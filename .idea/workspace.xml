@@ -3,6 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="35a1ecec-4343-4d92-a845-2700a214c2c0" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/home.htm" afterPath="$PROJECT_DIR$/home.htm" />
     </list>
     <ignored path="Parq.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -45,21 +46,21 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="home.htm" pinned="false" current-in-tab="false">
+      <file leaf-file-name="home.htm" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/home.htm">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="409">
-              <caret line="30" column="0" selection-start-line="30" selection-start-column="0" selection-end-line="30" selection-end-column="0" />
+            <state relative-caret-position="131">
+              <caret line="13" column="14" selection-start-line="13" selection-start-column="14" selection-end-line="13" selection-end-column="14" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="home_services_fragment.htm" pinned="false" current-in-tab="true">
+      <file leaf-file-name="home_services_fragment.htm" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/home_services_fragment.htm">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="30">
-              <caret line="2" column="55" selection-start-line="2" selection-start-column="55" selection-end-line="2" selection-end-column="55" />
+            <state relative-caret-position="825">
+              <caret line="55" column="6" selection-start-line="0" selection-start-column="0" selection-end-line="55" selection-end-column="6" />
               <folding />
             </state>
           </provider>
@@ -148,7 +149,6 @@
         <option value="$PROJECT_DIR$/master.master" />
         <option value="$PROJECT_DIR$/signup.master" />
         <option value="$PROJECT_DIR$/bookings_resources_menu.htm" />
-        <option value="$PROJECT_DIR$/home.htm" />
         <option value="$PROJECT_DIR$/home_plans_fragment.htm" />
         <option value="$PROJECT_DIR$/core_priceplans_table.htm" />
         <option value="$PROJECT_DIR$/css.css" />
@@ -157,6 +157,7 @@
         <option value="$PROJECT_DIR$/header.htm" />
         <option value="$PROJECT_DIR$/Custom/plans.htm" />
         <option value="$PROJECT_DIR$/home_services_fragment.htm" />
+        <option value="$PROJECT_DIR$/home.htm" />
       </list>
     </option>
   </component>
@@ -316,7 +317,7 @@
       <workItem from="1584197388855" duration="170000" />
       <workItem from="1584210798063" duration="5765000" />
       <workItem from="1584304784118" duration="941000" />
-      <workItem from="1584364835253" duration="900000" />
+      <workItem from="1584364835253" duration="1054000" />
     </task>
     <task id="LOCAL-00001" summary="latest">
       <created>1584365457306</created>
@@ -332,11 +333,18 @@
       <option name="project" value="LOCAL" />
       <updated>1584365844671</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="latest">
+      <created>1584365849417</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1584365849417</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="22503000" />
+    <option name="totallyTimeSpent" value="22657000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-1416" y="-477" width="1313" height="1248" extended-state="0" />
@@ -763,18 +771,18 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/home.htm">
+    <entry file="file://$PROJECT_DIR$/home_services_fragment.htm">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="409">
-          <caret line="30" column="0" selection-start-line="30" selection-start-column="0" selection-end-line="30" selection-end-column="0" />
+        <state relative-caret-position="825">
+          <caret line="55" column="6" selection-start-line="0" selection-start-column="0" selection-end-line="55" selection-end-column="6" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/home_services_fragment.htm">
+    <entry file="file://$PROJECT_DIR$/home.htm">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="30">
-          <caret line="2" column="55" selection-start-line="2" selection-start-column="55" selection-end-line="2" selection-end-column="55" />
+        <state relative-caret-position="131">
+          <caret line="13" column="14" selection-start-line="13" selection-start-column="14" selection-end-line="13" selection-end-column="14" />
           <folding />
         </state>
       </provider>
