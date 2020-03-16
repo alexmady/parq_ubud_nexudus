@@ -1,0 +1,229 @@
+{% extends master.master %}
+{% block title %}{% T People at {0} || data.Business.Name %}{% endblock %}
+{% block main %}
+<div class="container">
+
+  <!-- BREADCRUMBS -->
+  <ol class="breadcrumb">
+    <li><a href="{{ data.Business.HomeUrl }}">{% T Home %}</a></li>
+    <li class="active">{% T Directory %}</li>
+  </ol>
+  <!-- END BREADCRUMBS -->
+  <!-- PAGE HEADER -->
+  <div class="page-header page-header--flex page-header--facets">
+    <div class="page-header--flex__item">
+      <h1>{% T Directory %}</h1>
+      <ul class="list-inline page-header__facets-list">
+        {% if data.Local.DirectoryRecords != 'OnlyTeams' %}
+        <li>
+          {% if data.Action != 'members'%}
+          <a href="{% Url Directory, Members %}{{ data.UrlQuery }}" class="link--secondary">{% T Members %}</a>
+          {% else %}
+          <b>{% T Members %}</b>
+          {% endif %}
+        </li>
+        {% endif %}
+        {% if data.Local.DirectoryRecords != 'OnlyMembers' %}
+        <li>
+          {% if data.Action != 'teams'%}
+          <a href="{% Url Directory, Teams %}{{ data.UrlQuery }}" class="link--secondary">{% T Teams %}</a>
+          {% else %}
+          <b>{% T Teams %}</b>
+          {% endif %}
+        </li>
+        {% endif %}
+      </ul>
+    </div>
+    <div class="page-header--flex__item">
+      <form onsubmit="dm.doSearch(); return false;" class="form form--search">
+        <input value="{{ data.Local.Query }}" type="text" class="form-control input--sm" id="query" placeholder="{% T Search... %}">
+        <button class="btn btn--default btn--sm" type="submit"><i class="fa fa-search"></i></button>
+      </form>
+    </div>
+  </div>
+  <!-- END PAGE HEADER -->
+
+  <!-- FILTERS -->
+  <div class="filters">
+    <ul class="nav filters__nav">
+      <li class="{% if data.Local.Query == null and data.Local.OnlyCheckedIn == true or data.Local.OnlyAdmins == false or data.Local.OnlyNew == false %}active{% endif %}">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"> 
+          {% if data.Local.OnlyNew %}{% T New Members %}
+          {% elseif data.Local.OnlyAdmins %}{% T Staff %}
+          {% elseif data.Local.OnlyCheckedIn %}{% T Checked in %}
+          {% else %}{% T All members %}
+          {% endif %}
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu" role="menu">
+          <li class="{% if data.Local.OnlyCheckedIn == false and data.Local.OnlyAdmins == false and data.Local.OnlyNew == false and data.UrlQuery.size == 0 %}active{% endif %}" role="menuitem" tabindex="-1"><a href="{% Url Directory, Members %}">All members</a></li>
+          <li class="{% if data.Local.OnlyNew %}active{% endif %}" role="menuitem" tabindex="-1"><a href="{% Url Directory, Members, onlyNew: true %}">{% T New Members %}</a></li>
+          <li class="{% if data.Local.OnlyAdmins %}active{% endif %} role="menuitem" tabindex="-1"><a href="{% Url Directory, Members, onlyAdmins: true %}">{% T Staff %}</a></li>
+          <li class="{% if data.Local.OnlyCheckedIn %}active{% endif %} role="menuitem" tabindex="-1"><a href="{% Url Directory, Members, onlyCheckedIn: true %}">{% T Checked in %}</a></li>
+        </ul>
+      </li>
+      
+      <li class="{% if data.Local.Tag != null %}active{% endif %}">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="true">
+          {% T Skills %}{% if data.Local.Tag != null %}:
+          {{data.Local.Tag}}
+          {% endif %}
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu" role="menu">
+          <li class="{% if data.Local.Tag == null %}active{% endif %}" role="menuitem" tabindex="-1">
+            <a href="{{ data.UrlPath }}">
+              {% T Show all %}
+            </a>
+          </li>
+          {% for tag in data.Local.TopTags %}
+          {% assign thisTag = tag.Tag | Downcase %}
+          <li class="{% if data.Local.Tag contains thisTag %}active{% endif %}" role="menuitem" tabindex="-1">
+            <a data-selected="{% if data.Local.Tag contains thisTag %}true{% else %}false{% endif %}" data-tag="{{ tag.Tag }}" class="tag-filter-link" href="#">{{ tag.Tag }} ({{ tag.Count }})</a>
+          </li>
+          {% endfor %}
+          <li role="separator" class="divider"></li>
+          <li role="menuitem" tabindex="-1"><a href="javascript:void(0);" data-toggle="modal" data-target="#modal-industries">{% T Select additional skills %}</a></li>
+        </ul>
+      </li>
+      {% for cm in data.Local.CustomFields %}
+      <li class="{% if data.QueryString[cm.FieldName] != null %}active{% endif %}">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+          {% T cm.NameInSearch %}{% if data.QueryString[cm.FieldName] != null %}: 
+            {% if cm.FieldType == 'Boolean' %}
+             {% if data.QueryString[cm.FieldName] == 'True' %}
+              {% T Yes %}
+             {% endif %}
+            {% else %}
+              {{data.QueryString[cm.FieldName]}}
+            {% endif %}
+          {% endif %}
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu" role="menu">
+          {% if cm.FieldType == 'Dropdown' %}
+            <li class="{% if data.QueryString[cm.FieldName] == null or data.QueryString[cm.FieldName] == '' %}active{% endif %}" role="menuitem" tabindex="-1">
+              <a class="custom-filter-link" data-cmindex="{{ cm.CustomFieldIndex }}" href="#">{% T Show All %}</a>
+            </li>
+            {% for opt in cm.AvailableOptionArray %}
+            <li class="{% if data.QueryString[cm.FieldName] == opt %}active{% endif %}" role="menuitem" tabindex="-1">
+              <a class="custom-filter-link" data-selected="{% if data.QueryString[cm.FieldName] == opt %}true{% else %}false{% endif %}" href="#" data-value="{{ opt }}" data-cmindex="{{ cm.CustomFieldIndex }}">{{ opt }}</a>
+            </li>
+            {% endfor %}
+          {% else cm.FieldType = 'Boolean' %}
+            <li class="{% if data.QueryString[cm.FieldName] == null or data.QueryString[cm.FieldName] == '' %}active{% endif %}" role="menuitem" tabindex="-1">
+              <a class="custom-filter-link" data-cmindex="{{ cm.CustomFieldIndex }}" href="#">{% T Show All %}</a>
+            </li>
+            <li class="{% if data.QueryString[cm.FieldName] == 'True' %}active{% endif %}" role="menuitem" tabindex="-1">
+              <a class="custom-filter-link" data-selected="{% if data.QueryString[cm.FieldName] == 'true' %}true{% else %}false{% endif %}" href="#" data-value="True" data-cmindex="{{ cm.CustomFieldIndex }}">{% T Yes %}</a>
+            </li>
+            
+          {% endif %}
+        </ul>
+      </li>
+      {% endfor %}
+
+      <li class="active pull-right">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+          {% T Location %}: {{ data.Business.Name }} <span class="caret"></span>
+        </a>
+        {% include core_locations_list.htm %}
+      </li>
+     
+    </ul>
+  </div>
+  <!-- END FILTERS -->
+
+  <!-- ALL SKILLS MODAL -->
+  <div class="modal modal--listing" id="modal-industries" tabindex="-1" role="dialog" aria-labelledby="modal-industriesLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h3 class="modal-title" id="modal-industriesLabel">{% T Select a skill %}</h3>
+        </div>
+        <div class="modal-body">
+          <ul class="columns-2">
+
+            {% for tag in data.Local.AllTags %}
+            {% assign thisTag = tag | Downcase %}
+            <li>
+              {% if data.Local.Tag contains thisTag %}
+              <i class="fa fa-check-square-o"></i>
+              {% else %}
+              <i class="fa fa-square-o"></i>
+              {% endif %}
+              <a data-selected="{% if data.Local.Tag contains thisTag %}true{% else %}false{% endif %}" data-tag="{{ thisTag }}" class="tag-filter-link" href="#" class="link--secondary">
+                {{ tag }}
+              </a>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- END ALL SKILLS MODAL -->
+
+  <!-- ZERO CASE -->
+  {% if data.Local.AllMembersByName.size == 0 %}
+  <div class="zero-case">
+    <i class="fa fa-users zero-case__icon"></i>
+    <h3>{% T We found no members %}</h3>
+    {% if data.QueryString != null %}
+    <div class="btn-toolbar">
+      <a href="{% Url Directory, Members %}" class="btn btn--primary">{% T Show all members %}</a>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+  {% if data.Local.TeamsByName.size == 0 %}
+  <div class="zero-case">
+    <i class="fa fa-users zero-case__icon"></i>
+    <h3>{% T We found no teams %}</h3>
+    {% if data.QueryString != null %}
+    <div class="btn-toolbar">
+      <a href="{% Url Directory, Teams %}" class="btn btn--primary">{% T Show all teams %}</a>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+  
+  <!-- ZERO CASE -->
+
+  <!-- USERS LIST -->
+  <ul class="row users-list">
+    {% for member in data.Local.AllMembersByName %}
+    {% include directory_list_item.htm %}
+    {% endfor %}
+  </ul>
+  
+  <!-- END USERS LIST -->
+  <!-- TEAMS LIST -->
+  <ul class="row users-list">
+    {% for team in data.Local.TeamsByName %}
+    {% include directory_list_item_team.htm %}
+    {% endfor %}
+  </ul>
+  <!-- END TEAMS LIST -->
+  <!-- PAGINATION -->
+  {% if data.Local.AllMembersByName.size > 0 or data.Local.TeamsByName.size > 0 %}
+    {% if data.Action == 'members' %}
+    {% assign pagedRecords = data.Local.AllMembersByName %}
+    {% else %}
+    {% assign pagedRecords = data.Local.TeamsByName %}
+    {% endif %}
+    {% include core_pagination_fragment.htm %}
+  {% endif %}
+  <!-- END PAGINATION -->
+
+</div>
+{% endblock %}
+{% block scripts %}
+<script> 
+var dm = new DirectoryManager('{{ data.UrlPath }}');
+$(function(){
+  dm.init();
+});
+</script>
+{% endblock %}

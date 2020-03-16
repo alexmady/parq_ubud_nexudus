@@ -1,0 +1,13 @@
+{% if data.Local.HomeBlogPosts.size > 0 %}
+<div class="container">
+  <div class="home__section home__section--padded home__section--bordered home__section--blog">
+    <h2 class="h1 home__section__title">{% T From our Blog %}</h2>
+    <ul class="row blog-list">
+      {% for post in data.Local.HomeBlogPosts | limit: 3 %}
+      {% include blog_list_item.htm %}
+      {% endfor %}
+    </ul>
+    <div class="btn-toolbar text-center"> <a href="{% Url Blog, Index %}" class="btn btn--primary">{% T See all posts %}</a> </div>
+  </div>
+</div>
+{% endif %}

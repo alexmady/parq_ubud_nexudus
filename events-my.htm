@@ -1,0 +1,115 @@
+{% extends master.master %}
+{% block main %}
+<div class="container">
+    <!-- BREADCRUMBS -->
+    <ol class="breadcrumb">
+        <li><a href="{{ data.Business.HomeUrl }}">{% T Home %}</a></li>
+        <li><a href="{% Url Profile, Index %}">{% T My Account %}</a></li>
+        <li class="active">{% T My Events %}</li>
+    </ol>
+    <!-- END BREADCRUMBS -->
+    <!-- SETTINGS -->
+    <div class="settings">
+
+        <div class="row">
+            <div class="col-sm-3">
+                {% include my_account_navigation.htm %}
+            </div>
+
+            <div class="col-sm-9">
+
+                <!-- YOUR BOOKINGS -->
+                <form class="profile-form">
+                    <fieldset class="section section--settings">
+                        <legend class="h3 section__title">{% T Your upcoming events %}</legend>
+
+                        <table class="table table-striped table--settings">
+                            <thead>
+                            <th>{% T Event %}</th>
+                            <th>{% T Attendee %}</th>
+                            <th>{% T Date %}</th>
+                            <th>&nbsp;</th>
+                            </thead>
+                            <tbody>
+                                {% if data.Local.UpcomingEvents.size == 0 %}
+                                <tr>
+                                    <td colspan="3">
+                                        {% T You have no upcoming events %}
+                                    </td>
+                                </tr>
+                                {% endif %}
+                                {% for ticket in data.Local.UpcomingEvents %}
+                                <tr>
+                                    <th>
+                                        {{ ticket.CalendarEvent.Name }}<br />
+                                        <small>{{ ticket.EventProductName }}</small>
+                                    </th>
+                                    <td>
+                                        {{ ticket.FullName }}<br />
+                                        <small>{{ ticket.Email }}</small>
+                                    </td>
+                                    <td>{{ ticket.CalendarEvent.StartDate | FormatDate: 'f' }}</td>
+                                    <td style="text-align: right">
+                                        <a class="btn btn--primary btn--sm" href="{% Url Events, SendTicket, id: ticket.Id %}">{% T Send ticket %}</a>
+                                        <a class="btn btn--secondary btn--sm" href="javascript: app.showQuestion('{% T Do you want to cancel this ticket? %}', '{% T Any payments made for this ticket will remain as credit in your account and will be automatically used towards any future invoices %}').then(function(result) { if(result) window.location = '{% Url Events, CancelTicket, id: ticket.Id %}'; })">{% T Cancel ticket %}</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+
+                    </fieldset>
+
+                    <fieldset class="section section--settings">
+                        <legend class="h3 section__title">{% T Your past events %}</legend>
+
+                        <table class="table table-striped table--settings">
+                            <thead>
+                            <th>{% T Event %}</th>
+                            <th>{% T Attendee %}</th>
+                            <th>{% T Date %}</th>
+                            </thead>
+                            <tbody>
+                                {% if data.Local.PastEvents.size == 0 %}
+                                <tr>
+                                    <td colspan="3">
+                                        {% T You have no past events %}
+                                    </td>
+                                </tr>
+                                {% endif %}
+                                {% for ticket in data.Local.PastEvents %}
+                                <tr>
+                                    <th>
+                                        {{ ticket.CalendarEvent.Name }}<br />
+                                        <small>{{ ticket.EventProductName }}</small>
+                                    </th>
+                                    <td>
+                                        {{ ticket.FullName }}<br />
+                                        <small>{{ ticket.Email }}</small>
+                                    </td>
+                                    <td>{{ ticket.CalendarEvent.StartDate | FormatDate: 'f' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+
+                    </fieldset>
+
+
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  $(function(){
+    var navManager = new LateralNavigationManager();
+    navManager.initLateralSmoothNav();
+    $('#nav-lateral-select').val('{{ data.URL }}');
+  })
+
+</script>
+{% endblock %}

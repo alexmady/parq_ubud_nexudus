@@ -1,0 +1,104 @@
+{% extends signup.master %}
+{% block title %}{% T Join us %} | {{ data.Business.Name }}{% endblock %}
+{% block main %}
+<div class="container">
+    <!-- CREDENTIALS -->
+    <div class="credentials credentials--step">
+
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+
+                <!-- LOGO OR SPACE NAME -->
+                <a class="navbar-brand" href="{{ data.Business.HomeUrl }}">
+                    {% if data.Business.HasLogo %}
+                    <img src="{% Url Business, GetLogo, w:600, h:150, mode: 'max' %}" alt="{{ data.Business.Name }}">
+                    {% else %}
+                    <img src="http://placehold.it/600x150/FFFFFF?text={{ data.Business.Name }}" alt="{{ data.Business.Name }}">
+                    {% endif %}
+                </a>
+                <!-- END LOGO OR SPACE NAME -->
+
+                <!-- CREDENTIALS HEADER -->
+                <header class="credentials__header">
+                <h1 class="h2">{% T Request cancellation %}</h1>
+                </header>
+                <!-- END CREDENTIALS HEADER -->
+
+                <!-- CREDENTIALS STEPS -->
+                <ul class="row steps">
+                <li class="col-xs-6 active"><span>1</span> <b>{% T Cancellation feedback %}</b></li>
+                <li class="col-xs-6"><span>2</span> <b>{% T Confirmation %}</b></li>
+                </ul>
+                <!-- END CREDENTIALS STEPS -->
+
+                <h4>{% T You are about to request to cancel this membership: %}</h4>
+                <div class="credentials__box">
+                    {% include tariff_details_fragment.htm %}
+                    <hr/>
+                    <p>
+                        {% T Knowing why you decided to cancel your membership can help us improve our service and the community of users at {0}. We appreciate your honest feedback. || data.Business.Name %}
+                    </p>
+
+                    <form class="form" method="POST" action="{% Url Profile, CancelContractDo %}" id="cancel-form" data-bind="with: formData, submit: $root.submitForm" novalidate>
+                        <div class="form-group">
+                             <label for="reason">{% T Main reason to cancel your membership %}</label>
+                             <input type="hidden" name="contract.Id" value="{{ data.Local.Contract.Id }}"/>
+                             <select name="contract.CancellationReason" class="form-control" id="reason" data-bind="value: reason" required="required">
+                                <option></option>
+                                <option value="BusinessExpansion">{% T Business expanssion / not enough space %}</option>
+                                <option value="ChangeWorkEnvironment">{% T Want to change work environment %}</option>
+                                <option value="LackCommunityInterations">{% T Lack of community interactions %}</option>
+                                <option value="MovedToOtherSpace">{% T Moved to another workspace %}</option>
+                                <option value="NewJobRelocation">{% T Relocation / new job %}</option>
+                                <option value="OtherMembers">{% T Other members of the community %}</option>
+                                <option value="PoorSpaceCondition">{% T Poor space conditions / service %}</option>
+                                <option value="PriceTooHigh">{% T Price is too high %}</option>
+                                <option value="Rellocated">{% T Just temporarily in this area %}</option>
+                                <option value="Other">{% T Other %}</option>
+                             </select>
+                             <small class="help-block validation-error" data-bind="validationMessage: reason"></small> 
+                        </div>
+                        <div class="form-group">
+                            <label for="">{% T Any other comments or feedback %}</label>
+                            <textarea name="contract.CancellationNotes" data-bind="value: notes" required="required" rows="5" class="form-control"></textarea>
+                            <small class="help-block validation-error" data-bind="validationMessage: notes"></small> 
+                        </div>
+                        <button type="submit" class="btn btn--primary" data-bind="disable: $root.busy">{% T Request cancellation %}</button>
+                    </form>
+                    <hr/>
+                    <p class="settings__plan__notify">
+                      {% T If you request to cancel this plan now, you will leave this membership on {0:d} || data.Local.Contract.EarliestCancellationDate %}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <hr/>
+        <div class="form-actions">
+          <button class="btn btn--seconday" href="#" onclick="window.location = '{% Url Allowances, Plans %}'"><i class="fa fa-angle-left i-space--right"></i> {% T go back %}</button>
+            
+        </div>
+
+        {% include signup_footer.htm %}
+    </div>
+    <!-- END CREDENTIALS -->
+
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+$(function(){
+    var settings = {
+        formId: 'cancel-form',
+        formError: "{% T We would love to know the reason you decided to cancel your membership. Please complete the form with any information you think will help to improve {0} and its community. || data.Business.Name %}",
+        formData: {
+            reason: null,
+            notes: null
+        }
+    }
+    var fm = new SimpleFormManager(settings);
+    fm.init();
+})
+</script>
+{% include core_priceplans_table_scripts.htm %}
+{% endblock %}

@@ -1,0 +1,166 @@
+{% extends signup.master %}
+{% block title %}{% T Join us %} | {{ data.Business.Name }}{% endblock %}
+{% block main %}
+
+<div class="container">
+    <!-- CREDENTIALS -->
+    <div class="credentials credentials--step">
+
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+
+                <!-- LOGO OR SPACE NAME -->
+                <a class="navbar-brand" href="{{ data.Business.HomeUrl }}">
+                    {% if data.Business.HasLogo %}
+                    <img src="{% Url Business, GetLogo, w:600, h:150, mode: 'max' %}" alt="{{ data.Business.Name }}">
+                    {% else %}
+                    <img src="http://placehold.it/600x150/FFFFFF?text={{ data.Business.Name }}" alt="{{ data.Business.Name }}">
+                    {% endif %}
+                </a>
+                <!-- END LOGO OR SPACE NAME -->
+                <!-- CREDENTIALS HEADER -->
+                <header class="credentials__header">
+                    <h1 class="h2">{% T Your Proposal %}</h1>
+                </header>
+                <!-- END CREDENTIALS HEADER -->
+                <!-- CREDENTIALS STEPS -->
+                <ul class="row steps">
+                    <li class="col-xs-4"><span>1</span> <b>{% T Proposal %}</b></li>
+                    <li class="col-xs-4"><span>2</span> <b>{% T Additional products %}</b></li>
+                    <li class="col-xs-4"><span>3</span> <b>{% T Payment Details %}</b></li>
+                </ul>
+                <!-- END CREDENTIALS STEPS -->
+
+                <div class="credentials__box">
+                    <h2 class="h3 section__title">{% T Proposal Summary %} ({{ data.Local.Proposal.Reference }})</h2>
+                    <p>
+                        {% T Please review the details of this proposal and click 'accept' below to continue. %}
+                    </p>
+                    {% if data.Local.Proposal.Notes != null %}
+                    <p>
+                        {{ data.Local.Proposal.Notes | NewlineToBr }}
+                    </p>
+                    {% endif %}
+                    {% if data.Local.Proposal.HasFile %}
+                    <p>
+                        <b><a target="_blank" href="{% Url Content, ProposalFile, guid: data.Local.Proposal.UniqueId %}">{% T Download proposal documents %}</a></b>
+                    </p>
+                    {% endif %}
+                    <table class="table table--settings js-table-settings">
+                        <thead>
+                        <th>{% T Item %}</th>
+                        <th>{% T Quantity %}</th>
+                        <th class="text-right">{% T SubTotal %}</th>
+                        </thead>
+                        <tbody>
+                            {% for contract in data.Local.Proposal.Contracts %}
+                            <tr>
+                                <td>
+                                    {{ contract.Tariff.Name }}
+                                    <br />
+                                    <small>
+
+                                        - {% T Start date: %}
+                                        {% if contract.StartDate != null %}
+                                        {{ contract.StartDate | FormatDate: 'd' }}
+                                        {% else %}
+                                        -
+                                        {% endif %}
+                                        <br />
+                                        - {% T End date: %}
+                                        {% if contract.CancellationDate != null %}
+                                        {{ contract.CancellationDate | FormatDate: 'd' }}
+                                        {% else %}
+                                        -
+                                        {% endif %}
+                                        <br />
+                                        - {% T Billing Day: %} {{ contract.BillingDay }}
+                                        <br />
+                                        - {% T Offices / Desks: %} {{ contract.Desks }}
+                                        </ul>
+                                    </small>
+                                </td>
+                                <td>
+                                    {{ contract.Quantity }}
+                                </td>
+                                <td class="text-right">
+                                    {{ contract.PriceFormatted }}
+                                    <br />
+                                    <small>
+                                        {% T every %}
+                                        {% if contract.Tariff.InvoiceEvery > 0 %}
+                                        {{ contract.Tariff.InvoiceEvery }}
+                                        {% T month(s) %}
+                                        {% else %}
+                                        {{ contract.Tariff.InvoiceEveryWeeks}}
+                                        {% T week(s) %}
+                                        {% endif %}
+                                    </small>
+                                </td>
+                            </tr>
+                            {% endfor %}
+
+                            {% for line in data.Local.Proposal.Products %}
+                            <tr>
+                                <td>{{ line.Product.Name }}</td>
+                                <td>{{ line.Quantity }}</td>
+                                <td class="text-right">
+                                    {{ line.PriceFormatted }}
+                                    {% if line.RegularCharge %}
+                                    <br />
+                                    <small>
+                                        {% T Recurrent charge %}
+                                    </small>
+                                    {% endif %}
+                                </td>
+                            </tr>
+
+                            {% endfor %}
+                        </tbody>
+
+                    </table>
+                </div>
+
+                <div class="form-actions btn-toolbar">
+                    <a href="{% Url Proposal, Accept, guid: data.Local.Proposal.UniqueId %}" class="btn btn--primary btn--sm">
+                        {% T Accept proposal %}
+                        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+                    </a>
+                </div>
+                {% include signup_footer.htm %}
+
+            </div>
+        </div>
+    </div>
+    <!-- END CREDENTIALS -->
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% include payment_scripts.htm %}
+{% if data.Local.StripeEnabled %}
+<script>
+  $('.stripeCustomerButton').click(function () {
+    var el = $(this);
+    var token = function (res) {
+      var $input = $('<input type=hidden name=stripeToken />').val(res.id);
+      var payUrl = el.attr('data-payUrl');
+      window.location.href = '{% Url Payments, StoreStripeToken %}?errorRedirectUrl={% Url Invoices, PaymentDetails %}&okRedirectUrl={% Url Profile, Complete %}&stripeToken=' + res.id + '&rnd=' + Math.floor((Math.random() * 100000) + 1);
+    };
+
+    StripeCheckout.open({
+      key: '{{ data.Local.StripePublicKey }}',
+      address: false,
+      allowRememberMe: false,
+      email: '{{ data.Coworker.Email }}',
+      name: '{{ data.Business.Name }}',
+      panelLabel: '{% T Continue %}',
+      token: token
+    });
+
+    return false;
+  });
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,102 @@
+{% extends master.master %}
+{% block htmlTag %}itemscope itemtype="http://schema.org/Article"{% endblock %}
+{% block title %}{% if data.Local.Category != null %}{% T data.Local.Category.Title %} | {% endif %}{% T Blog %} | {{ data.Business.Name }} {% endblock %}
+{% block main %}
+<div class="container">
+  <!-- BREADCRUMBS -->
+  <ol class="breadcrumb">
+    <li><a href="{{ data.Business.HomeUrl }}">{% T Home %}</a></li>
+    <li class="active">{% T Blog %}</li>
+  </ol>
+  <!-- END BREADCRUMBS -->
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <h1>{% T News at {0} || data.Business.Name %}</h1>
+  </div>
+  <!-- END PAGE HEADER -->
+
+  <!-- FILTERS -->
+  <div class="filters">
+    <ul class="nav filters__nav">
+      <li class="active">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"> 
+          {% if data.Local.Category != null %}{{ data.Local.Category.Title }}
+          {% else %}{% T All posts %}
+          {% endif %}
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu" role="menu">
+          <li class="{% if data.Local.Category == null %}active{% endif %}" role="menuitem" tabindex="-1">
+          <a href="{% Url Blog, Index, categoryId: '',  title: cat.Title | Clean %}">{% T All posts %}</a>
+          </li>
+          {% for cat in data.Local.CategoriesByPosts | limit: 5 %}
+          <li class="{% if data.Local.Category.Id == cat.Id %}active{% endif %}" role="menuitem" tabindex="-1">
+            <a href="{% Url Blog, Index, title: cat.Title | Clean, categoryId: cat.Id, page: 1 %}">{{ cat.Title }}</a>
+          </li>
+          {% endfor %}
+          <li role="separator" class="divider"></li>
+          <li role="menuitem" tabindex="-1"><a href="javascript:void(0);" data-toggle="modal" data-target="#modal-categories">{% T All categories %}</a></li>
+        </ul>
+      </li>
+      
+
+      <li class="active pull-right">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+          {% T Location %}: {{ data.Business.Name }} <span class="caret"></span>
+        </a>
+        {% include core_locations_list.htm %}
+      </li>
+     
+    </ul>
+  </div>
+  <!-- END FILTERS -->
+
+  <!-- ZERO CASE -->
+  {% if data.Local.BlogPosts.size == 0 %}
+  <div class="zero-case">
+    <i class="fa fa-file-text-o zero-case__icon"></i>
+    <h3>{% T There are no more blog posts. %}</h3>
+    <p>{% T Check back soon! %}</p>
+  </div>
+  {% endif %}
+  <!-- END ZERO CASE -->
+
+  <!-- BLOG LIST -->
+  <ul class="row blog-list">
+    {% for post in data.Local.BlogPosts %}
+    {% include blog_list_item.htm %}
+    {% endfor %}
+  </ul>
+  <!-- END BLOG LIST -->
+
+  <!-- PAGINATION -->
+  {% assign pagedRecords = data.Local.BlogPosts %}
+  {% include core_pagination_fragment.htm %}
+  <!-- END PAGINATION -->
+
+  <!-- ALL SKILLS MODAL -->
+  <div class="modal modal--listing" id="modal-categories" tabindex="-1" role="dialog" aria-labelledby="modal-categoriesLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h3 class="modal-title" id="modal-industriesLabel">{% T Select a category %}</h3>
+        </div>
+        <div class="modal-body">
+          <ul class="columns-3">
+
+            {% for cat in data.Local.Categories %}
+            <li>
+              <a class="tag-filter-link" href="{% Url Blog, Index, title: cat.Title | Clean, categoryId: cat.Id, page: 1 %}" class="link--secondary">{{ cat.Title }}</a>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- END ALL SKILLS MODAL -->
+
+</div>
+{% endblock %}

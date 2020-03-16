@@ -1,0 +1,17 @@
+
+  <p>
+    {% T Direct Debit is an instruction from you to your bank or building society. It authorises the organisation you want to pay to collect varying amounts from your account – but only if you’ve been given advanced notice of the amounts and dates of collection. %}
+  </p>
+  {% if data.Coworker.HasGoCardlessContractNumber %}
+  <p>
+    <strong>
+    {% T You already have a Direct Debit agreement with us. Please get in touch with us if you would like to cancel or change it. %} 
+    </strong>
+    </p>
+  {% else %}
+  {% if gc_returnUrl != null %}
+  <a class="btn btn--primary btn--sm" href="https://{{ data.RootDomain }}/Callbacks/GoCardlessPre/{{ data.Coworker.Id }}?returnUrl={{gc_returnUrl}}"><span aria-hidden="true" class="fa fa-university"></span> {% T Set up a new Direct Debit agreement %}</a>
+  {% else %}
+  <a class="btn btn--primary btn--sm" href="https://{{ data.RootDomain }}/Callbacks/GoCardlessPre/{{ data.Coworker.Id }}"><span aria-hidden="true" class="fa fa-university"></span> {% T Set up a new Direct Debit agreement %}</a>
+  {% endif %}
+  {% endif %}

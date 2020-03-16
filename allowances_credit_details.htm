@@ -1,0 +1,77 @@
+<tr class="tr-parent js-table-settings-tr-parent">
+    <th>
+        <div class="table--settings__handler">
+            <a href="#" class="link--default table--settings__title js-table-settings-link">
+                <span class="caret"></span>
+                {% if group.CreditName != null %}
+                {{ group.CreditName }}
+                {% else %}
+                {% T Credit %}
+                {% endif %}
+            </a>
+            {% if group.CreditDescription != null %}
+            <span class="table--settings__expiration">{{ group.CreditDescription }}</span>
+            {% endif %}
+        </div>
+    </th>
+    <td>
+        {% if group.TotalMinutes > 0 %}
+        {% T {0} hours || group.TotalHours %}
+        {% elseif group.TotalDays > 0 %}
+        {% T {0} day(s) || group.TotalDays %}
+        {% elseif group.TotalMonths > 0 %}
+        {% T {0} month(s) || group.TotalMonths %}
+        {% elseif group.TotalUses > 0 %}
+        {% T {0} use(s) || group.TotalUses %}
+        {% elseif group.TotalWeeks > 0 %}
+        {% T {0} weeks(s) || group.TotalWeeks %}
+        {% elseif group.Count > 0 %}
+        {% T {0} passes || group.Count %}
+        {% elseif group.TotalCredit > 0 %}
+        {% T {0:0.00} {1} || group.TotalCredit || data.Business.Currency.Code %}
+        {% else %}
+        {% T none %}
+        {% endif %}
+    </td>
+    <td class="text-right">
+        {% if group.MinutesLeft > 0 %}
+        {% T {0} hours || group.HoursLeft %}
+        {% elseif group.DaysLeft > 0 %}
+        {% T {0} day(s) || group.DaysLeft %}
+        {% elseif group.MonthsLeft > 0 %}
+        {% T {0} month(s) || group.MonthsLeft %}
+        {% elseif group.UsesLeft > 0 %}
+        {% T {0} use(s) || group.UsesLeft %}
+        {% elseif group.WeeksLeft > 0 %}
+        {% T {0} weeks(s) || group.WeeksLeft %}
+        {% elseif group.PassesLeft > 0 %}
+        {% T {0} passes || group.PassesLeft %}
+        {% elseif group.RemainingCredit > 0 %}
+        {% T {0:0.00} {1} || group.RemainingCredit || data.Business.Currency.Code %}
+        {% else %}
+        {% T none %}
+        {% endif %}
+    </td>
+</tr>
+<tr class="tr-child">
+    <td colspan="3">
+        <ul class="table--settings__details-list">
+            {% for each tp in group.CreditDetailsList %}
+            <li>
+                {{ tp.TimePass.Name }}
+                {{ tp.ExtraService.Name }}
+                {{ tp.Name }}
+                <span class="help-block">
+                    {% if tp.Used and tp.UsedDate != null %}
+                    {% T You used this benefit on {0:d} || tp.UsedDate %}
+                    {% elseif tp.ExpireDate != null %}
+                    {% T Expires on {0:d} || tp.ExpireDate %}
+                    {% else %}
+                    {% T Not used yet %}
+                    {% endif %}
+                </span>
+            </li>
+            {% endfor %}
+        </ul>
+    </td>
+</tr>

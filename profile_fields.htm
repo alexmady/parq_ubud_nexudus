@@ -1,0 +1,67 @@
+<div class="row">
+  {% if data.Setting_Forms_CompanyName != 3 %}
+  <div class="form-group col-sm-4 {% if data.Setting_Forms_CompanyName == 2 %}required{% endif %}">
+      <label for="">{% T Company Name  %}</label>
+      <input data-bind="value: CompanyName" {% if data.Setting_Forms_CompanyName == 2 %}required{% endif %} type="input" class="form-control" placeholder="{% if data.Setting_Forms_CompanyName == 2 %}{% T Required %}{% else %}{% T Optional %}{% endif %}">
+      <small class="help-block validation-error" data-bind="validationMessage: CompanyName"></small> 
+  </div>
+  {% endif %}
+  {% if data.Setting_Forms_BusinessArea != 3 %}
+  <div class="form-group col-sm-4 {% if data.Setting_Forms_BusinessArea == 2 %}required{% endif %}">
+      <label for="">{% T Industry  %}</label>
+      <input data-bind="value: BusinessArea" {% if data.Setting_Forms_BusinessArea == 2 %}required{% endif %} type="input" class="form-control" placeholder="{% if data.Setting_Forms_BusinessArea == 2 %}{% T Required %}{% else %}{% T Optional %}{% endif %}">
+      <small class="help-block validation-error" data-bind="validationMessage: BusinessArea"></small> 
+  </div>
+  {% endif %}
+	{% if data.Setting_Forms_Position != 3 %}
+  <div class="form-group col-sm-4 {% if data.Setting_Forms_Position == 2 %}required{% endif %}">
+      <label for="">{% T Your Role / Position   %}</label>
+      <input data-bind="value: Position" {% if data.Setting_Forms_Position == 2 %}required{% endif %} type="input" class="form-control" placeholder="{% if data.Setting_Forms_Position == 2 %}{% T Required %}{% else %}{% T Optional %}{% endif %}">
+      <small class="help-block validation-error" data-bind="validationMessage: Position"></small> 
+  </div>
+  {% endif %}
+</div>
+{% if data.Setting_Forms_ProfileSummary != 3 %}
+<div class="row">
+  {% if data.Setting_Forms_ProfileSummary != 3 %}
+  <div class="form-group col-sm-12 {% if data.Setting_Forms_ProfileSummary == 2 %}required{% endif %}">
+    <label for="ProfileSummary">{% T Your bio %}</label>
+    <textarea class="form-control" rows="3" {% if data.Setting_Forms_ProfileSummary == 2 %}required{% endif %} id="ProfileSummary" data-bind="simplemde: { value: ProfileSummary }" placeholder="{% T Keep it relevant, less is more... %}"></textarea>
+    <small class="help-block validation-error" data-bind="validationMessage: ProfileSummary"></small> 
+		<p class="help-block">{% T You can use MarkDown syntax to give format to your bio %}</p>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+
+{% if data.Setting_Forms_PorfileTags != 3 %}
+<div class="row" data-bind="ifnot: $root.profileTags()">
+  <div class="col-sm-12">
+		<div class="form-group {% if data.Setting_Forms_PorfileTags == 2 %}required{% endif %}">
+			<label class="control-label" for="ProfileTags">{% T Your skills %}</label>
+			<input type="text" {% if data.Setting_Forms_PorfileTags == 2 %}required{% endif %} class="form-control" id="ProfileTags" data-bind="tagsinput: ProfileTagsArray">
+			<p class="help-block">{% T Press enter after each skill. Keep it relevant, less is more... %}</p>
+		</div>
+  </div>
+</div>
+<div class="row" data-bind="if: $root.profileTags()">
+  <div class="col-sm-12">
+		<div class="form-group">
+			<label class="control-label" for="ProfileTags">{% T Your skills %}</label>
+		</div>
+  </div>
+</div>
+<!-- ko foreach: ko.partitioned($root.profileTags,3) -->
+<div class="row" data-bind="foreach: { data: $data, as: 'tag' }">
+  <div class="col-sm-4">
+	<div class="form-group form-group--related-top">
+	  <div class="checkbox">
+		<label>
+		  <input type="checkbox" data-bind="checked: $root.coworker.ProfileTagsArray, value: tag.toLowerCase()"> <span data-bind="text: tag"></span> 
+		</label>
+	  </div>
+	</div>
+  </div>
+</div>
+<!-- /ko -->
+{% endif %}

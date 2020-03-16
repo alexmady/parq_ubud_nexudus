@@ -1,0 +1,371 @@
+{% extends master.master %}
+{% block scripts %}
+
+<script>
+  var manager;
+  var coworker = {{ data.Coworker | Json, prefix: false }};
+  coworker.Country = { Id: parseInt(coworker.CountryId) };
+  coworker.SignUpToNewsletter = {{ data.Local.IsNewsletterSubscriber }};
+  if (coworker.Email == coworker.BillingEmail)
+    coworker.BillingEmail = null;
+
+  $(function(){
+    var settings = {
+      url: '{% Url Profile, Index, _resource: "." %}',
+      user: {{ data.User | Json prefix: false }},
+      coworker: coworker,
+      profileTags: {{ data.Local.ProfileTags | Json, prefix: false }},
+      customFields: {{ data.Local.CustomFields | Json prefix: false maxDepth: 0 }},
+      form: $('#profile-form'),
+      formError: '{% T Please make sure all the required fields are complete. %}',
+      successMessage: "{% T Your profile has been updated. %}",
+      errorMessage: "{% T We could not update your profile, please try again later. %}"
+    };
+    manager = new ProfileManager(settings);
+    manager.init();
+    
+    $('#nav-lateral-select').val('{{ data.URL }}');
+  })
+</script>
+{% include custom_fields_templates.htm %}
+{% endblock %}
+{% block main %}
+ <div class="container">
+
+  <!-- BREADCRUMBS -->
+  <ol class="breadcrumb">
+    <li><a href="{{ data.Business.HomeUrl }}">{% T Home %}</a></li>
+    <li class="active">{% T My Account %}</li>
+  </ol>
+  <!-- END BREADCRUMBS -->
+
+  <!-- SETTINGS -->
+  <div class="settings">
+    <div class="row">
+      <div class="col-sm-3">
+        {% include my_account_navigation.htm %}
+      </div>
+
+      <div class="col-sm-9">
+         <div class="notifications-placeholder"></div>
+        <form id="profile-form" action="{% Url Profile, Index %}" method="POST" enctype="multipart/form-data" class="form" data-bind="with: coworker">
+
+          <!-- YOUR APPEARANCE -->
+          <fieldset class="section section--settings" id="your-appearance">
+
+            <legend class="h3 section__title">{% T Your profile page %}</legend>
+
+            <div class="user-badge user-badge--lg">
+              <span class="avatar user-badge__avatar">
+              <img id="Coworker_Avatar_Img" src="{% Url Coworker, GetAvatar, id: data.Coworker.Id, h:128, w:128 %}&noavatar=%2Fcontent%2Fthemes%2Fpublic%2Fdos%2Fimg%2Favatar-default.png" alt="">
+              </span>
+              <div class="form-group">
+                <label for="Coworker_Avatar">{% T Your photo %}</label>
+                <input type="file" data-bind="file: {data: Avatar, allowed: ['image/jpeg', 'image/jpg', 'image/png'] }" id="Coworker_Avatar" name="Coworker_Avatar">
+                <p class="help-block">
+                  {%  T File smaller than 10MB and at least 400px by 400px. %}
+                  </p>
+              </div>
+              <div class="checkbox">
+                <label>
+                  <input data-bind="checked: DeleteAvatar" type="checkbox"> {% T Delete my picture %}
+                </label>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="Coworker_Banner">{% T Profile cover %}</label>
+              {% if data.Coworker.HasBanner %}
+              <div class="avatar user-cover" href="#">
+                <img id="Coworker_Banner_Img" style="height: 300px" src="{% Url Coworker, GetBanner, id: data.Coworker.Id, h:300, w:1696 %}&noavatar=%2Fcontent%2Fthemes%2Fpublic%2Fdos%2Fimg%2Favatar-default.png"  alt="" class="img-responsive">
+              </div>
+              {% endif %}
+              <input type="file" id="Coworker_Banner" data-bind="file: {data: Banner, allowed:  ['image/jpeg', 'image/jpg', 'image/png'] }" name="Coworker_Banner">
+              <p class="help-block">{% T File smaller than 10MB and at least 1200px by 300px. %}</p>
+              <div class="checkbox">
+                <label>
+                  <input data-bind="checked: DeleteBanner" type="checkbox"> {% T Delete cover %}
+                </label>
+              </div>
+            </div>
+
+            <div class="btn-toolbar form-actions">
+              <button class="btn btn--primary btn--sm" data-bind="click: $root.saveDetails, disable: $root.busy" type="button">
+                <span data-bind="visible: !$root.busy()"><i class="fa fa-floppy-o" aria-hidden="true"></i> {% T Save changes %}</span>
+                <span data-bind="visible: $root.busy()" style="display: none">{% T Saving... %}</span>
+              </button>
+              <a href="{% Url Directory, Profile, Id: data.Coworker.Id, name: data.Coworker.FullName | Clean %}" target="_blank" class="btn btn--secondary--inverse btn--sm">{% T View my profile %}</a>
+            </div>
+
+          </fieldset>
+          <!-- END YOUR APPEARANCE -->
+
+          <!-- ACCOUNT DETAILS -->
+          <fieldset class="section section--settings" id="account-details">
+
+            <legend class="h3 section__title">{% T Personal Details %}</legend>
+
+            <div class="row">
+              <div class="col-sm-4">
+                <div class="form-group required">
+                  <label class="control-label" for="FullName">{% T Full name %}</label>
+                  <input type="text" class="form-control" name="Coworker.FullName" id="FullName" data-bind="value: FullName" required="required">
+                  <small class="help-block validation-error" data-bind="validationMessage: FullName"></small>
+                </div>
+              </div>
+              <div class="col-sm-4">
+                <div class="form-group required">
+                  <label class="control-label" for="Salutation">{% T What should we call you? %}</label>
+                  <input type="text" class="form-control" name="Coworker.Salutation" data-bind="value: Salutation" required="required">
+                  <small class="help-block validation-error" data-bind="validationMessage: FullName"></small>
+                </div>
+              </div>
+              {% if data.Setting_SignupForm_Gender != 3 %}
+				<div class="col-sm-4 form-group col-sm-4 {% if data.Setting_SignupForm_Gender == 2 %}required{% endif %}">
+					<div class="form-group">
+						<label for="">{% T Gender %}</label>
+						<select class="form-control" data-bind="value: Gender" {% if data.Setting_SignupForm_Gender == 2 %}required{% endif %}>
+							<option value="NotSet">-</option>
+							<option value="Male">{% T Male %}</option>
+							<option value="Female">{% T Female %}</option>
+							<option value="Other">{% T Other %}</option>
+							<option value="RatherNotSay">{% T Rather Not Say %}</option>
+						</select>
+						<small class="help-block validation-error" data-bind="validationMessage: Gender"></small> 
+					</div>
+				</div>
+			  {% endif %}
+            </div>
+            <div class="row">
+              {% if data.Setting_SignupForm_LandLine != 3 %}
+				<div class="form-group col-sm-4 {% if data.Setting_SignupForm_LandLine == 2 %}required{% endif %}">
+					<label for="">{% T Phone %}</label>
+					<input data-bind="value: LandLine" {% if data.Setting_SignupForm_LandLine == 2 %}required{% endif %} type="input" class="form-control" placeholder="{% if data.Setting_SignupForm_LandLine == 2 %}{% T Required %}{% else %}{% T Optional %}{% endif %}">
+					<small class="help-block validation-error" data-bind="validationMessage: LandLine"></small> 
+				</div>
+				{% endif %}
+				{% if data.Setting_SignupForm_MobilePhone != 3 %}
+				<div class="form-group col-sm-4 {% if data.Setting_SignupForm_MobilePhone == 2 %}required{% endif %}">
+					<label for="">{% T Mobile %}</label>
+					<input data-bind="value: MobilePhone" {% if data.Setting_SignupForm_MobilePhone == 2 %}required{% endif %} type="input" class="form-control" placeholder="{% if data.Setting_SignupForm_MobilePhone == 2 %}{% T Required %}{% else %}{% T Optional %}{% endif %}">
+					<small class="help-block validation-error" data-bind="validationMessage: MobilePhone"></small> 
+				</div>
+				{% endif %}
+              <div class="col-sm-4">
+                <div class="form-group">
+                  <label class="control-label" for="DateOfBirth">{% T Date of Birth %}</label>
+                  <input type="text" class="form-control date" id="DateOfBirth" data-bind="pickadate:{ value: DateOfBirth, options: $root.datePickerOptions }">
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label" for="Email">{% T Email %}</label>
+              <input type="text" class="form-control" id="Email" name="Coworker.Email" readonly="readonly" data-bind="value: Email" >
+              <p class="help-block">{% T Contact us to change your email %}
+            </div>
+            <div class="btn-toolbar form-actions">
+              <button class="btn btn--primary btn--sm" data-bind="click: $root.saveDetails, disable: $root.busy" type="button">
+                <span data-bind="visible: !$root.busy()"><i class="fa fa-floppy-o" aria-hidden="true"></i> {% T Save changes %}</span>
+                <span data-bind="visible: $root.busy()" style="display: none">{% T Saving... %}</span>
+              </button>
+            </div>
+            <hr/>
+            
+            {% include profile_address_fields.htm %}
+
+            <div class="btn-toolbar form-actions">
+              <button class="btn btn--primary btn--sm" data-bind="click: $root.saveDetails, disable: $root.busy" type="button">
+                <span data-bind="visible: !$root.busy()"><i class="fa fa-floppy-o" aria-hidden="true"></i> {% T Save changes %}</span>
+                <span data-bind="visible: $root.busy()" style="display: none">{% T Saving... %}</span>
+              </button>
+            </div>
+            
+          </fieldset>
+          <!-- END ACCOUNT DETAILS -->
+          <!-- BILLING DETAILS -->
+          <fieldset class="section section--settings" id="billing-details" data-bind="visible: hasBillingDetails" style="display: none">
+            <legend class="h3 section__title">{% T Billing/Company Details %}</legend>
+
+            {% include profile_billing_fields.htm %}
+            
+            <div class="btn-toolbar form-actions">
+              <button class="btn btn--primary btn--sm" data-bind="click: $root.saveDetails, disable: $root.busy" type="button">
+                <span data-bind="visible: !$root.busy()"><i class="fa fa-floppy-o" aria-hidden="true"></i> {% T Save changes %}</span>
+                <span data-bind="visible: $root.busy()" style="display: none">{% T Saving... %}</span>
+              </button>
+            </div>
+          </fieldset>
+          <!-- END BILLING DETAILS -->
+
+          <!-- CUSTOM FIELDS -->
+          <!-- ko foreach: { data: $root.customFields, as: 'group' } -->
+          <fieldset class="section section--settings" 
+                    data-bind="attr: {id: 'customfields-' + $root.customFields.indexOf(group) }">
+            <legend class="h3 section__title" data-bind="text: group[0].GroupName"></legend>
+            <div class="row" data-bind="foreach: { data: group, as: 'field' }">
+              <!-- ko template: { name: 'field-template-' + field.FieldType.toLowerCase() + (field.FieldType === 'Dropdown' && field.AllowMultipleOptions ? '-multiple' : '') } -->
+              <!-- /ko -->
+            </div>
+            <div class="btn-toolbar form-actions">
+              <button class="btn btn--primary btn--sm" data-bind="click: $root.saveDetails, disable: $root.busy" type="button">
+                <span data-bind="visible: !$root.busy()"><i class="fa fa-floppy-o" aria-hidden="true"></i> {% T Save changes %}</span>
+                <span data-bind="visible: $root.busy()" style="display: none">{% T Saving... %}</span>
+              </button>
+            </div>
+          </fieldset>
+          <!-- /ko -->
+          <!-- END CUSTOM FIELDS -->
+
+          <!-- PROFESSIONAL PROFILE -->
+          <fieldset class="section section--settings" id="professional-profile">
+            <legend class="h3 section__title">{% T Professional Profile %}</legend>
+
+            {% include profile_fields.htm %}
+
+            <hr/>
+            <div class="alert alert-danger" role="alert" style="display: none" data-bind="visible: !ProfileIsPublic()">
+              <strong>{% T Heads up! %}</strong> 
+              {% T Your profile is not yet listed in the directory! Enable the option 'List my profile in the directory' below. %}
+            </div>
+            <div class="checkbox">
+              <label>
+                <input data-bind="checked: ProfileIsPublic" type="checkbox"> 
+                <strong>{% T List my profile in the directory %}</strong>
+              </label>
+            </div>
+            <hr/>
+            <div class="btn-toolbar form-actions">
+              <button class="btn btn--primary btn--sm" data-bind="click: $root.saveDetails, disable: $root.busy" type="button">
+                <span data-bind="visible: !$root.busy()"><i class="fa fa-floppy-o" aria-hidden="true"></i> {% T Save changes %}</span>
+                <span data-bind="visible: $root.busy()" style="display: none">{% T Saving... %}</span>
+              </button>
+            </div>
+          </fieldset>
+          <!-- END PROFESSIONAL PROFILE -->
+
+          <!-- SOCIAL NETWORKS -->
+          <fieldset class="section section--settings" id="social-networks">
+            <legend class="h3 section__title">{% T Social Networks %}</legend>
+            {% include profile_social_fields.htm %}
+
+            <div class="btn-toolbar form-actions">
+              <button class="btn btn--primary btn--sm" data-bind="click: $root.saveDetails, disable: $root.busy" type="button">
+                <span data-bind="visible: !$root.busy()"><i class="fa fa-floppy-o" aria-hidden="true"></i> {% T Save changes %}</span>
+                <span data-bind="visible: $root.busy()" style="display: none">{% T Saving... %}</span>
+              </button>
+            </div>
+
+          </fieldset>
+          <!-- END SOCIAL NETWORKS -->
+
+          <!-- EMAIL AND PASSOWRD -->
+          <fieldset class="section section--settings" id="email-password">
+              <legend class="h3 section__title">{% T Your Password %}</legend>
+              <div class="row">
+                  <div class="col-sm-6">
+                      <div class="form-group">
+                          <label class="control-label" for="OldPassword">{% T Your Check-in and Internet Pincode %}</label>
+                          <input readonly type="text" class="form-control" data-bind="value: $root.coworker.AccessPincode">
+                      </div>
+                  </div>
+              </div>
+              <div class="row">
+                  <div class="col-sm-6">
+                      <div class="form-group">
+                          <label class="control-label" for="OldPassword">{% T Old password %}</label>
+                          <input type="password" class="form-control" id="OldPassword" data-bind="value: $root.user.OldPassword, valueUpdate: 'keyup'">
+                          <p class="help-block">
+                              {% T If you don't remember your old password: %}
+                              <a target="_blank" href="{% Url Profile, SendResetPasswordEmail %}">{% T request a password reset email %}</a>.
+                      </div>
+                  </div>
+              </div>
+              <div class="row">
+                  <div class="col-sm-6" data-bind="visible: $root.user.OldPassword">
+                      <div class="form-group">
+                          <label class="control-label" for="NewPassword">{% T New password %}</label>
+                          <input type="password" class="form-control" id="NewPassword" data-bind="value: $root.user.NewPassword, valueUpdate: 'keyup'">
+                      </div>
+                  </div>
+              </div>
+              <div class="row" data-bind="visible: $root.user.OldPassword() && $root.user.NewPassword()">
+                  <div class="col-sm-6">
+                      <div class="form-group">
+                          <label class="control-label" for="RepeatNewPassword">{% T Repeat New password %}</label>
+                          <input type="password" class="form-control" id="RepeatNewPassword" data-bind="value: $root.user.RepeatNewPassword, valueUpdate: 'keyup'">
+                          <small class="help-block validation-error" data-bind="validationMessage: $root.user.RepeatNewPassword"></small>
+                      </div>
+                  </div>
+              </div>
+              <div class="btn-toolbar form-actions" data-bind="visible: $root.user.OldPassword() && $root.user.NewPassword() && $root.user.RepeatNewPassword()">
+                  <button class="btn btn--primary btn--sm" data-bind="click: $root.saveDetails, disable: $root.busy" type="button">
+                      <span data-bind="visible: !$root.busy()">{% T Change Password %}</span>
+                      <span data-bind="visible: $root.busy()" style="display: none">{% T Saving... %}</span>
+                  </button>
+              </div>
+          </fieldset>
+          <!-- END EMAIL AND PASSOWRD -->
+
+          <!-- NOTIFICATIONS -->
+          <fieldset class="section section--settings" id="notifications-settings">
+            <h2 class="h3 section__title">{% T Notifications %}</h2>
+
+            <div class="settings__notifications">
+              <h4 class="h6">{% T Select when would you like to receive notifications %}</h4>
+              <div class="form-group">
+                <div class="checkbox">
+                  <label>
+                      <input data-bind="checked: SignUpToNewsletter" type="checkbox"> 
+                      {% T I would like to receive occasional and relevant updates from {0} by email. || data.Business.Name %}
+                  </label>
+                </div>
+                
+                <div class="checkbox">
+                  <label>
+                    <input type="checkbox" data-bind="checked: $root.user.OnNewWallPost" /> {% T When a new message is posted in the home page wall. %}
+                  </label>
+                </div>
+
+                <div class="checkbox">
+                  <label>
+                    <input type="checkbox" data-bind="checked: $root.user.OnNewBlogComment" /> {% T When a new comment is posted in the blog. %}
+                  </label>
+                </div>
+
+                <div class="checkbox">
+                  <label>
+                    <input type="checkbox" data-bind="checked: $root.user.OnNewEventComment" /> {% T When a new comment is posted in an event. %}
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings__notifications">
+              <h4 class="h6">{% T How and when should we alert you about conversations in the community board? %}</h4>
+              <div class="form-group">
+                <div class="checkbox">
+                  <label>
+                    <input type="checkbox" data-bind="checked: $root.user.ReceiveCommunityDigest"/> {% T Send me an update in the morning if there are new messages (~8am). %}
+                  </label>
+                </div>
+                <div class="checkbox">
+                  <label>
+                    <input type="checkbox" data-bind="checked: $root.user.ReceiveEveryMessage" /> {% T Send me a notification shortly after every message. You can still mute individual conversations. %}
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div class="form-actions btn-toolbar">
+            <button class="btn btn--primary btn--sm" data-bind="click: $root.saveDetails, disable: $root.busy" type="button">
+              <span data-bind="visible: !$root.busy()"><i class="fa fa-floppy-o" aria-hidden="true"></i> {% T Save changes %}</span>
+              <span data-bind="visible: $root.busy()" style="display: none">{% T Saving... %}</span>
+            </button>
+          </div>
+          </fieldset>
+          <!-- END NOTIFICATIONS -->
+        </form>
+      </div>
+    </div>
+  </div>
+  <!-- END SETTNGS -->
+{% endblock %}

@@ -1,0 +1,13 @@
+{% if data.PricePlans.size > 0 %}
+
+<div class="home__section" id="priceplans">
+  <div class="container">
+    {% if data.Local.Contract == null %}
+    <h2 class="h1 home__section__title">{% T Choose your membership %}</h2>
+    {% else %}
+    <h2 class="h1 home__section__title">{% T Choose your new membership %}</h2>
+    {% endif %}
+    {% include core_priceplans_table.htm %}
+  </div>
+</div>
+{% endif %}

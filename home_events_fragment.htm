@@ -1,0 +1,15 @@
+{% if data.Local.HomeEvents.size > 0 %}
+<div class="container">
+  <div class="home__section home__section--padded home__section--bordered home__section--events">
+    <h2 class="h1 home__section__title">{% T Some of our events %}</h2>
+    <ul class="row events-list">
+      {% for  event in data.Local.HomeEvents %}
+      {% include events_list_item.htm %}
+      {% endfor %}
+    </ul>
+    <div class="btn-toolbar text-center">
+      <a href="{% Url Events, Index %}" class="btn btn--primary">{% T See all events %}</a>
+    </div>
+  </div>
+</div>
+{% endif %}

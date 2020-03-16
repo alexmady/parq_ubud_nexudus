@@ -1,0 +1,66 @@
+      {% capture icons %}0{% endcapture %}
+      {% if data.Setting_HomePage_AboutUsIcon %}
+      {% capture icons %}{{ icons | ParseInt | Plus: 1 }}{% endcapture %}
+      {% endif %}
+      {% if data.Setting_HomePage_EventsIcon and data.Setting_PublicWebSite_Events %}
+      {% capture icons %}{{ icons | ParseInt | Plus: 1 }}{% endcapture %}
+      {% endif %}
+      {% if data.Setting_HomePage_DirectoryIcon and data.Setting_PublicWebSite_Directory %}
+      {% capture icons %}{{ icons | ParseInt | Plus: 1 }}{% endcapture %}
+      {% endif %}
+      {% if data.Setting_HomePage_BookingsIcon and data.Resources.size > 0 %}
+      {% capture icons %}{{ icons | ParseInt | Plus: 1 }}{% endcapture %}
+      {% endif %}
+      {% if data.Setting_HomePage_MyAccountIcon  %}
+      {% capture icons %}{{ icons | ParseInt | Plus: 1 }}{% endcapture %}
+      {% endif %}
+      {% assign icons = icons | ParseInt %}
+      {% capture span %}{{ 12 | DividedBy: icons  }}{% endcapture %}
+
+<div class="container">
+  <div class="home__section home__section--features">
+    <ul class="row features-list">
+
+      
+
+      {% if data.Setting_HomePage_AboutUsIcon %}
+      <li class="col-xxs-12 col-xs-6 col-sm-{{span}} features-list__item">
+        <a href="{% Url About, Index %}" class="icon-link"><i class="i-nexudus-thespace"></i></a>
+        <h2><a href="{% Url About, Index %}">{% T Space %}</a></h2>
+      </li>
+      {% endif %}
+      {% if data.Setting_HomePage_EventsIcon and data.Setting_PublicWebSite_Events %}
+      <li class="col-xxs-12 col-xs-6 col-sm-{{span}} features-list__item">
+        <a href="{% Url Events, Index %}" class="icon-link"><i class="i-nexudus-whatson"></i></a>
+        <h2><a href="{% Url Events, Index %}">{% T Events %}</a></h2>
+      </li>
+      {% endif %}
+      {% if data.Setting_HomePage_DirectoryIcon and data.Setting_PublicWebSite_Directory %}
+      <li class="col-xxs-12 col-xs-6 col-sm-{{span}} features-list__item">
+        <a href="{% Url Directory, Members %}" class="icon-link"><i class="i-nexudus-members"></i></a>
+        <h2><a href="{% Url Directory, Members %}">{% T Members %}</a></h2>
+      </li>
+      {% endif %}
+      {% if data.Setting_HomePage_BookingsIcon and data.Resources.size > 0 %}
+      <li class="col-xxs-12 col-xs-6 col-sm-{{span}} features-list__item">
+        <a href="{% Url Bookings, Calendar %}" class="icon-link"><i class="i-nexudus-meeting"></i></a>
+        <h2><a href="{% Url Bookings, Calendar %}">{% T Bookings %}</a></h2>
+      </li>
+      {% endif %}
+      {% if data.Setting_HomePage_MyAccountIcon  %}
+      {% if data.Coworker == null %}
+      <li class="col-xxs-12 col-xs-6 col-sm-{{span}} features-list__item">
+        <a href="{% Url Signup, Index %}" class="icon-link"><i class="i-nexudus-joinus"></i></a>
+        <h2><a href="{% Url Signup, Index %}">{% T Join Us %}</a></h2>
+      </li>
+      {% else %}
+      <li class="col-xxs-12 col-xs-6 col-sm-{{span}} features-list__item">
+        <a href="{% Url Profile, Index %}" class="icon-link"><i class="i-nexudus-joinus"></i></a>
+        <h2><a href="{% Url Profile, Index %}">{% T My Profile %}</a></h2>
+      </li>
+      {% endif %}
+      {% endif %}
+    
+    </ul>
+  </div>
+</div>

@@ -1,0 +1,58 @@
+{% extends signup.master %}
+{% block title %}{% T Join us %} | {{ data.Business.Name }}{% endblock %}
+{% block main %}
+<div class="container">
+    <!-- CREDENTIALS -->
+    <div class="credentials credentials--step">
+
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+
+                <!-- LOGO OR SPACE NAME -->
+                <a class="navbar-brand" href="{{ data.Business.HomeUrl }}">
+                    {% if data.Business.HasLogo %}
+                    <img src="{% Url Business, GetLogo, w:600, h:150, mode: 'max' %}" alt="{{ data.Business.Name }}">
+                    {% else %}
+                    <img src="http://placehold.it/600x150/FFFFFF?text={{ data.Business.Name }}" alt="{{ data.Business.Name }}">
+                    {% endif %}
+                </a>
+                <!-- END LOGO OR SPACE NAME -->
+
+                <!-- CREDENTIALS HEADER -->
+                <header class="credentials__header">
+                <h1 class="h2">{% T Review terms and conditions %}</h1>
+                </header>
+                <!-- END CREDENTIALS HEADER -->
+
+                <!-- CREDENTIALS STEPS -->
+                <ul class="row steps">
+                  <li class="col-xs-3"><span>1</span> <b>{% T Personal details %}</b></li>
+                  <li class="col-xs-3 active"><span>2</span> <b>{% T Subscription plan %}</b></li>
+                  <li class="col-xs-3"><span>3</span> <b>{% T Additional products %}</b></li>
+                  <li class="col-xs-3"><span>4</span> <b>{% T Payment Details %}</b></li>
+                </ul>
+                <!-- END CREDENTIALS STEPS -->
+            </div>
+        </div>
+        
+        <div id="terms-wrapper">
+          
+          <h4>{% T Terms and Conditions for {0} || data.Local.Tariff.Name %}</h4>
+          {{ data.Local.Tariff.TermsAndConditions | StripHtml | MarkDown }}
+                  
+          
+        </div>
+
+        <div class="form-actions">
+          <a href="{{ data.Local.ReturnUrl }}" class="btn btn--primary">
+            {% T Agree and Continue %}
+            <i class="fa fa-angle-right i-space--left"></i>
+          </a>  
+        </div>
+
+        {% include signup_footer.htm %}
+    </div>
+    <!-- END CREDENTIALS -->
+
+</div>
+{% endblock %}

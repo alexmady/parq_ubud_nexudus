@@ -1,0 +1,35 @@
+{% if data.Local.Thread != null %}
+{% capture fileName %}{{data.Local.Thread.FileNames[forloop.index0]}}{% endcapture %}
+{% assign id = data.Local.Thread.Id %}
+{% assign subject = data.Local.Thread.Subject %}
+{% assign message = data.Local.Thread.Message %}
+{% else %}
+{% capture fileName %}{{thread.FileNames[forloop.index0]}}{% endcapture %}
+{% assign id = thread.Id %}
+{% assign subject = thread.Subject %}
+{% assign message = thread.Message %}
+{% endif %}
+{% if fileName contains 'jpg' or fileName contains 'png' %}
+<div href="{% Url Content, CommunityThreadFiles, id: id, w: 1024 %}" data-toggle="lightbox" data-type="image" data-gallery="thread-{{ thread.Id }}" data-title="{{ subject | StripHtml | StripNewlines  | TruncateWords: 10 }}" data-footer="{{ message | StripHtml | StripNewlines | TruncateWords: 50 }}">
+  <div class="overlay"></div>
+  <img src="{% Url Content, CommunityThreadFiles, id: id, w:80, h: 80 %}">
+  <i class="fa fa-search-plus"></i>
+</div>
+{% else %}
+<div onclick="window.location = '{% Url Content, CommunityThreadFiles, id: id %}'" class="board-list_media_file">
+  {% if fileName contains 'pdf' %}
+  <p>{% T PDF %}</p>
+  <div class="overlay"></div>
+  <i class="fa fa-file-pdf"></i>
+  {% elseif fileName contains 'rar' or fileName contains 'zip' %}
+  <p>{% T ZIP/RAR %}</p>
+  <div class="overlay"></div>
+  <i class="fa fa-file-archive-o"></i>
+  {% else %}
+  <p>{% T File %}</p>
+  <div class="overlay"></div>
+  <i class="fa fa-download"></i>
+  {% endif %}
+  
+</div>
+{% endif %}

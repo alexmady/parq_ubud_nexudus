@@ -1,0 +1,224 @@
+{% extends master.master %}
+{% block title %}{% T Meeting Rooms and Resources %}{% endblock %}
+{% block main %}
+<div class="container">
+
+    <div class="container">
+        <!-- BREADCRUMBS -->
+        <ol class="breadcrumb">
+            <li><a href="{{ business.HomeUrl }}">{% T Home %}</a></li>
+            <li><a href="{% Url Bookings, Calendar %}">{% T Calendar %}</a></li>
+            <li class="active">{% T Meeting Rooms and Resources %}</li>
+        </ol>
+        <!-- END BREADCRUMBS -->
+    </div>
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+        <h1>{% T Meeting Rooms and Resources %}</h1>
+    </div>
+    <!-- END PAGE HEADER -->
+    <!-- FILTERS -->
+    <div class="filters">
+        <ul class="nav filters__nav">
+            {% include bookings_resources_menu.htm %}
+
+            <li class="active pull-right">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                    {% T Location %}: {{ data.Business.Name }} <span class="caret"></span>
+                </a>
+                {% include core_locations_list.htm %}
+            </li>
+        </ul>
+    </div>
+    <!-- END FILTERS -->
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="form-group">
+                <label for="">{% T Date: %}</label>
+                <div class="input-group date">
+                    <input type="date" class="form-control" readonly="readonly" data-bind="pickadate:{ value: startDate, options: $root.datePickerOptions }">
+                    <span class="input-group-addon">
+                        <i class="glyphicon-th fa fa-calendar"></i>
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="{% if data.Setting_Bookings_ShowEndDate %}col-sm-2{% else %}col-sm-4{% endif %}">
+            <div class="form-group">
+                <label for="">{% T Start Time %}</label>
+                <div class="input-group date">
+                    <input type="text" class="form-control" readonly="readonly" data-bind="pickatime:{ value: startTime, options: $root.timePickerOptions }">
+                    <span class="input-group-addon">
+                        <i class="glyphicon-th fa fa-clock-o"></i>
+                    </span>
+                </div>
+            </div>
+        </div>
+        {% if data.Setting_Bookings_ShowEndDate %}
+        <div class="col-sm-4">
+            <div class="form-group">
+                <label for="">{% T End Date: %}</label>
+                <div class="input-group date">
+                    <input type="date" class="form-control" readonly="readonly" data-bind="pickadate:{ value: endDate, options: $root.datePickerOptions }">
+                    <span class="input-group-addon">
+                        <i class="glyphicon-th fa fa-calendar"></i>
+                    </span>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        <div class="{% if data.Setting_Bookings_ShowEndDate %}col-sm-2{% else %}col-sm-4{% endif %}">
+            <div class="form-group">
+                <label for="">{% T End Time %} <span class="text-hint" data-bind="text: '(' + duration().asMinutes() + ' {% T minutes %})'"></span></label>
+                <div class="input-group date">
+                    <input type="text" class="form-control" readonly="readonly" data-bind="pickatime:{ value: endTime, options: $root.timePickerOptions }">
+                    <span class="input-group-addon">
+                        <i class="glyphicon-th fa fa-clock-o"></i>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="btn-toolbar btn-toolbar--block--in-xs-down form-actions">
+        <div class="row">
+            <div class="col-sm-12 text-right">
+                <button data-bind="click: searchResources" class="btn btn--default btn--sm btn-block--in-xs-down" type="button">
+                    <i class="fa fa-search"></i>
+                    {% T Find available rooms %}
+                </button>
+            </div>
+        </div>
+    </div>
+    <hr />
+
+    <!-- RESOURCES LIST -->
+    <ul class="row resources-list">
+        {% for resource in data.Local.Resources %}
+        <li class="col-sm-6 resources-list__item">
+            <h2 class="h3 resources-list__title"><a href="#" onclick="bookingManager.createBooking({ resourceId: {{ resource.Id }}, date: moment('{{ data.Local.StartDate | FormatDate: 'yyyy-MM-ddTHH:mm' }}'), endDate: moment('{{ data.Local.EndDate | FormatDate: 'yyyy-MM-ddTHH:mm' }}').toDate() }); return false;">{{ resource.Name }}</a></h2>
+            {% if resource.IsAvailable %}
+            <span class="label label--success">{% T Available %}</span>
+            {% else %}
+            <span title="{{ resource.Message }}" class="label label--danger">{% T Not Available %}</span>
+            <small class="unavailable-message" data-toggle="tooltip" title="" data-original-title="{{ resource.Message }}">{% T Why? %}</small>
+            {% endif %}
+            <a href="#" onclick="bookingManager.createBooking({ resourceId: {{ resource.Id }}, date: moment('{{ data.Local.StartDate | FormatDate: 'yyyy-MM-ddTHH:mm' }}'), endDate: moment('{{ data.Local.EndDate | FormatDate: 'yyyy-MM-ddTHH:mm' }}').toDate() }); return false;" class="resources-list__cover">
+                {% if resource.HasImage %}
+                <img src="{% Url PublicResources, GetImage, id: resource.Id, h: 411, w: 555 %}" alt="{{ resource.Name }}" class="entry-image" />
+                {% else %}
+                <img src="http://placehold.it/1110x822?text={{ resource.Name }}" alt="{{ resource.Name }}">
+                {% endif %}
+            </a>
+            <p class="resources-description">
+                {{ resource.Description  }}
+                <ul class="list-inline resources-services-list">
+                    {% if resource.AirConditioning %}
+                    <li><span data-toggle="tooltip" title="{% T Air conditioner %}"><i class="i-nexudus-ac"></i></span></li>
+                    {% endif %}
+                    {% if resource.ConferencePhone or resource.StandardPhone %}
+                    <li><span data-toggle="tooltip" title="{% T Conference phone %}"><i class="i-nexudus-conference"></i></span></li>
+                    {% endif %}
+                    {% if resource.Projector %}
+                    <li><span data-toggle="tooltip" title="{% T Projector %}"><i class="i-nexudus-projector"></i></span></li>
+                    {% endif %}
+                    {% if resource.Internet %}
+                    <li><span data-toggle="tooltip" title="{% T Wifi %}"><i class="i-nexudus-wifi"></i></span></li>
+                    {% endif %}
+                    {% if resource.WhiteBoard %}
+                    <li><span data-toggle="tooltip" title="{% T Whiteboard %}"><i class="i-nexudus-whiteboard"></i></span></li>
+                    {% endif %}
+                    {% if resource.LargeDisplay %}
+                    <li><span data-toggle="tooltip" title="{% T TV set %}"><i class="i-nexudus-tvset"></i></span></li>
+                    {% endif %}
+                    {% if resource.TeaAndCoffee %}
+                    <li><span data-toggle="tooltip" title="{% T Coffee and tea available %}"><i class="i-nexudus-hotdrinks"></i></span></li>
+                    {% endif %}
+                    {% if resource.Drinks %}
+                    <li><span data-toggle="tooltip" title="{% T Drinks Available %}"><i class="i-nexudus-softdrinks"></i></span></li>
+                    {% endif %}
+                </ul>
+                <ul class="clearfix resources-details-list">
+                    {% if resource.Allocation != null %}
+                    <li class="resources-details-list__item">
+                        <span class="resources-details-list__title">{% T Seating %}</span>
+                        <b class="resources-details-list__value">{{ resource.Allocation }} p.</b>
+                    </li>
+                    {% endif %}
+                    {% if resource.PriceFormatted != null and resource.Price >= 0 %}
+                    <li class="resources-details-list__item">
+                        <span class="resources-details-list__title">{% T Price %}</span>
+                        <b class="resources-details-list__value">{{ resource.PriceFormatted }}</b>
+                    </li>
+                    {% endif %}
+                </ul>
+
+                <div class="btn-toolbar">
+                    <a href="#" onclick="bookingManager.createBooking({ resourceId: {{ resource.Id }}, date: moment('{{ data.Local.StartDate | FormatDate: 'yyyy-MM-ddTHH:mm' }}'), endDate: moment('{{ data.Local.EndDate | FormatDate: 'yyyy-MM-ddTHH:mm' }}').toDate() }); return false;" class="btn btn--primary btn--sm">{% T Make a booking %}</a>
+                </div>
+
+        </li>
+        {% endfor %}
+
+    </ul>
+    <!-- END RESOURCES LIST -->
+    <!-- MODAL DIALOGS -->
+    {% include bookings_registration_form.htm %}
+    {% include bookings_booking_form.htm %}
+    <!-- END MODAL DIALOGS -->
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  var resources = [
+      {% for resource in data.Resources %}
+          {% assign resourceGroupKey = resource.GroupName | Clean %}
+          {% assign resourceGroupName = resource.GroupName %}
+          {% if resourceGroupKey == '' %}
+              {% assign resourceGroupKey = 'resources' %}
+              {% assign resourceGroupName = 'Resources' %}
+          {% endif %}
+          {
+              id:{{ resource.Id }},
+              UniqueId: '{{ resource.UniqueId }}',
+              imageUrl: '{% if resource.HasImage %}{% Url PublicResources, GetImage, id: resource.Id, h: 200, w: 312 %}{% else %}http://placehold.it/312x200?text=?{% endif %}',
+              thumbUrl: '{% if resource.HasImage %}{% Url PublicResources, GetImage, id: resource.Id, h: 32, w: 32 %}{% else %}http://placehold.it/32x32?text=?{% endif %}',
+              groupName: '{% T resourceGroupName %}',
+              title:'{{ resource.Name | Replace: "'", "\'" }}',
+              resourceTypeName:'{{ resource.ResourceTypeName | Replace: "'", "\'" }}'
+          },
+      {% endfor %}
+  ];
+  var bookingManager = new BookingManager({
+      dateTimeFormat: 'D, dd MM yyyy - HH:ii P',
+      resources: resources,
+      roundMinutesTo: 30,
+      coworker: {
+          Id: {% if data.Coworker != null %}{{data.Coworker.Id}}{% else %}null{% endif %}
+      },
+      guestBookings: {% if data.Setting_Bookings_EnableGuestBookings %}true{% else %}false{% endif %},
+      loginUrl: '{% Url Login, Index, lang: data.Language %}&returnUrl={{ data.URL }}',
+      availableUrl: '{% Url Bookings, GetBookingPrice %}',
+      dayAvailableUrl: '{% Url Bookings, GetAvailabilityAt %}',
+      productsUrl: '{% Url Bookings, GetResourceProducts %}',
+      newBookingUrl: '{% Url Bookings, NewBookingJson %}',
+      updateBookingUrl: '{% Url Bookings, BookingJson %}',
+      visitorsUrl: '{% Url Bookings, GetBookingVisitors %}',
+      bookingUrl:  '{% Url Bookings, BookingJson %}',
+      deleteBookingUrl:  '{% Url Bookings, DeleteJson %}',
+      searchUrl: '{% Url Bookings, Search %}',
+	  paymentUrl: '{% Url Bookings, Pay %}'
+  });
+
+  $(function(){
+
+
+    var start = moment("{{ data.Local.StartDate | FormatDate: 'yyyy-MM-ddTHH:mm' }}").toDate();
+    var end = moment("{{ data.Local.EndDate | FormatDate: 'yyyy-MM-ddTHH:mm' }}").toDate();
+    bookingManager.setDates(start, end);
+    bookingManager.getBalance();
+    bookingManager.applyBindings();
+  })
+
+</script>
+{% endblock %}

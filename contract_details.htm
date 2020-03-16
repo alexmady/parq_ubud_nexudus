@@ -1,0 +1,69 @@
+<div class="settings__plan__suscription">
+	<h4 class="h6 settings__plan__suscription__title">
+	  {{ contract.Tariff.Name }} 
+	  <span>
+	  {% if contract.Tariff.InvoiceInMonths and contract.Tariff.InvoicePeriod == 1 %}
+		({{ contract.PriceFormatted }} / {% T month %})
+	  {% else %}
+		{% if contract.Tariff.InvoiceInMonths %}
+		({{ contract.PriceFormatted }} / {{ contract.Tariff.InvoicePeriod }} {% T months %})</span>
+		{% else %}
+		({{ contract.PriceFormatted }} / {{ contract.Tariff.InvoicePeriod }} {% T weeks %})</span>
+		{% endif %}
+	  {% endif %}
+	  </span>
+	</h4>
+	{% if contract.Tariff.Id != contract.NextTariff.Id %}
+	<div class="alert alert--warning alert--icon" role="alert">
+	  <i class="fa fa-warning"></i>
+	  <b>{% T This subscription is about to change. %}</b>
+	  {% T We will change your plan to '{0}' on {1:d}. || contract.NextTariff.Name || contract.RenewalDate %}
+	</div>
+	{% endif %}
+	{% if contract.Active == false %}
+	<div class="alert alert--info alert--icon" role="alert">
+	  <i class="fa fa-warning"></i>
+	  <b>{% T This subscription has not started yet. %}</b>
+	  {% T This plan is set to start on {0:d}. You will not have access to any of its benefits before that date. || contract.StartDate %}
+	</div>
+	{% endif %}
+	{% if contract.AbsoluteCancellationDate != null %}
+	<div class="alert alert--warning alert--icon" role="alert">
+	  <i class="fa fa-warning"></i>
+	  <b>{% T This subscription is about to be cancelled. %}</b>
+	  {% T We will cancel this subscription on {0:d}. || contract.AbsoluteCancellationDate %}
+	</div>
+	{% endif %}
+	<div>
+	  {{ contract.Tariff.Description }}
+	</div>
+
+  {% if data.Setting_Members_AllowTariffChange %}
+	<div class="btn-toolbar">
+	  <a href="{% Url Profile, ChangeContract, id: contract.Id %}" class="btn btn--primary btn--sm">
+		<i class="fa fa-pencil"></i>
+		{% T Change this plan %}
+	  </a>
+	  {% if contract.CancellationDate == null %}
+	  <a href="{% Url Profile, CancelContract, id: contract.Id %}" class="btn btn--link btn--sm">
+		{% T Cancel subscription %}
+	  </a>
+	  {% endif %}
+	</div>
+	{% endif %}
+	{% if contract.CancellationDate == null %}
+	  {% if data.Coworker.HasGoCardlessContractNumber and data.Coworker.EnableGoCardlessPayments %}
+	  <p class="settings__plan__notify">
+		{% T The next charge of {0} will be paid using your Direct Debit agreement on {2:d}. We will also add any unpaid charges to this invoice, like bookings or day passes you may have purchased before that date. || contract.NextPriceFormatted || data.Coworker.CardNumber || contract.RenewalDate %}<br>
+	  </p>
+	  {% elseif data.Coworker.CardNumber.size > 0 %}
+	  <p class="settings__plan__notify">
+		{% T The next charge of {0} will be placed on your card ending on '{1}' on {2:d}. We will also add any unpaid charges to this invoice, like bookings or day passes you may have purchased before that date. || contract.NextPriceFormatted || data.Coworker.CardNumber || contract.RenewalDate %}<br>
+	  </p>
+	  {% elseif data.Coworker.HasSetupRegularPayments %}
+	  <p class="settings__plan__notify">
+		{% T The next charge of {0} will be paid using '{1}' on {2:d}. We will also add any unpaid charges to this invoice, like bookings or day passes you may have purchased before that date. || contract.NextPriceFormatted || data.Coworker.RegularPaymentProvider || contract.RenewalDate %}<br>
+	  </p>
+	  {% endif %}
+	{% endif %}
+  </div>

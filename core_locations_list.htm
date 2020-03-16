@@ -1,0 +1,13 @@
+{% if data.Businesses.size > 1 %}
+<ul class="dropdown-menu" role="menu">
+    {% for business in data.Businesses %}
+    {% if business.IsChildLocation %}
+    {% if data.Coworker == null %}
+    <li class="{% if data.Business.Id == business.Id %}active{% endif %}" role="menuitem" tabindex="-1"><a href="{{ business.HomeUrl }}{{ data.URL }}">{{ business.Name }}</a></li>
+    {% else %}
+    <li class="{% if data.Business.Id == business.Id %}active{% endif %}" role="menuitem" tabindex="-1"><a href="{{ business.HomeUrl }}/{{ data.Language }}/login?returnurl={{ data.URL }}">{{ business.Name }}</a></li>
+    {% endif %}
+    {% endif %}
+    {% endfor %}
+</ul>
+{% endif %}

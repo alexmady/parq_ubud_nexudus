@@ -1,0 +1,73 @@
+<!-- LATERAL NAVIGATION -->
+<!-- Nav select for large devices -->
+<nav class="nav-lateral hidden-xs affix-top" style="position: fixed;" data-spy="affix" data-offset-top="50" id="js-nav-smooth" role="navigation">
+  <ul>
+    <li class="{% if data.Controller == 'profile' %}active{% endif %}">
+      <a href="javascript:void(0)" onclick="window.location = '{% Url Profile, Index %}#';return false" >{% T Your account %}</a>
+      <ul class="{% if data.Controller != 'profile' %}hide{% endif %}">
+        <li><a href="javascript:void(0)" onclick="window.location = '{% Url Profile, Index %}#your-appearance'">{% T Your Photo %}</a></li>
+        <li><a href="javascript:void(0)" onclick="window.location = '{% Url Profile, Index %}#account-details'">{% T Personal Details %}</a></li>
+        <li data-bind="visible: coworker.hasBillingDetails" style="display: none">
+          <a href="javascript:void(0)" onclick="window.location = '{% Url Profile, Index %}#billing-details'">{% T Billing details %}</a></li>
+        <!-- ko foreach: { data: $root.customFields, as: 'group' } -->
+        <li><a data-bind="attr: {href: '{% Url Profile, Index %}#customfields-' + $root.customFields.indexOf(group) }, text: group[0].GroupName"></a></li>
+        <!-- /ko -->
+        <li><a href="javascript:void(0)" onclick="window.location = '{% Url Profile, Index %}#professional-profile'">{% T Professional Profile %}</a></li>
+        <li><a href="javascript:void(0)" onclick="window.location = '{% Url Profile, Index %}#social-networks'">{% T Social Networks %}</a></li>
+        <li><a href="javascript:void(0)" onclick="window.location = '{% Url Profile, Index %}#email-password'">{% T Password %}</a></li>
+        <li><a href="javascript:void(0)" onclick="window.location = '{% Url Profile, Index %}#notifications-settings'">{% T Notifications %}</a></li>
+      </ul>
+    </li>
+    {% if data.Coworker.PaysForTeam != null %}
+    <li class="{%if data.Controller == 'team' and data.Action == 'profile'%}active{%endif%}">
+      <a href="javascript:void(0)" href="{% Url Team, Profile, id: data.Coworker.PaysForTeam.Id %}#">{% T My Team %}</a>
+    </li>
+    {% endif %}
+    <li class="{% if data.Controller == 'allowances' %}active{% endif %}">
+      <a href="javascript:void(0)" onclick="window.location = '{% Url Allowances, Plans %}#'">{% T Plans and benefits %}</a>
+      <ul class="{% if data.Controller != 'allowances' %}hide{% endif %}">
+        <li><a href="javascript:void(0)" onclick="window.location = '{% Url Allowances, Plans %}#your-plan'">{% T Your plan %}</a></li>
+        <li><a href="javascript:void(0)" onclick="window.location = '{% Url Allowances, Plans %}#allowances'">{% T Your benefits %}</a></li>
+        <li><a href="javascript:void(0)" onclick="window.location = '{% Url Allowances, Plans %}#your-additional-products'">{% T Your additional products %}</a></li>
+      </ul>
+    </li>
+    <li  class="{% if data.Controller == 'invoices' %}active{% endif %}">
+      <!--<a href="{% Url Invoices, Index %}#">{% T Billing %}</a>-->
+      <a href="javascript:void(0)" onclick="window.location = '{% Url Invoices, Index %}';return false;">{% T Billing %}</a>
+      <ul class="{% if data.Controller != 'invoices' %}hide{% endif %}">
+        <li><a href="javascript:void(0)" onclick="window.location = '{% Url Invoices, Index %}#payment-history'">{% T Invoices and Payments %}</a></li>
+        {% if data.Coworker.EnableGoCardlessPayments %}
+        <li><a href="javascript:void(0)" onclick="window.location = '{% Url Invoices, Index %}#gocardless'">{% T Direct Debit Payments %}</a></li>
+        {% endif %}
+        {% if data.Local.SpreedlyEnabled %}
+        <li><a href="javascript:void(0)" onclick="window.location = '{% Url Invoices, Index %}#payment-information'">{% T Card Payments %}</a></li>
+        {% endif %}
+        
+
+        
+      </ul>
+    </li>
+    <li class="{% if data.Controller == 'bookings' %}active{% endif %}"><a href="{% Url Bookings, My %}#">{% T Your bookings %}</a></li>
+    <!--<li class="{% if data.Controller == 'deliveries' %}active{% endif %}"><a href="{% Url Deliveries, Index %}#">{% T Deliveries %}</a></li>-->
+    <!--<li class="{%if data.Controller == 'profile' and data.Action == 'visitors' %}active{%endif%}"><a href="{% Url Profile, Visitors %}#">{% T Visitors %}</a></li>-->
+    {% if data.UserIsLoggedIn %}
+    <li><a href="{% Url Login, Logout %}">{% T Sign out %}</a></li>
+    {% endif %}
+  </ul>
+</nav>
+
+<!-- Nav select for small devices -->
+<nav class="nav-lateral--mobile visible-xs js-link-select-navigation" role="navigation">
+  <h1 class="h2">{% T Your account %}</h1>
+  <select class="form-control" id="nav-lateral-select">
+    <option value="{% Url Profile, Index %}">{% T Your account %}</option>
+    <option value="{% Url Allowances, Plans %}">{% T Plans and benefits %}</option>
+    <option value="{% Url Invoices, Index %}">{% T Billing %}</option>
+    <option value="{% Url Profile, Index %}#notifications-settings">{% T Notifications %}</option>
+    <option value="{% Url Bookings, My %}">{% T Your bookings %}</option>
+    <!--<option value="{% Url Deliveries, Index %}">{% T Deliveries %}</option>-->
+    <!--<option value="{% Url Profile, Visitors %}">{% T Visitors %}</option>-->
+  </select>
+  
+</nav>
+<!-- END LATERAL NAVIGATION -->

@@ -1,0 +1,273 @@
+ <!-- BOOKINGS MODAL STEP 3 -->
+
+ <div class="modal modal--book" id="bookings-booking-form" role="dialog" aria-labelledby="modal-bookLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" aria-label="{% T Close %}" data-bind="click: closeBookingForm"><span aria-hidden="true">&times;</span></button>
+                <h3 class="modal-title" id="modal-bookLabel" data-bind="visible: currentBookingId() == 0">{% T Make a booking %}</h3>
+                <h3 class="modal-title" id="modal-bookLabel" data-bind="visible: currentBookingId() > 0">{% T Update a booking %}</h3>
+            </div>
+            <div class="modal-body">
+                <form class="form form--book">
+
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="">{% T Resource %}</label>
+                                <div class="dropdown">
+                                    <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                                        <span data-bind="text: selectedResource() ? selectedResource().title : '{% T Select a resource %}'"></span>
+                                        <span class="caret"></span>
+                                    </button>
+                                    <ul data-bind="foreach: resources" class="dropdown-menu dropdown-menu--images" role="menu">
+
+                                        <li class="" role="menuitem" tabindex="-1">
+                                            <a href="#" data-bind="click: $root.selectResource(id)">
+                                                <img data-bind="{attr: { src: thumbUrl, alt: title }}" src="http://placehold.it/32x32?text=?" class="avatar dropdown-menu--images__cover">
+                                                <span data-bind="text: title" class="dropdown-menu--images__title"></span>
+                                                <span data-bind="text: resourceTypeName" class="dropdown-menu--images__subtitle"></span>
+                                            </a>
+                                        </li>
+
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row" data-bind="visible: selectedResource()">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <img data-bind="attr: { src: selectedResource() ? selectedResource().imageUrl : null }" src="http://placehold.it/312x200" alt="" class="img-responsive">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="{% if data.Setting_Bookings_ShowEndDate %}col-sm-6{% else %}col-sm-12{% endif %}">
+                            <div class="form-group">
+                                <label for="">{% T Date: %}</label>
+                                <div class="input-group date">
+                                    <input type="date" class="form-control" readonly="readonly" data-bind="pickadate:{ value: startDate, options: $root.datePickerOptions }">
+                                    <span class="input-group-addon">
+                                        <i class="glyphicon-th fa fa-calendar"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        {% if data.Setting_Bookings_ShowEndDate %}
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="">{% T End Date: %}</label>
+                                <div class="input-group date">
+                                    <input type="date" class="form-control" readonly="readonly" data-bind="pickadate:{ value: endDate, options: $root.datePickerOptions }">
+                                    <span class="input-group-addon">
+                                        <i class="glyphicon-th fa fa-calendar"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="row" data-bind="visible: resourceDetails().Shifts != null && resourceDetails().Shifts.length > 0">
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <label for="">{% T Shift %}</label>
+                                <div class="input-group" style="width: 100%">
+                                    <select class="form-control" data-bind="options: resourceDetails().Shifts, optionsText: 'Name', value: selectedShift"></select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row" data-bind="visible: resourceDetails().Shifts == null || resourceDetails().Shifts.length == 0">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="">{% T Start Time %}</label>
+                                <div class="input-group date">
+                                    <input type="text" class="form-control" readonly="readonly" data-bind="pickatime:{ value: startTime, options: $root.timePickerOptions, disabledTimes: $root.disabledTimes }">
+                                    <span class="input-group-addon">
+                                        <i class="glyphicon-th fa fa-clock-o"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="">{% T End Time %} <span class="text-hint" data-bind="text: '(' + duration().asMinutes() + ' {% T minutes %})'"></span></label>
+                                <div class="input-group date">
+                                    <input type="text" class="form-control" readonly="readonly" data-bind="pickatime:{ value: endTime, options: $root.timePickerOptions, disabledTimes: $root.disabledTimes }">
+                                    <span class="input-group-addon">
+                                        <i class="glyphicon-th fa fa-clock-o"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- ERROR MESSAGES -->
+                    <div class="alert alert--danger alert--icon" role="alert" data-bind="visible: bookingFormError ">
+                        <i class="fa fa-exclamation-circle"></i>
+                        <b data-bind="text: bookingFormError"></b>
+                    </div>
+                    <!-- END ERROR MESSAGES -->
+
+                    <div class="form-group form--book__select-products" data-bind="visible: bookingProducts().length > 0">
+                        <label>{% T Select the items you will require during this booking %}</label>
+                        <div data-bind="foreach: bookingProducts">
+                            <div class="form-inline">
+                                <select class="form-control form-control--auto"
+                                        data-bind="event: { change: $root.productChanged }, options: $root.productQty, value: Quantity, visible: RequestQuantity"></select>
+                                <label data-bind="visible: RequestQuantity">
+                                    <span data-bind="text: ProductName"></span>
+                                    -
+                                    <span data-bind="text: FormattedPrice"></span>
+                                </label>
+                                <div class="checkbox" data-bind="visible: !RequestQuantity">
+                                    <label>
+                                        <input type="checkbox" data-bind="checked: Selected, event: { change: $root.productChanged }">
+                                        <span data-bind="text: ProductName"></span>
+                                        -
+                                        <span data-bind="text: FormattedPrice"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="form--book__add-note">
+                        <a href="#" class="link--secondary" data-bind="click: toggleNoteField, visible: !noteFieldDisplayed() && !notes()">{% T + Add note %}</a>
+                        <div class="form-group js-add-booking-note" data-bind="visible: noteFieldDisplayed() || notes()">
+                            <label for="booking_notes">{% T Note %}</label>
+                            <textarea data-bind="value: notes" id="booking_notes" cols="30" rows="4" class="form-control" placeholder="{% T Type any notes for {0} || data.Business.Name %}"></textarea>
+                        </div>
+                    </div>
+                    <div class="form--book__add-visitor">
+                        <div class="form-group js-add-booking-visitor">
+                            <div data-bind="foreach: bookingVisitors">
+                                <div class="form-group js-add-booking-note">
+                                    <label>{% T Full Name %}:</label>
+                                    <input type="text" class="form-control" data-bind="value: FullName">
+                                </div>
+                                <div class="form-group js-add-booking-note">
+                                    <label>{% T Email %}:</label>
+                                    <input type="text" class="form-control" data-bind="value: Email">
+                                    <small>
+                                        <a href="#" data-bind="click: $root.removeVisitor">{% T Remove Visitor %}</a>
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        <a href="#" class="link--secondary" data-bind="click: $root.addVisitor">{% T + Add visitor %}</a>
+                    </div>
+                    <div class="form--book__add-discount">
+                        <a href="#" class="link--secondary" data-bind="click: toggleDiscountField, visible: !discountFieldDisplayed() && !discountCode()">{% T + Add discount code %}</a>
+                        <div class="form-group js-add-booking-note" data-bind="visible: discountFieldDisplayed()">
+                            <label for="booking_discountCode">{% T Discount Code %}</label>
+                            <input data-bind="value: discountCode, valueUpdate: 'keyup'" id="booking_discountCode" class="form-control" placeholder="{% T Type a discount code %}"/>
+                            <div data-bind="with: discountInformation">
+                                <small class="text-danger" data-bind="visible: discountMessage, text: discountMessage"></small>
+                                <small class="text-success" data-bind="visible: description && !discountMessage, text: description"></small>
+                            </div>
+                        </div>
+
+                    </div>
+                    <!-- MESSAGES -->
+                    <div class="alert alert--info--v2 alert--icon" role="alert" data-bind="visible: price() && !bookingFormError() && !bookingFormInfo()">
+                        <i class="fa fa-info-circle"></i>
+                        <b>
+                            <!--{% T This booking has a cost of %}-->
+
+                            <table style="width:100%">
+                                <tr>
+                                    <th></th>
+                                    <th style="font-weight: 300;color: darkred;text-transform: none;font-style: italic">
+                                        special offer
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th>DUE NOW<span style="font-size: 10px;">(DEPOSIT)</span></th>
+                                    <th>
+                                        <span data-bind="text: price"></span>
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <td>DUE AFTER EVENT</td>
+                                    <td>10,000 IDR per person, per hour</td>
+                                </tr>
+                                <!--<tr>-->
+                                    <!--<td>Eve</td>-->
+                                    <!--<td>Jackson</td>-->
+                                    <!--<td>94</td>-->
+                                <!--</tr>-->
+                            </table>
+
+                        </b>
+                        <br>
+                        {% if data.Setting_Bookings_CancelUnPaidBookingsForNonSubscribers and data.Coworker.IsContact %}
+                        <p style="text-transform: none">
+                            <!--{% T Once you complete this booking, you will be asked to pay this amount before it is confirmed.  %}-->
+                            {% T Continuing with this booking will charge your account the deposit amount mentioned above. The deposit is non-refundable. %}
+                            <!--{% T You can check your credit <a target="_blank" href="/{0}/allowances/plans">here</a>. || data.Language  %}-->
+                        </p>
+                        <p style="text-transform: none">
+                            <!--{% T Once you complete this booking, you will be asked to pay this amount before it is confirmed.  %}-->
+                            {% T At the end of your event a secondary charge will become payable. We will issue a separate invoice based on the event duration and number of participants. %}
+                            <!--{% T You can check your credit <a target="_blank" href="/{0}/allowances/plans">here</a>. || data.Language  %}-->
+                        </p>
+                        {% elseif data.Setting_Bookings_CancelUnPaidBookingsForSubscribers and data.Coworker.IsMember %}
+                        <p style="text-transform: none">
+                            <!--{% T Once you complete this booking, you will be asked to pay this amount before it is confirmed.  %}-->
+                            {% T Continuing with this booking will charge your account the deposit amount mentioned above. The deposit is non-refundable. %}
+                            <!--{% T You can check your credit <a target="_blank" href="/{0}/allowances/plans">here</a>. || data.Language  %}-->
+                        </p>
+                        <p style="text-transform: none">
+                            <!--{% T Once you complete this booking, you will be asked to pay this amount before it is confirmed.  %}-->
+                            {% T At the end of your event a secondary charge will become payable. We will issue a separate invoice based on the event duration and number of participants. %}
+                            <!--{% T You can check your credit <a target="_blank" href="/{0}/allowances/plans">here</a>. || data.Language  %}-->
+                        </p>
+                        {% endif %}
+                    </div>
+                    <div class="alert alert--danger alert--icon" role="alert" data-bind="visible: bookingFormError">
+                        <i class="fa fa-exclamation-circle"></i>
+                        <b data-bind="text: bookingFormError"></b>
+                    </div>
+                    <div class="alert alert--info alert--icon" role="alert" data-bind="visible: bookingFormInfo">
+                        <i class="fa fa-exclamation-circle"></i>
+                        <b data-bind="text: bookingFormInfo"></b>
+                    </div>
+                    <!-- END MESSAGES -->
+                    <div class="btn-toolbar btn-toolbar--block--in-xs-down form-actions">
+                        {% if data.Setting_Bookings_RequestDrafts %}
+                        <div data-bind="visible: currentBookingId() == 0">
+                            <div class="checkbox" >
+                                <label>
+                                    <input type="checkbox" data-bind="checked: tentative">
+                                    {% T I am not ready to book, send me a proposal with the details of this booking instead. %}
+                                </label>
+                            </div>
+                        </div>
+                        {% endif %}
+                        <div class="row">
+                            <div class="col-sm-8">
+                                <button data-bind="click: saveBooking, disable: disableSaveButton" class="btn btn--primary btn--sm btn-block--in-xs-down" type="button">
+                                    <span data-bind="visible: !disableSaveButton() && !tentative()">{% T BOOK NOW %}</span>
+                                    <span data-bind="visible: !disableSaveButton() && tentative()">{% T Send proposal %}</span>
+                                    <span data-bind="visible: disableSaveButton()">{% T Please wait... %}</span>
+                                </button>
+                                <a data-bind="click: closeBookingForm" href="#" class="btn btn--link btn--sm btn-block--in-xs-down">{% T Close %}</a>
+                            </div>
+                            <div class="col-sm-4 text-right">
+                                <button data-bind="click: deleteBooking, visible: currentBookingId() > 0" class="btn btn--default btn--sm btn-block--in-xs-down" type="button">
+                                    {% T Delete this booking %}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- END BOOKINGS MODAL STEP 3 -->

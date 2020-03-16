@@ -1,0 +1,53 @@
+<div class="container">
+    <div class="home__section home__section--padded home__section--bordered">
+        <h2 class="h1 home__section__title">{% T Our additional products %}</h2>
+        <div class="additional-products">
+            <!-- Nav tabs for large devices -->
+            <ul class="nav nav-tabs hidden-xs" role="tablist">
+                {% for group in data.Local.ProductGroups %}
+                <li role="presentation" class="{% if forloop.index0 == 0 %}active{% endif %}"><a href="#tab-products-{{group  | Clean }}" aria-controls="tab-products-{{group  | Clean }}" role="tab" data-toggle="tab">{% T group %}</a></li>
+                {% endfor %}
+            </ul>
+            <!-- Nav select for small devices -->
+            <select class="form-control nav-selector js-tab-select-navigation visible-xs" data-content="#tab-content-products">
+                {% for group in data.Local.ProductGroups %}
+                <option value="#tab-products-{{group  | Clean }}">{% T group %}</option>
+                {% endfor %}
+            </select>
+            <!-- Tab panes -->
+            <div class="tab-content" id="tab-content-products">
+                {% for group in data.Local.ProductGroups %}
+                <div role="tabpanel" class="tab-pane {% if forloop.index0 == 0 %}active{% endif %}"
+                     id="tab-products-{{group  | Clean }}">
+                    <ul class="row additional-products-list">
+                        {% for service in data.Local.Products %}
+                        {% if service.Tags contains group or (service.Tags == null and group == "Products") %}
+                        <li class="col-sm-6 additional-products-list__item">
+                            <h4 class="h6">{{ service.Name }}</h4>
+                            <p>{{ service.Description }}</p>
+                            <b class="additional-products-list__price">
+                                {% if service.Price == 0 %}
+                                {% T FREE %}
+                                {% else%}
+                                {{ service.PriceFormatted }}
+                                {% endif %}
+                            </b>
+                            {% if data.Coworker != null %}
+                            <a href="{% Url Store, Products, productId: service.Id %}" class="btn btn--primary btn--xs">
+                                {% T Get it now %}
+                            </a>
+                            {% else %}
+                            <a href="{% Url Store, SignupProducts, productId: service.Id %}" class="btn btn--primary btn--xs">
+                                {% T Get it now %}
+                            </a>
+                            {% endif %}
+                        </li>
+                        {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>

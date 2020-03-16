@@ -1,0 +1,56 @@
+<div class="home__section home__section--padded home__section--services">
+  <div class="container">
+    <h2 class="h1 home__section__title">{% T Our services %}</h2>
+    <ul class="row services-list">
+      {% if data.Setting_HomePage_ShowWorkspaceService %}
+      <li class="col-xxs-12 col-xs-6 col-sm-4">
+        <div class="services-list__item" data-mh="services-list-item" style="height: 298px;"> <i class="i-nexudus-workspace"></i>
+          <h3 class="h4 services-list__title">{% T data.Setting_HomePage_WorkSpaceShortText %}</h3>
+          <p class="services-list__description">{% T data.Setting_HomePage_WorkSpaceLongText %}</p>
+        </div>
+      </li>
+      {% endif %}
+      {% if data.Setting_HomePage_ShowBookingsService %}
+      <li class="col-xxs-12 col-xs-6 col-sm-4">
+        <div class="services-list__item" data-mh="services-list-item" style="height: 298px;"> <i class="i-nexudus-conference"></i>
+          <h3 class="h4 services-list__title">{% T data.Setting_HomePage_BookingsShortText %}</h3>
+          <p class="services-list__description">{% T data.Setting_HomePage_BookingsLongText %}</p>
+        </div>
+      </li>
+      {% endif %}
+      {% if data.Setting_HomePage_ShowCommunityService %}
+      <li class="col-xxs-12 col-xs-6 col-sm-4">
+        <div class="services-list__item" data-mh="services-list-item" style="height: 298px;"> <i class="i-nexudus-members"></i>
+          <h3 class="h4 services-list__title">{% T data.Setting_HomePage_CommunityShortText %}</h3>
+          <p class="services-list__description">{% T data.Setting_HomePage_CommunityLongText %}</p>
+        </div>
+      </li>
+      {% endif %}
+      {% if data.Setting_HomePage_ShowChildCareService %}
+      <li class="col-xxs-12 col-xs-6 col-sm-4">
+        <div class="services-list__item" data-mh="services-list-item" style="height: 298px;"> <i class="i-nexudus-childcare"></i>
+          <h3 class="h4 services-list__title">{% T data.Setting_HomePage_ChildCareShortText %}</h3>
+          <p class="services-list__description">{% T data.Setting_HomePage_ChildCareLongText %}</p>
+        </div>
+      </li>
+      {% endif %}
+      {% if data.Setting_HomePage_ShowBenefitsService %}
+      <li class="col-xxs-12 col-xs-6 col-sm-4">
+        <div class="services-list__item" data-mh="services-list-item" style="height: 298px;"> <i class="i-nexudus-benefits"></i>
+          <h3 class="h4 services-list__title">{% T data.Setting_HomePage_BenefitsShortText %}</h3>
+          <p class="services-list__description">{% T data.Setting_HomePage_BenefitsLongText %}</p>
+        </div>
+      </li>
+      {% endif %}
+      {% if data.Setting_HomePage_ShowEventsService %}
+      <li class="col-xxs-12 col-xs-6 col-sm-4">
+        <div class="services-list__item" data-mh="services-list-item" style="height: 298px;"> <i class="i-nexudus-weeklyevents"></i>
+          <h3 class="h4 services-list__title">{% T data.Setting_HomePage_EventsShortText %}</h3>
+          <p class="services-list__description">{% T data.Setting_HomePage_EventsLongText %}</p>
+        </div>
+      </li>
+      {% endif %}
+    </ul>
+    
+  </div>
+</div>

@@ -1,0 +1,73 @@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
+<script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.6.2/chosen.jquery.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.6.2/chosen.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.css">
+<script type="text/html" id="field-template-survey-text">
+    <div class="col-sm-12">
+        <div class="form-group" data-bind="css: { required: true }">
+            <label class="control-label" data-bind="text: $data.Text"></label>
+            <p><small data-bind="text: $data.Description"></small></p>
+            <input class="form-control" type="text" data-bind="value: $data.SurveyAnswer.Value,  attr: { required: true }, valueUpdate: 'keypress'" />
+            <small class="help-block validation-error" data-bind="validationMessage: $data.SurveyAnswer.Value"></small>
+        </div>
+    </div>
+</script>
+<script type="text/html" id="field-template-survey-boolean">
+    <div class="col-sm-12">
+        <div class="form-group" data-bind="css: { required: true }">
+            <div class="checkbox">
+                <label>
+                    <input type="checkbox" data-bind="checked: $data.SurveyAnswer.Value">
+                    <span data-bind="text: $data.Text"></span>
+                </label>
+                <p><small data-bind="text: $data.Description"></small></p>
+            </div>
+        </div>
+    </div>
+</script>
+<script type="text/html" id="field-template-survey-date">
+    <div class="col-sm-12">
+        <div class="form-group" data-bind="css: { required: true }">
+            <label class="control-label" data-bind="text: $data.Text, attr: { for: 'custom' + $data.Id }"></label>
+            <p><small data-bind="text: $data.Description"></small></p>
+            <input initialblankdate type="text" class="form-control" data-bind="pickadate:{ value: $data.SurveyAnswer.Value, options: $root.datePickerOptions }, attr: { id: 'custom' + $data.Id, required: true }">
+            <input data-bind="value: $data.SurveyAnswer.Value" type="hidden" required="required" />
+            <small class="help-block validation-error" data-bind="validationMessage: $data.SurveyAnswer.Value"></small>
+
+        </div>
+    </div>
+</script>
+<script type="text/html" id="field-template-survey-dropdown">
+    <div class="col-sm-12">
+        <div class="form-group" data-bind="css: { required: true }">
+            <label class="control-label" data-bind="text: $data.Text, attr: { for: 'custom' + $data.Id }"></label>
+            <p><small data-bind="text: $data.Description"></small></p>
+            <select data-placeholder="-" class="form-control"
+                    data-bind="optionsCaption: '{% T Choose one %}', options: $data.AvailableOptionsArray, selectedOptions: $data.SurveyAnswer.Value, chosen: {width: '100%'}, attr: { required: true }"></select>
+            <small class="help-block validation-error" data-bind="validationMessage: $data.SurveyAnswer.Value"></small>
+        </div>
+    </div>
+</script>
+<script type="text/html" id="field-template-survey-dropdown-multi">
+    <div class="col-sm-12">
+        <div class="form-group" data-bind="css: { required: true }">
+            <label class="control-label" data-bind="text: $data.Text, attr: { for: 'custom' + $data.Id }"></label>
+            <p><small data-bind="text: $data.Description"></small></p>
+            <select data-placeholder="-" multiple class="form-control"
+                    data-bind="options: $data.AvailableOptionsArray, selectedOptions: $data.SurveyAnswer.Value, chosen: {width: '100%'}, attr: { required: true }"></select>
+            <small class="help-block validation-error" data-bind="validationMessage: $data.SurveyAnswer.Value"></small>
+        </div>
+    </div>
+</script>
+<script type="text/html" id="field-template-survey-longtext">
+    <div class="col-sm-12">
+        <div class="form-group" data-bind="css: { required: true }">
+            <label class="control-label" data-bind="text: $data.Text, attr: { for: 'custom' + $data.Id }"></label>
+            <p><small data-bind="text: $data.Description"></small></p>
+            <textarea class="form-control" rows="3" data-bind="value: $data.SurveyAnswer.Value,,  attr: { required: true }"></textarea>
+            <small class="help-block validation-error" data-bind="validationMessage: $data.SurveyAnswer.Value"></small>
+        </div>
+    </div>
+</script>

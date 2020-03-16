@@ -1,0 +1,10 @@
+<div class="home__section home__section--padded claim claim--v1">
+  <div class="container">
+    <h2 class="text-mega claim__title">{% T data.Setting_HomePage_ClaimText %}</h2>
+    {% if data.Coworker == null %}
+    <a href="{% Url Signup, Index %}" class="link--quaternary">{% T data.Setting_HomePage_ClaimSmallTextLogout %}</a>
+    {% else %}
+    <a href="{% Url Profile, Index %}" class="link--quaternary">{% T data.Setting_HomePage_ClaimSmallTextLogin %}</a>
+    {% endif %}
+  </div>
+</div>

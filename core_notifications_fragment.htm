@@ -1,0 +1,48 @@
+<div id="notifications" style="display: none">
+  {% if  data.InfoMessage != "" %}
+  <div class="alert alert--info alert--icon" role="alert">
+    <button type="button" class="close" data-dismiss="alert" aria-label="{% T Close %}"><span aria-hidden="true">×</span></button>
+    <i class="fa fa-info-circle"></i>
+    <b>{{ data.InfoMessage }}</b>
+  </div>
+  {% endif %}
+  {% if  data.SuccessMessage != "" %}
+  <div class="alert alert--success alert--icon" role="alert">
+    <button type="button" class="close" data-dismiss="alert" aria-label="{% T Close %}"><span aria-hidden="true">×</span></button>
+    <i class="fa fa-check"></i>
+    <b>{{ data.SuccessMessage }}</b>
+  </div>
+  {% endif %}
+  {% if  data.ErrorMessage != "" %}
+  <div class="alert alert--danger alert--icon" role="alert">
+    <button type="button" class="close" data-dismiss="alert" aria-label="{% T Close %}"><span aria-hidden="true">×</span></button>
+    <i class="fa fa-exclamation-circle"></i>
+    <b>{{data.ErrorMessage}}</b>
+  </div>
+  {% endif %}
+</div>
+<!-- NOTIFICATION DIALOG -->
+<div class="modal modal--book" id="modal-message" tabindex="-1" role="dialog" aria-labelledby="modal-bookLabel">
+  <div class="modal-dialog" role="document">
+      <div class="modal-content">
+      <div class="modal-header">
+          
+          <h3 class="modal-title" id="modal-message-text"></h3>
+      </div>
+      <div class="modal-body">
+          <p id="modal-message-description"></p>
+          <br/>
+          <div class="btn-toolbar form-actions bookings__btn-modal" id="close-buttons">
+              <button class="btn btn--primary btn--sm" data-dismiss="modal" id="close-button" type="button">{% T Close %}</button>
+          </div>
+          <div class="btn-toolbar form-actions bookings__btn-modal" id="prompt-buttons">
+              <button class="btn btn--primary btn--sm" type="button" id="yes-button">{% T Yes %}</button>
+              <button class="btn btn--secondary btn--sm" type="button" id="no-button">{% T No %}</button>
+          </div>
+
+      </div>
+      </div>
+  </div>
+</div>
+<!-- END NOTIFICATION DIALOG -->
+

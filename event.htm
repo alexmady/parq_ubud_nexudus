@@ -1,0 +1,298 @@
+{% extends master.master %}
+{% block htmlTag %}itemscope itemtype="http://schema.org/Event"{% endblock %}
+{% block title %}{{ data.Local.Event.Name }} | {% T Events %} | {{ data.Business.Name }}{% endblock %}
+{% block meta %}
+<meta itemprop="name" content="{{ data.Local.Event.Name | StripHtml }}" />
+<meta itemprop="description" content="{{ data.Local.Event.ShortDescription | StripHtml }}" />
+{% if data.Local.Event.HasLargeImage %}
+<meta itemprop="image" content="https://{{ data.Business.WebAddress }}.{{ data.PublicSiteSubDomain }}{% Url Events, GetLargeImage, id: data.Local.Event.Id, w: 800 %}" />
+{% endif %}
+{% endblock %}
+{% block socialTags %}
+<!-- Twitter Card data -->
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:site" content="@{{ data.Setting_Social_Twitter }}" />
+<meta name="twitter:title" content="{{ data.Local.Event.Name | StripHtml  | Truncate: 70 }}" />
+<meta name="twitter:description" content="{{ data.Local.Event.ShortDescription | StripHtml | Truncate: 200 }}" />
+<meta name="twitter:creator" content="@{{ data.Setting_Social_Twitter }}" />
+{% if data.Local.Event.HasLargeImage %}
+<meta name="twitter:image:src" content="https://{{ data.Business.WebAddress }}.{{ data.PublicSiteSubDomain }}{% Url Events, GetLargeImage, id: data.Local.Event.Id, w: 800 %}" />
+{% endif %}
+<!-- Open Graph data -->
+<meta property="og:url" content="{{ data.AbsoluteUri }}" />
+<meta property="og:title" content="{{ data.Local.Event.Name | StripHtml }}" />
+{% if data.Local.Event.HasLargeImage %}
+<meta property="og:image" content="http://{{ data.Business.WebAddress }}.{{ data.PublicSiteSubDomain }}{% Url Events, GetLargeImage, id: data.Local.Event.Id, w: 527  %}.jpg" />
+<meta property="og:image:type" content="image/jpeg">
+{% endif %}
+<meta property="og:description" content="{{ data.Local.Event.ShortDescription | StripHtml }}" />
+<meta property="og:site_name" content="{{ data.Business.Name }}" />
+{% endblock %}
+{% block main %}
+<div class="container">
+  <!-- BREADCRUMBS -->
+  <ol class="breadcrumb">
+    <li><a href="{{ data.Business.HomeUrl }}">{% T Home %}</a></li>
+    <li><a href="{% Url Events, Index %}">{% T Events %}</a></li>
+    <li class="active">{{ data.Local.Event.Name | StripHtml }}</li>
+  </ol>
+  <!-- END BREADCRUMBS -->
+  <!-- EVENTS PAGE HEADER -->
+  <div class="page-header">
+    <div class="notifications-placeholder"></div>
+    <h1>{{ data.Local.Event.Name | StripHtml }}</h1>
+  </div>
+  <!-- END EVENTS PAGE HEADER -->
+  <!-- EVENTS DETAIL -->
+  <div class="events-detail__metadata">
+    <div class="row">
+      <div class="col-sm-4">
+        <div class="events-detail__when">
+          <i class="fa fa-calendar"></i>
+          <b class="events-detail__date">
+            {{ data.Local.Event.StartDate | Date: 'D' }}
+            {% if data.Local.Event.MultipleDays %}
+            - {{ data.Local.Event.EndDate | Date: 'D' }}
+            {% endif %}
+          </b>
+          <time class="events-detail__time">{{ data.Local.Event.StartDate | Date: 't' }}  - {{ data.Local.Event.EndDate | Date: 't' }}</time>
+          <div class="dropdown events-detail__calendar">
+            <a class="link--secondary addthisevent" href="{% Url Events, ICal, Id: data.Local.Event.Id, title: ev.Name | Clean %}" >
+              {% T Add to calendar %}
+               <span class="caret"></span>
+                <span class="_start">{{ data.Local.Event.StartDate | Date: 'MM-dd-yyyy' }} {{ data.Local.Event.StartDate | Date: 'HH:mm:ss' }}</span>
+                <span class="_end">{{ data.Local.Event.EndDate | Date: 'MM-dd-yyyy' }} {{ data.Local.Event.EndDate | Date: 'HH:mm:ss' }}</span>
+                <span class="_summary">{{ data.Local.Event.Name }}</span>
+                <span class="_description">{{ data.Local.Event.ShortDescription }}</span>
+                <span class="_location">{{ data.Local.Event.VenueAddress }}</span>
+                <span class="_organizer">{{ data.Local.Event.Business.Name }}</span>
+                <span class="_organizer_email">{{ data.Business.EmailContact }}</span>
+                <span class="_all_day_event">false</span>
+                <span class="_date_format">MM-dd-YYYY</span>
+            </a>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-sm-4">
+        {% if data.Local.Event.VenueAddress != null or data.Local.Event.Location != null %}
+        <div class="events-detail__where">
+          <i class="fa fa-map-marker"></i>
+          {% if data.Local.Event.Location != null %}
+          <b class="events-detail__location">{{ data.Local.Event.Location }}</b>
+          {% endif %}
+          {% if data.Local.Event.VenueAddress != null %}
+          <span class="events-detail__address">{{ data.Local.Event.VenueAddress }}</span>
+          <a class="link--secondary events-detail__map" target="_blank" href="https://www.google.co.uk/maps/place/{{ data.Local.Event.VenueAddress | Replace:' ', '+' }}">{% T Map %}</a>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+      
+      <div class="col-sm-4">
+        {% if data.Local.Event.TicketsPage.size > 0 %}
+        <div class="btn-toolbar btn-toolbar--block events-detail__actions">
+          <a href="{{data.Local.Event.TicketsPage}}" class="btn btn--primary btn--lg btn-block">{% T Get tickets %}</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <!-- END EVENTS DETAIL -->
+  <div class="row">
+    <div class="col-sm-8">
+      <!-- EVENTS BODY -->
+      <div class="article-content fr-view">
+        {% if data.Local.Event.HasLargeImage %}
+        <img src="{% Url Events, GetLargeImage, id: data.Local.Event.Id, w: 1500 %}?t={{ data.Local.Event.Name }}" alt="{{ data.Local.Event.Name | StripHtml }}">
+        {% endif %}
+        
+        {{ data.Local.Event.LongDescription }}
+      </div>
+      <!-- END EVENTS BODY -->
+
+      <!-- SOCIAL BUTTONS -->
+      <ul class="list-inline social-links">
+        {% if data.Local.Event.WebAddress != null %}
+        <li>
+          <a href="{{data.Local.Event.WebAddress}}" class="link--google">
+            <i class="fa fa-globe i-space--right--small"></i>
+            {% T Website %}
+          </a>
+        </li>
+        {% endif %}
+        {% if data.Local.Event.FacebookPage != null %}
+        <li>
+          <a href="{{data.Local.Event.FacebookPage}}" class="link--facebook">
+            <i class="fa fa-facebook i-space--right--small"></i>
+            Facebook
+          </a>
+        </li>
+        {% endif %}
+      </ul>
+      <!-- END SOCIAL BUTTONS -->
+      
+      {% include core_share_buttons.htm %}
+
+      {% if data.Local.Event.AllowComments or data.Local.Event.Comments.size > 0  %}
+      <!-- COMMENTS -->
+      <div class="section">
+        {% if data.Local.Event.Comments.size > 0 %}
+        <h2 class="h4 section__title">{% T {0} comment(s) || data.Local.Event.Comments.size %}</h2>
+        {% else %}
+        <h2 class="h4 section__title">{% T Be the first one to leave a comment %}</h2>
+        {% endif %}
+
+        <ul class="comments-list">
+          {% for comment in data.Local.Event.Comments %}
+          <li class="comments-list__item" id="comment-{{ comment.Id }}">
+            <div class="user-badge">
+              <h3 class="h6 user-badge__name">
+                <a href="{% Url Directory, Profile, id: comment.PostedBy.Coworker.Id, name: comment.PostedBy.Coworker.FullName | Clean %}">
+                {{ comment.PostedBy.FullName }}
+                </a>
+              </h3>
+              <time class="user-badge__metadata">{{ comment.CreatedOn | Date: 'g' }}</time>
+              <a class="avatar user-badge__avatar" href="{% Url Directory, Profile, id: comment.PostedBy.Coworker.Id, name: comment.PostedBy.Coworker.FullName | Clean %}">
+                <img src="{% Url Coworker, GetAvatar, id: comment.PostedBy.Coworker.Id, h:48, w:48 %}&noavatar=%2Fcontent%2Fthemes%2Fpublic%2Fdos%2Fimg%2Favatar-default.png" alt="{{ comment.PostedBy.Coworker.FullName }}">
+              </a>
+            </div>
+            <div class="comments-list__body">
+              <p>
+                {{ comment.Text | StripHtml }}
+              </p>
+            </div>
+            <a href="{{ data.URL }}#comment-{{ comment.Id }}" class="link--tertiary comments-list__link" data-toggle="tooltip" title="{% T Link to this comment %}"><i class="fa fa-link"></i></a>
+          </li>
+          {% endfor %}
+        </ul>
+
+        {% if data.Local.Event.AllowComments %}
+        {% if data.Coworker == null %}
+        <div class="alert alert--credentials" role="alert">
+          <h3 class="h6">{% T Log in or signup to comment %}</h3>
+          <div class="btn-toolbar">
+            <a href="{% Url Login, Index %}?returnUrl={% Url events, view, id: data.Local.Event.Id, title: data.Local.Event.Name | Clean %}" class="btn btn--default--inverse btn--sm">{% T Log in %}</a>
+            <a href="{% Url SignUp, Index %}" class="btn btn--default btn--sm">{% T Sign up %}</a>
+          </div>
+        </div>
+        {% else %}
+        <div class="your-input">
+          <div class="user-badge">
+            <h3 class="h6 user-badge__name">{% T Your comment %}</h3>
+            <a class="avatar user-badge__avatar" href="{% Url Directory, Profile, id: data.Coworker.Id, name: data.Coworker.FullName | Clean %}">
+              <img src="{% Url Coworker, GetAvatar, id: data.Coworker.Id, h:48, w:48 %}&noavatar=%2Fcontent%2Fthemes%2Fpublic%2Fdos%2Fimg%2Favatar-default.png" alt="" />
+            </a>
+            <span class="user-badge__metadata">{% T You are logged in as {0} || data.Coworker.FullName %}</span>
+          </div>
+          <form action="{% Url Events, NewComment %}" method="POST" class="form your-input__form">
+            {% AntiforgeryToken %}
+            <input type="hidden" id="id" name="id" required="required" value="{{ data.Local.Event.Id }}">
+          	<input type="hidden" id="title" name="title" required="required" value="{{ data.Local.Event.Name }}">
+            <div class="form-group">
+              <textarea required="required" maxlength="2000" name="comment" cols="30" rows="4" class="form-control" placeholder="{% T Leave your comment... %}"></textarea>
+            </div>
+            <div class="form-actions">
+              <button class="btn btn--default--inverse btn--sm" type="submit">{% T Post your comment %}</button>
+            </div>
+          </form>
+        </div>
+        {% endif %}
+        {% endif %}
+
+      </div>
+      <!-- END COMMENTS -->
+      {% endif %}
+    </div>
+
+    <div class="col-sm-4">
+
+      <!-- USERS GOING -->
+      <aside class="sidebar-aside">
+        {% if data.Local.AttendeeCount > 0 %}
+        <h4 class="h5 sidebar-aside__heading">{% T {0} going || data.Local.AttendeeCount %}</h4>
+        {% endif %}
+        <!-- USERS LIST -->
+        <ul class="users-list">
+          {% for member in data.Local.Attendees %}
+          <li class="users-list__item">
+            <div class="user-badge">
+              <h3 class="h6 user-badge__name">
+                <a href="{% Url Directory, Profile, Id: member.Id, name: member.FullName | Clean %}">{{ member.FullName }}</a></h3>
+              <p class="user-badge__position">
+                {{ member.Position }}
+                {% if member.Position != null %}/{% endif %}
+                {{ member.CompanyName }}
+              </p>
+              <a class="avatar user-badge__avatar" href="{% Url Directory, Profile, Id: member.Id, name: member.FullName | Clean %}">
+                <img src="{% Url Coworker, GetAvatar, id: member.Id, h:48, w:48 %}&noavatar=%2Fcontent%2Fthemes%2Fpublic%2Fdos%2Fimg%2Favatar-default.png" alt="">
+              </a>
+            </div>
+          </li>
+          {% endfor %}
+        </ul>
+        <!-- END USERS LIST -->
+
+
+      </aside>
+      <!-- END USERS GOING -->
+
+      <!-- RELATED EVENTS -->
+      <aside class="sidebar-aside">
+        {% if data.Local.RelatedEvents.size > 0 %}
+        <h4 class="h5 sidebar-aside__heading">{% T Related events %}</h4>
+
+        <!-- EVENTS LIST -->
+        <ul class="users-list">
+          {% for event in data.Local.RelatedEvents  %}
+          <li class="users-list__item">
+            <div class="user-badge">
+              <h3 class="h6 user-badge__name">
+                <a href="{% Url Events, View, Id: event.Id, title: event.Name | Clean %}">{{ event.Name | StripHtml }}</a>
+              </h3>
+              <p class="user-badge__position">
+                {{ event.StartDate | Date: 'D' }} 
+                {% if event.Location != null %} - 
+                {{ event.Location }}
+                {% endif %}
+              </p>
+              <a class="avatar user-badge__avatar" href="{% Url Events, View, Id: event.Id, title: event.Name | Clean %}">
+                {% if event.HasSmallImage %}
+                <img src="{% Url Events, GetSmallImage, id: event.Id, h: 48, w: 48 %}" alt="{{ event.Name }}">
+                {% else %}
+                <img src="http://placehold.it/48x48?text=?" alt="">
+                {% endif %}
+              </a>
+              
+            </div>
+          </li>
+          {% endfor %}
+        </ul>
+        <!-- END EVENTS LIST -->
+        {% endif %}
+      </aside>
+      <!-- END RELATED EVENTS -->
+
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}
+{% block scripts %}
+<script type="text/javascript" src="https://addthisevent.com/libs/1.5.8/ate.min.js"></script>
+<script type="text/javascript">
+addthisevent.settings({
+    license   : "a405mv4wfzncermbtmjd",
+    mouse     : false,
+    css       : false,
+    outlook   : {show:true, text:"Outlook Calendar"},
+    google    : {show:true, text:"Google Calendar"},
+    yahoo     : {show:true, text:"Yahoo Calendar"},
+    hotmail   : {show:true, text:"Hotmail Calendar"},
+    ical      : {show:true, text:"iCal Calendar"},
+    facebook  : {show:true, text:"Facebook Event"},
+    callback  : ""
+});
+</script>
+{% endblock %}

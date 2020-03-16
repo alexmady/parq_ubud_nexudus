@@ -1,0 +1,62 @@
+{% extends master.master %}
+{% block title %}{{ data.Local.Page.Title }}{% endblock %}
+
+{% block meta %}
+{% endblock %}
+{% block socialTags %}
+<!-- CUSTOM OPEN GRAPH TAGS -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="http://{{ data.Domain }}{{ data.URL }}">
+<meta property="og:title" content="{{ data.Local.Page.Title }} - {{ data.Business.Name }}">
+{% if data.Local.Page.HasImage %}
+<meta property="og:image" content="http://{{ data.Domain }}{% Url Page, Image, id: data.Local.Page.Id%}?w=400&h=400&mode=pad">
+{% else %}
+<meta property="og:image" content="http://{{ data.Domain }}{% Url Business, GetLogo, h:240,w: 240 %}">
+{% endif %}
+<!-- TWITTER CARDS -->
+<meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@{{ data.Setting_Social_Twitter }}">
+<meta name="twitter:title" content="{{ data.Local.Page.Title }} - {{ data.Business.Name }}">
+<meta name="twitter:image" content="http://{{ data.Domain }}{% Url Business, GetLogo, h: 240, w: 240 %}">
+{% endblock %}
+
+{% block main %}
+<style>
+    ol.outlook-steps li {
+        margin-bottom: 10px
+    }
+</style>
+<div class="container">
+    <!-- BREADCRUMBS -->
+    <ol class="breadcrumb">
+        <li><a href="{{ data.Business.HomeUrl }}">{% T Home %}</a></li>
+        <li class="active">{% T Outlook Integration %}</li>
+    </ol>
+    <!-- END BREADCRUMBS -->
+    <h1>{% T Complete your Outlook Integration %}</h1>
+    <p>
+        {% T Setting your new Outlook integration is quick and simple. Simply follow these steps: %}
+        <ol class="outlook-steps">
+            <li><strong>{% T Add our site to your trusted sites %}</strong></li>
+            <ol>
+                <li>Open Internet Explorer</li>
+                <li>Click on Menu (small gear at upper right)</li>
+                <li>Select Internet Options</li>
+                <li>Select Security tab</li>
+                <li>Select Trusted Sites</li>
+                <li>Click Sites</li>
+                <li>In Add this website to the zone: box, type https://outlookplugin.spaces.nexudus.com.
+                <li>Click Add</li>
+                <li>Click Close</li>
+                <li>Click OK</li>
+            </ol>
+            <li><strong>{% T Download and install the Outlook plug-in %}: <a href="https://outlookplugin.spaces.nexudus.com/setup.exe">https://outlookplugin.spaces.nexudus.com</a></strong></li>
+            <li>{% T When you open Outlook, you will find a calendar for each of the rooms you have access to. Making a booking in any of those calendars will place a reservation in your account %}</li>
+        </ol>
+    </p>
+
+
+</div>
+{% endblock %}
+{% block scripts %}
+{% endblock %}

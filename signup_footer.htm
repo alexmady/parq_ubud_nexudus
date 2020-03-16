@@ -1,0 +1,18 @@
+<!-- FOOTER -->
+<footer class="credentials__footer">
+
+  <ul class="list-inline">
+    <li><a target="_blank" href="{% Url TermsAndConditions, Index %}">{% T Terms and conditions %}</a></li>
+    {% if data.Setting_Legal_Cookies.size > 0 %}
+    <li><a target="_blank" href="{% Url Legal, Cookies %}">{% T Cookies policy %}</a></li>
+    {% endif %}
+    {% if data.Setting_Legal_Privacy.size > 0 %}
+    <li><a target="_blank" href="{% Url Legal, Privacy %}">{% T Privacy policy %}</a></li>
+    {% endif %}
+  </ul>
+
+  <p>{{ data.Now | FormatDate: 'yyyy' }} © {{ data.Business.Name }}. {% T All rights reserved. %}</p>
+            
+
+</footer>
+<!-- END FOOTER -->

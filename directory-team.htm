@@ -1,0 +1,148 @@
+{% extends master.master %}
+{% block title %}{{ data.Local.Team.Name | StripHtml }} | {{ data.Business.Name }} {% endblock %}
+{% block main %}
+<div class="container">
+
+        <!-- BREADCRUMBS -->
+        <ol class="breadcrumb">
+          <li><a href="{{ data.Business.HomeUrl }}">{% T Home %}</a></li>
+          <li><a href="{% Url Directory, Teams %}">{% T Teams %}</a></li>
+          <li class="active">{{ data.Local.Team.Name }}</li>
+        </ol>
+        <!-- END BREADCRUMBS -->
+
+      </div>
+
+      <!-- USER PROFILE -->
+      <div class="user-profile">
+
+        <!-- USER PROFILE HEADER -->
+        <div class="user-profile__header" style="background-image: url('{% Url Team, GetAvatar, id: data.Local.Team.Id %}?noavatar=%2Fcontent%2Fthemes%2Fpublic%2Fdos%2Fimg%2Favatar-default.png')">
+          <div class="container">
+            <div class="user-badge user-badge--xl">
+              <h1 class="h3 user-badge__name"><a href="#">{{ data.Local.Team.Name }}</a></h1>
+              <p class="user-badge__position">{{ data.Local.Team.Description }}</p>
+              <a class="avatar user-badge__avatar" href="#">
+                <img src="{% Url Team, GetAvatar, id: data.Local.Team.Id, h: 166, w: 166, mode: 'Pad' %}" style="background-color: white; padding: 5px" alt="">
+              </a>
+              {% if data.Local.Team.TeamMembers.size > 0 %}
+              <div class="user-badge__people"><i class="fa fa-user i-space--right--small"></i> 
+                <span class="user-badge__people__count">{{ data.Local.Team.TeamMembers.size }}</span>
+              </div>
+              {% endif %}
+              <ul class="list-inline user-badge__social">
+                {% if data.Local.Team.ProfileWebsite.size > 0 %}
+                <li><a target="_blank" href="{{ data.Local.Team.ProfileWebsite }}" class="link--tertiary"><i class="fa fa-globe"></i></a></li>
+                {% endif %}
+                {% if data.Local.Team.Twitter.size > 0 %}
+                <li><a href="http://twitter.com/{{ data.Local.Team.Twitter }}" class="link--tertiary"><i class="fa fa-twitter"></i></a></li>
+                {% endif %}
+                {% if data.Local.Team.Linkedin.size > 0 %}
+                <li><a href="{{ data.Local.Team.Linkedin }}" class="link--tertiary"><i class="fa fa-linkedin"></i></a></li>
+                {% endif %}
+                {% if data.Local.Team.Facebook.size > 0 %}
+                <li><a href="{{ data.Local.Team.Facebook }}" class="link--tertiary"><i class="fa fa-facebook"></i></a></li>
+                {% endif %}
+                {% if data.Local.Team.Skype.size > 0 %}
+                <li><a href="callto://{{ data.Local.Team.Skype }}" class="link--tertiary"><i class="fa fa-skype"></i></a></li>
+                {% endif %}
+
+              </ul>
+              
+            </div>
+          </div>
+        </div>
+        <!-- END USER PROFILE HEADER -->
+        <div class="container">
+          <div class="row">
+            <div class="col-sm-9">
+              <!-- USER PROFILE ABOUT -->
+              <div class="user-profile__about">
+                <h2 class="h3">{% T About {0} || data.Local.Team.Name %}</h2>
+                <div class="user-profile__about__bio">
+                  {{ data.Local.Team.ProfileSummary | StripHtml | MarkDown }}
+                </div>
+
+                {% if data.Local.Team.ProfileTagsList.size > 0 %}
+                <div class="tags-list">
+                  <i class="fa fa-tags i-space--right--small"></i>
+                  <ul>
+                    {% for tag in data.Local.Team.ProfileTagsList %}
+                    <li><a href="{% Url Directory, Teams, tag: tag %}" class="link--secondary">{{ tag }}</a></li>
+                    {% endfor %}
+                  </ul>
+                </div>
+                {% endif %}
+
+              </div>
+              <!-- END USER PROFILE ABOUT -->
+
+              <!-- TEAM MEMBERS -->
+              {% if data.Local.Team.TeamMembers.size > 0 %}
+              <div class="section">
+                <h2 class="h4 section__title">{% T Members of {0} || data.Local.Team.Name  %}</h2>
+
+                <ul class="list-inline user-profile__members">
+                  {% for member in data.Local.Team.TeamMembers %}
+                  <li data-toggle="tooltip" title="{{ member.FullName }}">
+                    <a class="avatar" href="{% Url Directory, Profile, Id: member.Id, name: member.FullName | Clean %}" >
+                      
+                      <img style="height: 32px; width: 32px;" src="{% Url Coworker, GetAvatar, id: member.Id, h: 32, w: 32 %}&noavatar=%2Fcontent%2Fthemes%2Fpublic%2Fdos%2Fimg%2Favatar-default.png" alt="">
+                    </a>
+                  </li>
+                  {% endfor %}
+                </ul>
+
+              </div>
+              {% endif %}
+              <!-- END TEAM MEMBERS -->
+
+              <!-- TEAM PHOTOS -->
+              {% if data.Local.Team.HasImages %}
+              <div class="section">
+                <h2 class="h4 section__title">{% T {0} in images || data.Local.Team.Name %}</h2>
+                <ul class="row user-profile__photos">
+                  {% if data.Local.Team.HasImage1 %}
+                  <li class="col-xxs-6 col-xs-4 col-sm-3"><img src="{% Url Team, GetImage1, id: data.Local.Team.Id, h:300, w:400 %}" alt=""></li>
+                  {% endif %}
+                  {% if data.Local.Team.HasImage2 %}
+                  <li class="col-xxs-6 col-xs-4 col-sm-3"><img src="{% Url Team, GetImage2, id: data.Local.Team.Id, h:300, w:400 %}" alt=""></li>
+                  {% endif %}
+                  {% if data.Local.Team.HasImage3 %}
+                  <li class="col-xxs-6 col-xs-4 col-sm-3"><img src="{% Url Team, GetImage3, id: data.Local.Team.Id, h:300, w:400 %}" alt=""></li>
+                  {% endif %}
+                </ul>
+
+              </div>
+              {% endif %}
+              <!-- END TEAM PHOTOS -->
+            </div>
+
+            <div class="col-sm-3">
+
+              <!-- TWITTER TIMELINE -->
+              <aside class="sidebar-aside">
+                <!-- TWITTER TIMELINE -->
+                {% if data.Local.Team.Twitter.size > 0 %}
+                <aside class="sidebar-aside">
+                  <h4 class="h5 sidebar-aside__heading">{% T {0} on Twitter || data.Local.Team.Name %}</h4>
+                  <a class="twitter-timeline" href="https://twitter.com/{{ data.Local.Team.Twitter }}"
+                          data-tweet-limit="2"
+                          data-widget-id="430399305858285569"
+                          data-chrome="noheader nofooter transparent noborders"
+                          data-screen-name="{{ data.Local.Team.Twitter | Replace: '@','' }}" data-show-replies="false">Tweets by @{{ data.Local.Team.Twitter | Replace: '@',''  }}</a>
+                </aside>
+                {% endif %}
+                <!-- END TWITTER TIMELINE -->
+              </aside>
+              <!-- END TWITTER TIMELINE -->
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+      <!-- USER PROFILE -->
+{% endblock %}

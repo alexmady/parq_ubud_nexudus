@@ -1,0 +1,149 @@
+{% extends master.master %}
+{% block title %}{% T Community %} | {{ data.Business.Name }} {% endblock %}
+{% block scripts %}
+<link rel="stylesheet" type="text/css" href="/content/themes/public/js/libs/jquery.mentionsInput/jquery.mentionsInput.css" />
+<script src="/content/themes/public/js/libs/jquery.elastic/jquery.elastic.source.js"></script>
+<script src="/content/themes/public/js/libs/underscore/underscore-min.js"></script>
+<script src="/content/themes/public/js/libs/jquery.mentionsInput/jquery.mentionsInput.js"></script>
+<script src="/scripts/jquery.timeago.js"></script>
+<script src="/scripts/jquery.timeago.{{ data.Language }}.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/ekko-lightbox/4.0.1/ekko-lightbox.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ekko-lightbox/4.0.1/ekko-lightbox.js"></script>
+
+<script>
+  $(function(){
+    var cm = new CommunityBoardManager();
+    cm.init();
+
+    //Lightbox
+    $(document).on('click', '[data-toggle="lightbox"]', function(event) {
+        event.preventDefault();
+        $(this).ekkoLightbox({
+          loadingMessage: '{% T Please wait... %}'
+        });
+    });
+  })
+</script>
+{% endblock %}
+{% block main %}
+<div class="container">
+  <!-- BREADCRUMBS -->
+  <ol class="breadcrumb">
+    <li><a href="{{ data.Business.HomeUrl }}">{% T Home %}</a></li>
+    {% if data.Local.Group == null %}
+      {% if data.Local.Tag != null %}
+      <li><a href="{% Url Community, Index %}">{% T Message Board %} </a></li>
+      <li class="active">{{ data.Local.Tag }}</li>
+      {% else %}
+      <li class="active">{% T Message Board %} </li>
+      {% endif %}
+    {% else %}
+    <li><a href="{% Url Community, Index %}">{% T Message Board %} </a></li>
+    <li class="active">{{ data.Local.Group.Name }}</li>
+    {% endif %}
+    
+  </ol>
+  <!-- END BREADCRUMBS -->
+
+  <!-- PAGE HEADER -->
+  <div class="page-header page-header--flex">
+    <div class="page-header--flex__item">
+      <h1>
+        {% if data.Local.Group == null %}
+        {% T Message Board %} 
+        {% else %}
+        {{ data.Local.Group.Name }}
+        {% endif %}
+        {% if data.Local.Tag != null %}
+        / {{ data.Local.Tag }}
+        {% endif %}
+      </h1>
+      {% if data.Local.Group.Description != null %}
+      <p>
+      {% T data.Local.Group.Description %}
+      </p>
+      {% endif %}
+    </div>
+    <div class="page-header--flex__item">
+      <form class="form form--search" method="GET" action="">
+        <input type="text" class="form-control input--sm" name="query" value="{{ data.Local.Query }}" placeholder="{% T Search... %}">
+        <button class="btn btn--default btn--sm" type="submit"><i class="fa fa-search"></i></button>
+      </form>
+    </div>
+  </div>
+  <!-- END PAGE HEADER -->
+
+  <!-- FILTERS -->
+  <div class="filters">
+    {% if data.Local.CanStartConversation %}
+    <a href="{% Url Community, Start, privateThread: data.Local.PrivateThreads, groupId: data.Local.Group.Id %}" class="btn btn--primary btn--sm filters__new-item">{% T Start conversation %}</a>
+    {% endif %}
+    <ul class="nav filters__nav">
+      <li class="{% if data.Local.PublicThreads or data.Local.Group != null %}active{% endif %}">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+          {% if data.Local.Group == null %}
+          {% T Community Groups %} 
+          {% else %}
+          {{ data.Local.Group.Name }}
+          {% endif %}
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu" role="menu">
+          <li class="{% if data.Local.Group == null %}active{% endif %}" role="menuitem" tabindex="-1"><a href="{% Url Conversations, Index %}">{% T All Messages %}</a></li>
+          {% for group in data.Local.Groups %}
+          <li class="{% if data.Local.Group.Id == group.Id %}active{% endif %}" role="menuitem" tabindex="-1"><a href="{% Url Conversations, Group, id: group.Id, name: group.Name | Clean %}">{{ group.Name }}</a></li>
+          {% endfor %}
+        </ul>
+      </li>
+      <li class="{% if data.Local.MyThreads %}active{% endif %}"><a href="{% Url Community, Me, query: data.Local.Query %}">{% T My Conversations %}</a></li>
+      <li class="{% if data.Local.PrivateThreads %}active{% endif %}"><a href="{% Url Community, Private, query: data.Local.Query %}"><i aria-hidden="true" class="icon i-8 icon-lock"></i> {% T Private %}</a></li>
+    </ul>
+  </div>
+  <!-- END FILTERS -->
+
+  <div class="notifications-placeholder"></div>
+  {% if data.Local.Guests != null and data.Local.Group.GroupAccess == "Private" %}
+  {% include community_thread_guests.htm %}
+  {% endif %}
+  
+
+   <!-- ZERO CASE -->
+  {% if data.Local.Threads.size == 0 %}
+  <div class="zero-case">
+    <i class="fa fa-comments-o zero-case__icon"></i>
+
+    {% if data.Local.Query.size == 0 %}
+    {% if data.Local.MyThreads %}
+    <h3>{% T You haven't started any conversations %}</h3>
+    <p>{% T This list will show conversations you have started %}</p>
+    {% elseif data.Local.PrivateThreads %}
+    <h3>{% T You have no private conversations yet %}</h3>
+    <p>{% T Private conversations are just between you and those people you invite %}</p>
+    {% else %}
+    <h2>{% T All quiet over here... no conversations %}</h2>
+    {% endif %}
+    {% else %}
+    <h2>{% T We found no conversations %}</h2>
+    {% endif %}
+    <div class="btn-toolbar">
+      <a href="{% Url Community, Start, privateThread: data.Local.PrivateThreads, groupId: data.Local.Group.Id  %}" class="btn btn--primary">{% T Start conversation %}</a>
+    </div>
+  </div>
+  {% endif %}
+  <!-- END ZERO CASE -->
+
+  <!-- BOARD LIST -->
+  <ul class="board-list">
+    {% for thread in data.Local.Threads %}
+    {% include community_threads_item.htm %}
+    {% endfor %}
+  </ul>
+  <!-- END BOARD LIST -->
+
+  <!-- PAGINATION -->
+  {% if data.Local.Threads.size > 0 %}
+    {% assign pagedRecords = data.Local.Threads %}
+    {% include core_pagination_fragment.htm %}
+  {% endif %}
+  <!-- END PAGINATION -->
+{% endblock %}

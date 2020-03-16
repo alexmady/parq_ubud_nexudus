@@ -1,0 +1,39 @@
+<li class="col-sm-6 col-md-4 users-list__item">
+  <div class="user-badge user-badge--lg user-badge--team">
+    <h3 class="h6 user-badge__name">
+      <a href="{% Url Directory, Team, Id: team.Id, name: team.Name | Clean %}">{{ team.Name }}</a>
+    </h3>
+    <p class="user-badge__position">{{ team.Description }}</p>
+
+    <a class="avatar user-badge__avatar" href="{% Url Directory, Team, Id: team.Id, name: team.Name | Clean %}">
+      {% if team.HasTeamLogo %}
+      <img src="{% Url Team, GetAvatar, id: team.Id, h:128, w:128, mode: 'Pad' %}" alt="{{ team.Name }}" style="padding: 5px">
+      {% else %}
+      <img src="http://placehold.it/128x128?text=?" alt="{{ team.Name }}">
+      {% endif %}
+    </a>
+    {% if team.AllTeamMembers.size > 0 %}
+    <div class="user-badge__people"><i class="fa fa-user i-space--right--small"></i> 
+      <span class="user-badge__people__count">{{ team.AllTeamMembers.size }}</span>
+    </div>
+    {% endif %}
+    <ul class="list-inline user-badge__social">
+      {% if team.ProfileWebsite.size > 0 %}
+      <li><a target="_blank" href="{{ team.ProfileWebsite }}" class="link--tertiary"><i class="fa fa-globe"></i></a></li>
+      {% endif %}
+      {% if team.Twitter.size > 0 %}
+      <li><a href="http://twitter.com/{{ team.Twitter }}" class="link--tertiary"><i class="fa fa-twitter"></i></a></li>
+      {% endif %}
+      {% if team.Linkedin.size > 0 %}
+      <li><a href="{{ team.Linkedin }}" class="link--tertiary"><i class="fa fa-linkedin"></i></a></li>
+      {% endif %}
+      {% if team.Facebook.size > 0 %}
+      <li><a href="{{ team.Facebook }}" class="link--tertiary"><i class="fa fa-facebook"></i></a></li>
+      {% endif %}
+      {% if team.Skype.size > 0 %}
+      <li><a href="callto://{{ team.Skype }}" class="link--tertiary"><i class="fa fa-skype"></i></a></li>
+      {% endif %}
+    </ul>
+    
+  </div>
+</li>

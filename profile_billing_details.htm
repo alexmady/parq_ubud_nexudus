@@ -1,0 +1,43 @@
+{% if data.Setting_SignupForm_BillingAddress != 3 %}
+<div class="row">
+  {% if data.Setting_SignupForm_BillingAddress != 3 %}
+  <div class="form-group col-sm-12 {% if data.Setting_SignupForm_BillingAddress == 2 %}required{% endif %}">
+    <label for="">{% T Billing Address %}</label>
+    <textarea class="form-control" rows="3" {% if data.Setting_SignupForm_BillingAddress == 2 %}required{% endif %} id="Address" data-bind="value: BillingAddress" placeholder="{% T Your personal address %}"></textarea>
+    <small class="help-block validation-error" data-bind="validationMessage: BillingAddress"></small> 
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+<div class="row">
+  {% if data.Setting_SignupForm_BillingCityName != 3 %}
+  <div class="form-group col-sm-4 {% if data.Setting_SignupForm_BillingCityName == 2 %}required{% endif %}">
+      <label for="">{% T Billing Town %}</label>
+      <input data-bind="value: BillingCityName" {% if data.Setting_SignupForm_BillingCityName == 2 %}required{% endif %} type="input" class="form-control" placeholder="{% if data.Setting_SignupForm_BillingCityName == 2 %}{% T Required %}{% else %}{% T Optional %}{% endif %}">
+      <small class="help-block validation-error" data-bind="validationMessage: BillingCityName"></small> 
+  </div>
+  {% endif %}
+  {% if data.Setting_SignupForm_BillingState != 3 %}
+  <div class="form-group col-sm-4 {% if data.Setting_SignupForm_BillingState == 2 %}required{% endif %}">
+      <label for="">{% T Billing State / Province %}</label>
+      <input data-bind="value: BillingState" {% if data.Setting_SignupForm_BillingState == 2 %}required{% endif %} type="input" class="form-control" placeholder="{% if data.Setting_SignupForm_BillingState == 2 %}{% T Required %}{% else %}{% T Optional %}{% endif %}">
+      <small class="help-block validation-error" data-bind="validationMessage: BillingState"></small> 
+  </div>
+  {% endif %}
+  {% if data.Setting_SignupForm_BillingPostCode != 3 %}
+  <div class="form-group col-sm-4 {% if data.Setting_SignupForm_BillingPostCode == 2 %}required{% endif %}">
+      <label for="">{% T Billing Zip / Postcode %}</label>
+      <input data-bind="value: BillingPostCode" {% if data.Setting_SignupForm_BillingPostCode == 2 %}required{% endif %} type="input" class="form-control" placeholder="{% if data.Setting_SignupForm_BillingPostCode == 2 %}{% T Required %}{% else %}{% T Optional %}{% endif %}">
+      <small class="help-block validation-error" data-bind="validationMessage: BillingPostCode"></small> 
+  </div>
+  {% endif %}
+</div>
+{% if data.Setting_SignupForm_BillingEmail != 3 %}
+<div class="row">
+  <div class="form-group col-sm-12 {% if data.Setting_SignupForm_BillingEmail == 2 %}required{% endif %}">
+      <label for="">{% T Send my invoices to %}</label>
+      <input data-bind="value: BillingEmail" {% if data.Setting_SignupForm_BillingEmail == 2 %}required{% endif %} type="input" class="form-control" placeholder="{% if data.Setting_SignupForm_BillingEmail == 2 %}{% T Required %}{% else %}{% T Optional %}{% endif %}">
+      <small class="help-block validation-error" data-bind="validationMessage: BillingEmail"></small> 
+  </div>
+</div>
+{% endif %}

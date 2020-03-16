@@ -1,0 +1,199 @@
+{% extends master.master %}
+{% block title %}{{ data.Page.Title }}{% endblock %}
+
+{% block meta %}
+{% endblock %}
+{% block socialTags %}
+<!-- CUSTOM OPEN GRAPH TAGS -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="http://{{ data.Domain }}{{ data.URL }}">
+<meta property="og:title" content="{{ data.Page.Title }} - {{ data.Business.Name }}">
+{% if data.Page.HasImage %}
+<meta property="og:image" content="http://{{ data.Domain }}{% Url Page, Image, id: data.Page.Id%}?w=400&h=400&mode=pad">
+{% else %}
+<meta property="og:image" content="http://{{ data.Domain }}{% Url Business, GetLogo, h:240,w: 240 %}">
+{% endif %}
+<!-- TWITTER CARDS -->
+<meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@{{ data.Setting_Social_Twitter }}">
+<meta name="twitter:title" content="{{ data.Page.Title }} - {{ data.Business.Name }}">
+<meta name="twitter:image" content="http://{{ data.Domain }}{% Url Business, GetLogo, h: 240, w: 240 %}">
+{% endblock %}
+
+{% block main %}
+
+
+
+<div class="container">
+	<!-- BREADCRUMBS -->
+	<ol class="breadcrumb">
+		<li><a href="{{ data.Business.HomeUrl }}">{% T Home %}</a></li>
+		<li class="active">{{ data.Page.Title }}</li>
+	</ol>
+	<!-- END BREADCRUMBS -->
+	<h1>{{ data.Page.Title }}</h1>
+	{% if data.Page.HasImage %}
+	<img class="thumbnail" src="{% Url Page, Image, id: data.Page.Id, w: 1024 %}" />
+	{% endif %}
+	{{ data.Page.Description }}
+
+</div>
+
+{% if data.PricePlans.size > 0 %}
+
+<div class="home__section" id="priceplans">
+	<div class="container">
+		{% if data.Contract == null %}
+		<h2 class="h1 home__section__title">{% T Choose your membership %}</h2>
+		{% else %}
+		<h2 class="h1 home__section__title">{% T Choose your new membership %}</h2>
+		{% endif %}
+
+		<div class="suscriptions">
+			<!-- Nav tabs for large devices -->
+			<ul class="nav nav-tabs hidden-xs" role="tablist">
+				{% for group in data.PricePlanGroups %}
+				<li role="presentation" class="{% if forloop.index0 == 0 %}active{% endif %}"><a href="#tariffs-{{group  | Clean }}" aria-controls="tariffs-{{group  | Clean }}" role="tab" data-toggle="tab">{% T group %}</a></li>
+				{% endfor %}
+			</ul>
+			<!-- Nav select for small devices --><select class="form-control nav-selector js-tab-select-navigation visible-xs" data-content="#tab-content-memberships">
+			{% for group in data.PricePlanGroups %}
+			<option value="#tariffs-{{group  | Clean }}">{% T group %}</option>
+			{% endfor %}
+		</select>
+			<!-- Tab panes -->
+			<div class="tab-content" id="tab-content-memberships">
+				{% for group in data.PricePlanGroups %}
+				<div role="tabpanel" class="tab-pane {% if forloop.index0 == 0 %}active{% endif %}"
+					 id="tariffs-{{group  | Clean }}">
+
+					<ul class="row suscriptions-list">
+
+						{% for service in data.PricePlans %}
+
+						{% if data.Contract != null %}
+						{% capture continueUrl %}{% Url Profile, ChangeContractDo, id: data.Contract.Id, tariffId: service.Id, businessGuid: data.BusinessGuid %}{% endcapture %}
+						{% elseif data.Controller == 'profile' %}
+						{% capture continueUrl %}{% Url Profile, NewContract, tariffGuid: service.UniqueId, businessGuid: data.BusinessGuid %}{% endcapture %}
+						{% else %}
+						{% capture continueUrl %}{% Url Signup, Index, tariffGuid: service.UniqueId, businessGuid: data.BusinessGuid %}{% endcapture %}
+						{% endif %}
+
+						{% if service.GroupName == group or (service.GroupName == null and group == "Price Plans") %}
+						<li class="col-sm-4 suscriptions-list__item">
+							<h4 class="suscriptions-list__title">{{ service.Name }}</h4>
+							{% if service.InvoiceEvery == 1 %}
+							<p class="suscriptions-list__frequency">{% T Monthly %}</p>
+							{% elseif service.InvoiceEvery == 12 %}
+							<p class="suscriptions-list__frequency">{% T Annually %}</p>
+							{% elseif service.InvoiceEveryWeeks == 1 %}
+							<p class="suscriptions-list__frequency">{% T Weekly %}</p>
+							{% elseif service.InvoiceEvery > 1 %}
+							<p class="suscriptions-list__frequency">{% T Every {0} months || service.InvoiceEvery %}</p>
+							{% elseif service.InvoiceEveryWeeks > 1 %}
+							<p class="suscriptions-list__frequency">{% T Every {0} weeks || service.InvoiceEveryWeeks %}</p>
+							{% endif %}
+							<p class="suscriptions-list__price">{{ service.PriceFormatted }}</p>
+							<ul class="suscriptions-list__details">
+								<li class="suscriptions-list__details__item"> {{ service.Description }} </li>
+							</ul>
+							{% if data.Controller == 'profile' and data.Action == 'tariff' %}
+							<div class="subscriptions-list__start__date">
+								<p>{% T Choose a start date %}</p>
+								<input type="text" class="pickadate form-control" placeholder="{% T Today %}" />
+							</div>
+							{% endif %}
+							<div class="btn-toolbar suscriptions-list__join">
+								{% if service.TermsAndConditions != null and data.Coworker != null %}
+								{% if data.Contract != null %}
+								<a href="#" data-href="/{{data.Language}}/termsandconditions/view/{{service.Id}}?returnUrl={{continueUrl}}%26startdate=|date|" class="btn btn--primary">{% T Review Terms and Conditions %}</a>
+								{% elseif data.Controller == 'profile' %}
+								<a href="#" data-href="/{{data.Language}}/termsandconditions/view/{{service.Id}}?returnUrl={{continueUrl}}%26startdate=|date|" class="btn btn--primary">{% T Review Terms and Conditions %}</a>
+								{% elseif data.Controller == 'publichome' %}
+								<a href="#" data-href="/{{data.Language}}/termsandconditions/view/{{service.Id}}?returnUrl={{continueUrl}}" class="btn btn--primary">{% T Review Terms and Conditions %}</a>
+								{% else %}
+								<a href="#" data-href="/{{data.Language}}/termsandconditions/view/{{service.Id}}?returnUrl={{continueUrl}}%26startdate=|date|" class="btn btn--primary">{% T Review Terms and Conditions %}</a>
+								{% endif %}
+								{% else %}
+								{% if data.Contract != null %}
+								<a href="#" data-href="{{continueUrl}}&startdate=|date|" class="btn btn--primary">{% T Change to this plan %}</a>
+								{% elseif data.Controller == 'profile' %}
+								<a href="#" data-href="{{continueUrl}}&startdate=|date|" class="btn btn--primary">{% T Select this plan %}</a>
+								{% else %}
+								<a href="{{continueUrl}}" data-href="{{continueUrl}}" class="btn btn--primary">{% T Sign up %}</a>
+								{% endif %}
+								{% endif %}
+							</div>
+
+						</li>
+						{% endif %}
+						{% endfor %}
+					</ul>
+				</div>
+				{% endfor %}
+			</div>
+		</div>
+
+	</div>
+</div>
+{% endif %}
+
+<div class="container">
+	<div class="home__section home__section--padded home__section--bordered">
+		<h2 class="h1 home__section__title">{% T Our additional products %}</h2>
+		<div class="additional-products">
+			<!-- Nav tabs for large devices -->
+			<ul class="nav nav-tabs hidden-xs" role="tablist">
+				{% for group in data.ProductGroups %}
+				<li role="presentation" class="{% if forloop.index0 == 0 %}active{% endif %}"><a href="#tab-products-{{group  | Clean }}" aria-controls="tab-products-{{group  | Clean }}" role="tab" data-toggle="tab">{% T group %}</a></li>
+				{% endfor %}
+			</ul>
+			<!-- Nav select for small devices -->
+			<select class="form-control nav-selector js-tab-select-navigation visible-xs" data-content="#tab-content-products">
+				{% for group in data.ProductGroups %}
+				<option value="#tab-products-{{group  | Clean }}">{% T group %}</option>
+				{% endfor %}
+			</select>
+			<!-- Tab panes -->
+			<div class="tab-content" id="tab-content-products">
+				{% for group in data.ProductGroups %}
+				<div role="tabpanel" class="tab-pane {% if forloop.index0 == 0 %}active{% endif %}"
+					 id="tab-products-{{group  | Clean }}">
+					<ul class="row additional-products-list">
+						{% for service in data.Products %}
+						{% if service.Tags contains group or (service.Tags == null and group == "Products") %}
+						<li class="col-sm-6 additional-products-list__item">
+							<h4 class="h6">{{ service.Name }}</h4>
+							<p>{{ service.Description }}</p>
+							<b class="additional-products-list__price">
+								{% if service.Price == 0 %}
+								{% T FREE %}
+								{% else%}
+								{{ service.PriceFormatted }}
+								{% endif %}
+							</b>
+							{% if data.Coworker != null %}
+							<a href="{% Url Store, Products, productId: service.Id %}" class="btn btn--primary btn--xs">
+								{% T Get it now %}
+							</a>
+							{% else %}
+							<a href="{% Url Store, SignupProducts, productId: service.Id %}" class="btn btn--primary btn--xs">
+								{% T Get it now %}
+							</a>
+							{% endif %}
+						</li>
+						{% endif %}
+						{% endfor %}
+					</ul>
+				</div>
+				{% endfor %}
+			</div>
+		</div>
+	</div>
+</div>
+
+
+{% endblock %}
+{% block scripts %}
+
+{% endblock %}

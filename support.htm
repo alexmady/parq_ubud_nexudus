@@ -1,0 +1,71 @@
+{% extends master.master %}
+{% block title %}{% T Help %} | {{ data.Business.Name }}{% endblock %}
+{% block main %}
+<div class="container">
+  <!-- BREADCRUMBS -->
+  <ol class="breadcrumb">
+    <li><a href="{{ data.Business.HomeUrl }}">{% T Home %}</a></li>
+    <li class="active">{% T Help %}</li>
+  </ol>
+  <!-- END BREADCRUMBS -->
+</div>
+
+<!-- HELP -->
+<div class="help">
+  <!-- HELP HEADER -->
+  <div class="page-header page-header--help">
+    <div class="container">
+      <div class="row">
+        <div class="notifications-placeholder"></div>
+        <div class="col-sm-8">
+          <h1 class="h2">{% T Report a problem, ask for help. %}</h1>
+          <p>{% T If you find or experience any problems please contact us via this wall. We will tackle the problem as soon as possible and let you know via this wall too. %}.</p>
+          <div class="btn-toolbar">
+            <a href="{% Url Support, NewMessage %}" class="btn btn--primary--inverse">{% T Ask for help %}</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- END HELP HEADER -->
+  {% if data.Local.Messages.size > 0 %}
+  <div class="container">
+  <h2 class="h3">{% T Help messages at {0} || data.Business.Name %}</h2>
+  <div class="row">
+    <div class="col-md-8">
+      <!-- HELP LIST -->
+      <ul class="help-list">
+        {% for item in data.Local.Messages %}
+        <li class="help-list__item">
+          <h3 class="h6 help-list__title"><a href="{% Url Support, Message, id: item.Id %}">{{ item.Subject }}</a></h3>
+          
+          {% if item.Department != null %}
+          <span class="label">{{ item.Department.Name }}</span>
+          {% endif %}
+          {% if item.Closed %}
+          <span class="label label--danger">{% T Closed %}</span>
+          {% endif %}
+
+          <div class="help-list__metadata">
+            <time>{{ item.CreatedOn | Date: 'd' }} </time> {% T by %}
+            <a href="{% Url Directory, Profile, id: item.Coworker.Id, name: item.Coworker.FullName | Clean %}" class="link--default">{{ item.Coworker.FullName }}</a>
+          </div>
+          <div class="user-badge help-list__user">
+            <a class="avatar user-badge__avatar" href="{% Url Directory, Profile, id: item.Coworker.Id, name: item.Coworker.FullName | Clean %}">
+              <img src="{% Url Coworker, GetAvatar, id: item.Coworker.Id, h:48, w:48 %}&noavatar=%2Fcontent%2Fthemes%2Fpublic%2Fdos%2Fimg%2Favatar-default.png" alt="">
+            </a>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+    <!-- END HELP LIST -->
+    </div>
+  </div>
+  {% endif %}
+
+
+  </div>
+
+</div>
+<!-- HELP -->
+{% endblock %}

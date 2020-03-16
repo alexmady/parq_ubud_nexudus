@@ -1,0 +1,139 @@
+{% extends master.master %}
+{% block main %}
+<div class="container">
+    <!-- BREADCRUMBS -->
+    <ol class="breadcrumb">
+        <li><a href="{{ data.Business.HomeUrl }}">{% T Home %}</a></li>
+        <li><a href="{% Url Profile, Index %}">{% T My Account %}</a></li>
+        <li class="active">{% T My Bookings %}</li>
+    </ol>
+    <!-- END BREADCRUMBS -->
+    <!-- SETTINGS -->
+    <div class="settings">
+
+        <div class="row">
+            <div class="col-sm-3">
+                {% include my_account_navigation.htm %}
+            </div>
+
+            <div class="col-sm-9">
+
+                <!-- YOUR BOOKINGS -->
+                <form class="profile-form">
+                    <fieldset class="section section--settings">
+                        <legend class="h3 section__title">{% T Your bookings %}</legend>
+
+                        <table class="table table-striped table--settings">
+                            <thead>
+                            <th>{% T Date %}</th>
+                            <th>{% T Hour %}</th>
+                            <th>{% T Resource %}</th>
+                            </thead>
+                            <tbody>
+                                {% if data.Local.Bookings.size == 0 %}
+                                <tr>
+                                    <td colspan="3">
+                                        {% T You have no upcoming bookings %}
+                                    </td>
+                                </tr>
+                                {% endif %}
+                                {% for booking in data.Local.Bookings %}
+                                <tr>
+                                    <th>{{ booking.FromTime | FormatDate: 'D' }}</th>
+                                    <td>{{ booking.FromTime | FormatDate: 't' }} - {{ booking.ToTime | FormatDate: 't' }}</td>
+                                    <td>{{ booking.Resource.Name }}</td>
+                                    <td class="text-right">
+                                        <i class="fa fa-pencil"></i>
+                                        <a class="link--secondary" href="" data-bind="click: function() { bookingManager.showBooking({ id: '{{ booking.Id }}' }) }">{% T Edit booking %}</a>
+                                    </td>
+                                    <td class="text-right">
+                                        <i class="fa fa-calendar"></i>
+                                        <a class="link--secondary" href="{% Url Bookings, Calendar, showAll: false, resourceid: booking.Resource.Id %}&date={{ booking.FromTime | FormatDate: 'yyyy-MM-dd' }}&view=agendaDay">
+                                            {% T View in calendar %}
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <p class="help=block">
+                            <small>
+                                {% T This list shows bookings in the coming 90 days, use the calendar to see all your bookings %}
+                            </small>
+                        </p>
+
+                        <div class="btn-toolbar">
+                            <a href="{% Url Bookings, Calendar %}" class="btn btn--primary btn--sm">{% T Make a booking %}</a>
+                            <a href="{% Url Bookings, Calendar, showAll: false %}" class="btn btn--secondary btn--sm">{% T My bookings calendar %}</a>
+                        </div>
+                    </fieldset>
+
+                    <fieldset class="section">
+                        <legend class="h3 section__title">{% T Outlook Integration %}</legend>
+                        <p>
+                            {% T Connecting to your Office 365 account will enable you to make and manage bookings from your own Outlook Calendar. %}
+                        </p>
+                        <div class="btn-toolbar">
+                            <a href="/{{ data.Language }}/integrations/office365/signin" class="btn btn--primary btn--sm">{% T Connect to Office 365 %}</a>
+                            <a href="/{{ data.Language }}/integrations/office365/complete" class="btn btn--secondary btn--sm">{% T Configuration Guide %}</a>
+                        </div>
+                    </fieldset>
+                </form>
+
+                {% include bookings_booking_form.htm %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  $(function(){
+    var navManager = new LateralNavigationManager();
+    navManager.initLateralSmoothNav();
+    $('#nav-lateral-select').val('{{ data.URL }}');
+  })
+  
+var resources = [
+    {% for resource in data.Resources %}
+        {
+            id:{{ resource.Id }}, 
+            imageUrl: '{% if resource.HasImage %}{% Url PublicResources, GetImage, id: resource.Id, h: 200, w: 312 %}{% else %}http://placehold.it/312x200?text=?{% endif %}',
+            thumbUrl: '{% if resource.HasImage %}{% Url PublicResources, GetImage, id: resource.Id, h: 32, w: 32 %}{% else %}http://placehold.it/32x32?text=?{% endif %}',
+            groupName: '{% T resourceGroupName %}', 
+            title:'{{ resource.Name | Replace: "'", "\'" }}',
+            resourceTypeName:'{{ resource.ResourceTypeName | Replace: "'", "\'" }}'
+        },
+    {% endfor %}
+];
+var bookingManager = new BookingManager({
+    dateTimeFormat: 'D, dd MM yyyy - HH:ii P',
+    resources: resources,
+    roundMinutesTo: 30,
+    coworker: {
+        Id: {% if data.Coworker != null %}'{{data.Coworker.Id}}'{% else %}null{% endif %}
+    },
+    guestBookings: {% if data.Setting_Bookings_EnableGuestBookings %}true{% else %}false{% endif %},
+    loginUrl: '{% Url Login, Index, lang: data.Language %}&returnUrl={{ data.URL }}',
+    availableUrl: '{% Url Bookings, GetBookingPrice %}',
+    productsUrl: '{% Url Bookings, GetResourceProducts %}',
+    newBookingUrl: '{% Url Bookings, NewBookingJson %}',
+    updateBookingUrl: '{% Url Bookings, BookingJson %}',
+    visitorsUrl: '{% Url Bookings, GetBookingVisitors %}',
+    bookingUrl:  '{% Url Bookings, BookingJson %}',
+    deleteBookingUrl:  '{% Url Bookings, DeleteJson %}',
+    paymentUrl: '{% Url Bookings, Pay %}'
+});
+bookingManager.applyBindings();
+</script>
+<script>
+$( document ).ajaxComplete(function( event, xhr, settings ) {
+  if ((settings.url.includes('/bookings/bookingjson') || settings.url.includes('/bookings/deletejson')) && xhr.status === 200 && settings.type == 'POST') {
+    app.showMessage(xhr.responseJSON.Message).
+        then(function (result) {
+            location.reload();
+        });
+  }
+});
+</script>
+{% endblock %}

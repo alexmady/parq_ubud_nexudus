@@ -1,0 +1,19 @@
+{% if data.Local.Members.size > 0 %}
+<div class="container">
+  
+  <div class="home__section home__section--padded home__section--users home__section--bordered">
+    
+    <h2 class="h1 home__section__title">{% T People at {0} || data.Business.Name %}</h2>
+    
+    <ul class="row users-list">
+      {% for member in data.Local.Members %}
+      {% include directory_list_item.htm %}
+      {% endfor %}
+    </ul>
+    
+    <div class="btn-toolbar text-center">
+      <a href="{% Url Directory, Members %}" class="btn btn--primary">{% T See all members %}</a>
+    </div>
+  </div>
+</div>
+{% endif %}

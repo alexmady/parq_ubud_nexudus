@@ -1,0 +1,95 @@
+{% extends master.master %}
+{% block title %}{% T Home %}{% endblock %}
+{% block mainClass %}content--home{% endblock %}
+{% block main %}
+<div class="notifications-placeholder"></div>
+{% if data.Setting_HomePage_Banner %}
+<!-- JUMBO -->
+{% include home_banner_fragment.htm %}
+<!-- END JUMBO -->
+{% endif %}
+
+{% if data.Setting_HomePage_ShowIconBar %}
+<!-- COWORKING FEATURES -->
+{% include home_features_fragment.htm %}
+<!-- END COWORKING FEATURES -->
+{% endif %}
+
+
+{% if data.Setting_HomePage_ShowClaimBar %}
+<!-- CLAIM BANNER -->
+{% include home_claim_top_fragment.htm %}
+<!-- END CLAIM BANNER -->
+{% endif %}
+
+
+{% if data.Setting_HomePage_ShowServicesBar %}
+<!-- OUR SERVICES -->
+{% include home_services_fragment.htm %}
+<!-- END OUR SERVICES -->
+{% endif %}
+
+<!-- SUSCRIPTIONS -->
+{% include home_plans_fragment.htm %}
+<!-- END SUSCRIPTIONS -->
+
+<!-- TESTIMONIALS LIST -->
+{% if data.Setting_HomePage_Wall %}
+  {% include home_testimonials.htm %}
+{% endif %}
+<!-- END TESTIMONIALS LIST -->
+
+<!-- ADDITIONAL PRODUCTS -->
+{% if data.Local.Products.size > 0 %}
+  {% include home_products_fragment.htm %}
+{% endif %}
+<!-- END ADDITIONAL PRODUCTS -->
+
+<!-- BLOG LIST -->
+{% include home_blog_fragment.htm %}
+<!-- END BLOG LIST -->
+
+<!-- EVENTS LIST -->
+{% include home_events_fragment.htm %}
+<!-- END EVENTS LIST -->
+
+<!-- USERS LIST -->
+{% if data.Setting_PublicWebSite_Directory %}
+{% include home_checkedin_fragment.htm %}
+{% endif %}
+<!-- END USERS LIST -->
+
+<!-- SPACE LOCATIONS -->
+{% if data.Businesses.size > 2 %}
+{% include home_locations.htm %}
+{% endif %}
+<!-- END SPACE LOCATIONS -->
+
+<!-- CLAIM BANNER -->
+{% if data.Setting_HomePage_ShowFooterClaimBar %}
+{% include home_claim_bottom_fragment.htm %}
+{% endif %}
+<!-- END CLAIM BANNER -->
+
+<!-- NEWSLETTER BANNER -->
+{% include home_newsletter_fragment.htm %}
+<!-- END NEWSLETTER BANNER -->
+
+{% endblock %}
+{% block scripts %}
+<script>
+  $(function(){
+    //Init newsletter form
+    var settings = {
+        formId: 'newsletter-form',
+        formError: '{% T Please enter your email address. %}',
+        formData: {
+            email: null
+        }
+    }
+    var fm = new SimpleFormManager(settings);
+    fm.init();
+  })
+</script>
+{% include core_priceplans_table_scripts.htm %}
+{% endblock %}

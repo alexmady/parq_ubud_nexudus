@@ -1,0 +1,41 @@
+{% extends master.master %}
+{% block title %}{{ data.Local.Page.Title }}{% endblock %}
+
+{% block meta %}
+{% endblock %}
+{% block socialTags %}
+<!-- CUSTOM OPEN GRAPH TAGS -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="http://{{ data.Domain }}{{ data.URL }}">
+<meta property="og:title" content="{{ data.Local.Page.Title }} - {{ data.Business.Name }}">
+{% if data.Local.Page.HasImage %}
+<meta property="og:image" content="http://{{ data.Domain }}{% Url Page, Image, id: data.Local.Page.Id%}?w=400&h=400&mode=pad">
+{% else %}
+<meta property="og:image" content="http://{{ data.Domain }}{% Url Business, GetLogo, h:240,w: 240 %}">
+{% endif %}
+<!-- TWITTER CARDS -->
+<meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@{{ data.Setting_Social_Twitter }}">
+<meta name="twitter:title" content="{{ data.Local.Page.Title }} - {{ data.Business.Name }}">
+<meta name="twitter:image" content="http://{{ data.Domain }}{% Url Business, GetLogo, h: 240, w: 240 %}">
+{% endblock %}
+
+{% block main %}
+
+<div class="container">
+	<!-- BREADCRUMBS -->
+	<ol class="breadcrumb">
+		<li><a href="{{ data.Business.HomeUrl }}">{% T Home %}</a></li>
+		<li class="active">{{ data.Local.Page.Title }}</li>
+	</ol>
+	<!-- END BREADCRUMBS -->
+	<h1>{{ data.Local.Page.Title }}</h1>
+	{% if data.Local.Page.HasImage %}
+	<img class="thumbnail" src="{% Url Page, Image, id: data.Local.Page.Id, w: 1024 %}" />
+	{% endif %}
+	{{ data.Local.Page.Description }}
+
+</div>
+{% endblock %}
+{% block scripts %}
+{% endblock %}

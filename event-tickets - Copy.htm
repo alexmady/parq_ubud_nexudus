@@ -1,0 +1,228 @@
+{% extends master.master %}
+{% block title %}{{ data.Local.Event.Name }} | {% T Tickets %} | {{ data.Business.Name }}{% endblock %}
+{% block meta %}
+<meta itemprop="name" content="{{ data.Local.Event.Name | StripHtml }}" />
+<meta itemprop="description" content="{{ data.Local.Event.ShortDescription | StripHtml }}" />
+{% if data.Local.Event.HasLargeImage %}
+<meta itemprop="image" content="https://{{ data.Business.WebAddress }}.{{ data.PublicSiteSubDomain }}{% Url Events, GetLargeImage, id: data.Local.Event.Id, w: 800 %}" />
+{% endif %}
+{% endblock %}
+{% block socialTags %}
+<!-- Twitter Card data -->
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:site" content="@{{ data.Setting_Social_Twitter }}" />
+<meta name="twitter:title" content="{{ data.Local.Event.Name | StripHtml  | Truncate: 70 }}" />
+<meta name="twitter:description" content="{{ data.Local.Event.ShortDescription | StripHtml | Truncate: 200 }}" />
+<meta name="twitter:creator" content="@{{ data.Setting_Social_Twitter }}" />
+{% if data.Local.Event.HasLargeImage %}
+<meta name="twitter:image:src" content="https://{{ data.Business.WebAddress }}.{{ data.PublicSiteSubDomain }}{% Url Events, GetLargeImage, id: data.Local.Event.Id, w: 800 %}" />
+{% endif %}
+<!-- Open Graph data -->
+<meta property="og:url" content="{{ data.AbsoluteUri }}" />
+<meta property="og:title" content="{{ data.Local.Event.Name | StripHtml }}" />
+{% if data.Local.Event.HasLargeImage %}
+<meta property="og:image" content="http://{{ data.Business.WebAddress }}.{{ data.PublicSiteSubDomain }}{% Url Events, GetLargeImage, id: data.Local.Event.Id, w: 527  %}.jpg" />
+<meta property="og:image:type" content="image/jpeg">
+{% endif %}
+<meta property="og:description" content="{{ data.Local.Event.ShortDescription | StripHtml }}" />
+<meta property="og:site_name" content="{{ data.Business.Name }}" />
+{% endblock %}
+{% block main %}
+<div class="container">
+
+  <!-- BREADCRUMBS -->
+  <ol class="breadcrumb">
+    <li><a href="#">{% T Home %}</a></li>
+    <li><a href="{% Url Events, Index %}">{% T Events %}</a></li>
+    <li><a href="{% Url Events, View, id: data.Local.Event.Id, title: data.Local.Event.Name | Clean %}">{{ data.Local.Event.Name }}</a></li>
+    <li class="active">{% T Get tickets %}</li>
+  </ol>
+  <!-- END BREADCRUMBS -->
+
+  <div class="row">
+    <div class="col-sm-8 col-sm-offset-2">
+      <!-- PURCHASE TICKETS -->
+      <div class="purchase">
+        <div class="purchase-detail {% if data.Local.Event.HasLargeImage == false %}purchase-detail__noimage{% endif %}">
+          <h1 class="h3 purchase-detail__title">{{ data.Local.Event.Name }}</h1>
+          <div class="purchase-detail__metadata">
+            <div class="purchase-detail__when">
+              <i class="fa fa-calendar"></i>
+              <b class="purchase-detail__date">
+                {{ data.Local.Event.StartDate | Date: 'd' }}
+                {% if data.Local.Event.MultipleDays %}
+                {{ data.Local.Event.EndDate | Date: 'd' }}
+                {% endif %}
+              </b>
+              <time class="purchase-detail__time">
+                {{ data.Local.Event.StartDate | Date: 't' }} 
+                - {{ data.Local.Event.EndDate | Date: 't' }}
+              </time>
+            </div>
+            <div class="purchase-detail__where">
+              <i class="fa fa-map-marker"></i>
+              {% if data.Local.Event.Location != null %}
+              <b class="events-detail__location">{{ data.Local.Event.Location }}</b>
+              {% endif %}
+              {% if data.Local.Event.VenueAddress != null %}
+              <span class="events-detail__address">{{ data.Local.Event.VenueAddress }}</span>
+              <a class="link--secondary events-detail__map" target="_blank" href="https://www.google.co.uk/maps/place/{{ data.Local.Event.VenueAddress | Replace:' ', '+' }}">{% T Map %}</a>
+              {% endif %}
+            </div>
+          </div>
+          {% if data.Local.Event.HasSmallImage %}
+          <span class="purchase-detail__cover"><img src="{% Url Events, GetSmallImage, id: data.Local.Event.Id, w: 360, h: 360, mode: 'Max' %}?t={{ data.Local.Event.Name }}" alt=""></span>
+          {% endif %}
+        </div>
+
+        {% if data.Coworker == null %}
+        <div class="section">
+          <div class="sign-or-log">
+            <div class="row">
+              <div class="col-sm-6">
+                <h2 class="h3">{% T Enter your details %}</h2>
+
+                <div class="your-input">
+                  {% include events_registration_form.htm %}
+                </div>
+              </div>
+              <div class="col-sm-6">
+                <h2 class="h3">{% T ...or log in %}</h2>
+                <div class="btn-toolbar">
+                  <a href="{% Url Login, Index %}?returnUrl={{ data.URL }}" class="btn btn--primary btn--sm purchase-login">{% T Log in %}</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+        
+        <div  class="purchase" data-bind="css: {'purchase--disabled': !canPurchase() || $root.coworker.errors().length > 0 }">
+          <h2 class="h3">{% T Choose your tickets %}</h2>
+
+          <form action="" class="form">
+
+            <ul class="purchase-list">
+              <li class="purchase-list__item" data-bind="foreach: products, visible: products().length > 0" style="display: none">
+                <h3 class="h5 purchase-list__title"  data-bind="text: Name"></h3>
+                <span class="label label--default" data-bind="visible: SoldOut">{% T Sold out! %}</span>
+                <span class="label label--default" data-bind="visible: LastFew() && !SoldOut()">{% T Last few tickets! %}</span>
+                <div class="row">
+                  <div class="col-sm-7">
+                    <p class="purchase-list__description" data-bind="text: Description, visible: Description"></p>
+                    <p class="purchase-list__description" data-bind="text: Name, visible: !Description()"></p>
+                  </div>
+                  <div class="col-sm-3 form-inline">
+                    <div class="form-group">
+                      <label for="">{% T Qty: %}</label>
+                      <select class="form-control form-control--auto" data-bind="value: Quantity, optionsCaption: '', options: qtys, visible: IsAvailableNow() && !SoldOut()" style="width:70px"></select>
+                      <select class="form-control form-control--auto" data-bind="visible: !IsAvailableNow() || SoldOut()" disabled="disabled"><option>0</option></select>
+                    </div>
+                  </div>
+                  <div class="col-sm-2">
+                    <span class="purchase-list__price" data-bind="text: PriceFormatted"></span>
+                  </div>
+                </div>
+                <hr/>
+              </li>
+            </ul>
+
+            <!-- ATENDEES -->
+            <div class="atendees" style="display: none" data-bind="visible: attendees().length > 0">
+              <h2 class="h3">{% T Attendees %}</h2>
+              <p class="attendees__instructions">
+                {% T Please type the name and email address of each person attending this event. They will receive a notification and their ticket by email. %}
+              </p>
+              <div class="form" data-bind="foreach: attendees">
+                <div class="row">
+                  <div class="col-sm-4">
+                    <div class="form-group">
+                      <label class="h5 purchase-list__title" data-bind="text: productName"></label>
+                    </div>
+                  </div>
+                  <div class="col-sm-4">
+                    <div class="form-group">
+                      <label class="sr-only">Attendee full name</label>
+                      <input type="text" class="form-control"  placeholder="{% T Attendee full name %}" data-bind="value: fullName" >
+                    </div>
+                  </div>
+                  <div class="col-sm-4">
+                    <div class="form-group">
+                      <label class="sr-only">Attendee email</label>
+                      <input type="email" class="form-control" placeholder="{% T Attendee email %}" data-bind="value: email">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+            <!-- END ATENDEES -->
+
+            <div class="purchase-total" data-bind="visible: attendees().length > 0">
+              <b>{% T Discount Code %}:</b>
+                <input class="form-control" type="text" data-bind="value: discountCode, valueUpdate: 'keyup'" />
+                <div data-bind="with: discountCodeInfo">
+                  <small  class="help-block" data-bind="text: description"></small>
+                  <small class="help-block" style="color: red" data-bind="text: discountMessage"></small>
+                </div>
+            </div>
+            <div class="purchase-total" data-bind="visible: availableCredit() > 0">
+              <b>{% T Event Credit: %}</b>
+              <th class="span2">
+                {{ data.Business.Currency.Code }}
+                <span data-bind="text: availableCredit().toFixed(2)"></span>
+              </th>
+            </div>
+
+            <div class="purchase-total" data-bind="visible: attendees().length > 0">
+              <b>Total: <span data-bind="text: totalOneOff"></span> {{ data.Business.Currency.Code }}</b>
+            </div>
+
+            <div data-bind="visible: purchaseError()" style="display: none;" class="alert alert--danger alert--icon" role="alert">
+                <i class="fa fa-exclamation-circle"></i>
+                <b data-bind="text: purchaseError"></b>
+            </div>
+
+            <div data-bind="visible: purchaseMessage()" style="display: none;" class="alert alert--success alert--icon" role="alert">
+                <i class="fa fa-check"></i>
+                <b data-bind="text: purchaseMessage"></b>
+            </div>
+
+            <div class="form-actions text-right" data-bind="visible: attendees().length > 0">
+              <button class="btn btn--primary btn--lg " data-bind="click: doPurchase, css: { disabled: !doPurchaseEnabled() }" type="button">{% T Purchase %}</button>
+            </div>
+
+
+          </form>
+
+        </div>
+
+      </div>
+      <!-- END PURCHASE TICKETS -->
+
+    </div>
+
+  </div>
+
+  </div>
+{% endblock %}
+{% block scripts %}
+<script>
+  $(function () {
+    var settings = {
+      currentLang: '{{ data.Language }}',
+      availableCredit: {{ data.Local.EventCredit }},
+      maxQuantity: 10,
+      fullName: '{{ data.Coworker.FullName }}',
+      email: '{{ data.Coworker.Email }}',
+      errorInForm: '{% T Please complete all the required fields %}',
+      attendeeCache: [],
+      eventId: {{ data.Local.Event.Id }},
+      productId: '{{ data.Local.ProductId }}'
+    }
+
+    var tm = new TicketManager(settings);
+    tm.loadData();
+  });
+</script>
+{% endblock %}

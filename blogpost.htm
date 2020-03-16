@@ -1,0 +1,193 @@
+{% extends master.master %}
+{% block htmlTag %}itemscope itemtype="http://schema.org/Article"{% endblock %}
+{% block title %}{{ data.Local.BlogPost.Title }} | {{ data.Business.Name }} {% endblock %}
+{% block meta %}
+
+<meta itemprop="name" content="{{ data.Local.BlogPost.Title | StripHtml }}" />
+<meta itemprop="description" content="{{ data.Local.BlogPost.SummaryText | StripHtml }}" />
+
+{% endblock %}
+
+{% block socialTags %}
+{% if data.Local.BlogPost.HasLargeImage %}
+<meta itemprop="image" content="https://{{ data.Business.WebAddress }}.{{ data.PublicSiteSubDomain }}{% Url Blog, GetLargeImage, id: data.Local.BlogPost.Id, w:1500 %}" />
+{% elseif data.Local.BlogPost.HasImage %}
+<meta itemprop="image" content="https://{{ data.Business.WebAddress }}.{{ data.PublicSiteSubDomain }}{% Url Blog, GetImage, id: data.Local.BlogPost.Id, h: 300, w: 300 %}" />
+{% endif %}
+<!-- Twitter Card data -->
+<meta name="twitter:card" content="{% Url Blog, GetImage, id: data.Local.BlogPost.Id, w:1500 %}" />
+<meta name="twitter:site" content="@{{ data.Setting_Social_Twitter }}" />
+<meta name="twitter:title" content="{{ data.Local.BlogPost.Title | StripHtml }}" />
+<meta name="twitter:description" content="{{ data.Local.BlogPost.SummaryText | StripHtml | Truncate: 200 }}">
+<meta name="twitter:creator" content="@{{ data.Setting_Social_Twitter }}" />
+
+{% if data.Local.BlogPost.HasLargeImage %}
+<meta name="twitter:image:src" content="https://{{ data.Business.WebAddress }}.{{ data.PublicSiteSubDomain }}{% Url Blog, GetImage, id: data.Local.BlogPost.Id, h: 300, w: 300 %}" />
+{% elseif data.Local.BlogPost.HasImage %}
+<meta name="twitter:image:src" content="https://{{ data.Business.WebAddress }}.{{ data.PublicSiteSubDomain }}{% Url Blog, GetLargeImage, id: data.Local.BlogPost.Id, w:1500 %}" />
+{% endif %}
+<!-- Open Graph data -->
+<meta property="og:url" content="{{ data.AbsoluteUri }}" />
+<meta property="og:title" content="{{ data.Local.BlogPost.Title | StripHtml }}" />
+{% if data.Local.BlogPost.HasLargeImage %}
+<meta property="og:image" content="http://{{ data.Business.WebAddress }}.{{ data.PublicSiteSubDomain }}{% Url Blog, GetLargeImage, id: data.Local.BlogPost.Id, h: 476, w: 249 %}" />
+<meta property="og:image:secure_url" content="https://{{ data.Business.WebAddress }}.{{ data.PublicSiteSubDomain }}{% Url Blog, GetLargeImage, id: data.Local.BlogPost.Id, h: 476, w: 249 %}" />
+<meta property="og:image:type" content="image/jpeg">
+{% elseif data.Local.BlogPost.HasImage %}
+<meta property="og:image" content="http://{{ data.Business.WebAddress }}.{{ data.PublicSiteSubDomain }}{% Url Blog, GetImage, id: data.Local.BlogPost.Id, h: 300, w: 300 %}" />
+<meta property="og:image:secure_url" content="https://{{ data.Business.WebAddress }}.{{ data.PublicSiteSubDomain }}{% Url Blog, GetImage, id: data.Local.BlogPost.Id, h: 300, w: 300 %}" />
+<meta property="og:image:type" content="image/jpeg">
+{% endif %}
+<meta property="og:description" content="{{ data.Local.BlogPost.SummaryText | StripHtml }}" />
+<meta property="og:site_name" content="{{ data.Business.Name }}" />
+{% endblock %}
+
+{% block main %}
+<div class="container">
+  <!-- BREADCRUMBS -->
+  <ol class="breadcrumb">
+    <li><a href="{{ data.Business.HomeUrl }}">{% T Home %}</a></li>
+    <li><a href="{% Url Blog, Index, categoryId: null, title: null %}">{% T Blog %}</a></li>
+    <li class="active">{{ data.Local.BlogPost.Title | StripHtml }}</li>
+  </ol>
+  <!-- END BREADCRUMBS -->
+
+  <div class="row">
+    <div class="col-sm-8 col-sm-offset-2">
+      <!-- BLOG DETAIL -->
+      <div class="blog-detail">
+        <!-- BLOG PAGE HEADER -->
+        <div class="page-header page-header--blog">
+          <div class="notifications-placeholder"></div>
+          <h1>{{ data.Local.BlogPost.Title | StripHtml }}</h1>
+
+          <div class="blog-detail__metadata">
+            <span class="blog-detail__author">{{ data.Local.BlogPost.PostedBy.FullName }}</a>
+            <span class="blog-detail__date">{% T on %} {{ data.Local.BlogPost.PublishDate | FormatDate: 'D' }} </span>
+            <br/>
+            <span class="blog-detail__comments-count">
+              <i class="fa fa-comment-o"></i>
+              {% T {0} comment(s) || data.Local.BlogPost.Comments.size %}
+            </span>
+            {% for cat in data.Local.BlogPost.BlogCategories %}
+            <a href="{% Url Blog, Index, title: cat.Title | Clean, categoryId: cat.Id, page: 1 %}" class="label label--default">{{ cat.Title }}</a>
+            {% endfor %}
+          </div>
+
+        </div>
+        <!-- END BLOG PAGE HEADER -->
+
+        <!-- BLOG BODY -->
+        <div class="article-content fr-view">
+          {% if data.Local.BlogPost.HasLargeImage %}
+          <img src="{% Url Blog, GetLargeImage, id: data.Local.BlogPost.Id, w: 1500 %}" alt="">
+          {% endif %}
+
+          {{ data.Local.BlogPost.FullText }}
+
+        </div>
+        <!-- END BLOG BODY -->
+
+        {% include core_share_buttons.htm %}
+
+      </div>
+      <!-- END BLOG DETAIL -->
+
+      <!-- RELATED POSTS -->
+      {% if data.Local.RelatedPosts.size > 0 %}
+      <div class="section">
+
+        <h2 class="h4 section__title">{% T Related posts %}</h2>
+
+        <ul class="blog-list-horizontal">
+          {% for post in data.Local.RelatedPosts %}
+          <li class="blog-list-horizontal__item">
+            <h3 class="h6 blog-list-horizontal__title">
+              <a href="{% Url Blog, Read, Id: post.Id, title: post.Title | Clean %}">
+                {{ post.Title | StripHtml }}
+              </a>
+            </h3>
+            <div class="blog-list-horizontal__metadata">
+              <span class="blog-list-horizontal__author">{{ post.PostedBy.FullName }}</span>
+              <span class="blog-list-horizontal__date">{% T on %} {{ post.PublishDate | FormatDate: 'd' }}</span>
+              <span class="blog-list-horizontal__comments-count">
+                <i class="fa fa-comment-o"></i>
+                {% T {0} comment(s) || post.Comments.size %}
+              </span>
+            </div>
+          </li>
+         {% endfor %}
+        </ul>
+
+      </div>
+      {% endif %}
+      <!-- END RELATED POSTS -->
+
+      <!-- COMMENTS -->
+      <div class="section">
+
+        <h2 class="h4 section__title">{% T {0} comment(s) || data.Local.BlogPost.Comments.size %}</h2>
+
+        <ul class="comments-list">
+          {% for comment in data.Local.BlogPost.Comments %}
+          <li class="comments-list__item" id="comment-{{ comment.Id }}">
+            <div class="user-badge">
+              <h3 class="h6 user-badge__name">
+                <a href="{% Url Directory, Profile, id: comment.PostedBy.Coworker.Id, name: comment.FromUser.Coworker.FullName | Clean %}">
+                  {{ comment.PostedBy.FullName }} 
+                </a>
+              </h3>
+              <time class="user-badge__metadata">{{ comment.CreatedOn | Date: 'g' }}</time>
+              <a class="avatar user-badge__avatar" href="#">
+                <img src="{% Url User, GetAvatar, id: comment.PostedBy.Id, h:48, w:48 %}&noavatar=%2Fcontent%2Fthemes%2Fpublic%2Fdos%2Fimg%2Favatar-default.png" alt="">
+              </a>
+            </div>
+            <div class="comments-list__body">
+              <p>
+                {{ comment.Text | StripHtml }}
+              </p>
+            </div>
+            <a href="{{ data.URL }}#comment-{{ comment.Id }}" class="link--tertiary comments-list__link" data-toggle="tooltip" title="{% T Link to this comment %}"><i class="fa fa-link"></i></a>
+          </li>
+          {% endfor %}
+        </ul>
+
+        {% if data.Local.BlogPost.AllowComments %}
+        {% if data.Coworker == null %}
+        <div class="alert alert--credentials" role="alert">
+          <h3 class="h6">{% T Log in or signup to comment %}</h3>
+          
+          <div class="btn-toolbar">
+            <a href="{% Url Login, Index %}?returnUrl={% Url Blog, Read, Id: post.Id, title: post.Title | Clean %}" class="btn btn--default--inverse btn--sm">{% T Log in %}</a>
+            <a href="{% Url SignUp, Index %}" class="btn btn--default btn--sm">{% T Sign up %}</a>
+          </div>
+        </div>
+        {% else %}
+        <div class="your-input">
+          <div class="user-badge">
+            <h3 class="h6 user-badge__name">{% T Your comment %}</h3>
+            <a class="avatar user-badge__avatar" href="{% Url Directory, Profile, id: data.Coworker.Id, name: data.Coworker.FullName | Clean %}">
+              <img src="{% Url Coworker, GetAvatar, id: data.Coworker.Id, h:48, w:48 %}&noavatar=%2Fcontent%2Fthemes%2Fpublic%2Fdos%2Fimg%2Favatar-default.png" alt=""></a>
+          </div>
+          <form method="post" action="{% Url Blog, NewComment %}" class="form your-input__form">
+            <input type="hidden" name="id" value="{{ data.Local.BlogPost.Id }}"/>
+            <input type="hidden" id="title" name="title" required="required" value="{{data.Local.BlogPost.Title}}"> 
+            <div class="form-group">
+              <textarea name="comment" required="required" cols="30" rows="4" class="form-control" placeholder="{% T Leave your comment... %}"></textarea>
+            </div>
+            <div class="form-actions">
+              <button class="btn btn--default--inverse btn--sm" type="submit">{% T Post your comment %}</button>
+            </div>
+          </form>
+        </div>
+        {% endif %}
+        {% endif %}
+      </div>
+      <!-- END COMMENTS -->
+
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

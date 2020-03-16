@@ -1,0 +1,128 @@
+<!-- PAYMENT INFORMATION -->
+  {% if data.Coworker.Teams.size > 0 %}
+<div class="alert alert-info">
+    <strong>{% T Heads up! %}</strong> {% T You are part of the following team: %}
+    <strong>{{ data.Coworker.Teams }}</strong>.
+    {% if data.Coworker.PaysInvoicesViaTeam %}
+    {% T Any bills will be paid by: %}
+    <strong>{{ data.Coworker.PayingMember.FullName }}</strong>
+    {% endif %}
+</div>
+  {% endif %}
+  {% if data.Coworker.CardNumber.size > 0 %}
+<div class="alert alert-info" role="alert">
+    <strong>{% T Heads up! %}</strong>
+    {% T The card we have on your file ends in "{0}". You can use the form below to enter a new set of payment details. || data.Coworker.CardNumber %}
+</div>
+  {% endif %}
+<form class="form" id="payment-form" accept-charset="UTF-8" action="#" method="POST" onsubmit="return false;">
+    <input type="hidden" name="token" id="payment_method_token" value="" />
+    <div class="row">
+        <div class="{% if payment_small %}col-sm-4{% else %}col-sm-7{% endif %}">
+            <div class="form-group">
+                <label for="">{% T First name %}</label>
+                <input type="text" id="first_name" class="form-control" name="credit_card[first_name]" value="{{ data.Coworker.GuessedFirstNameForInvoice }}">
+            </div>
+        </div>
+        <div class="{% if payment_small %}col-sm-6{% else %}col-sm-5{% endif %}">
+            <div class="form-group">
+                <label for="">{% T Last name %}</label>
+                <input type="text" id="last_name" class="form-control" name="credit_card[last_name]" value="{{ data.Coworker.GuessedLastNameForInvoice }}">
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="{% if payment_small %}col-md-6{% else %}col-md-7{% endif %} col-sm-12">
+            <div class="form-group">
+                <label for="">{% T Card Number / Security Code %}</label>
+                <div id="spreedly-number" class="form-control" style="width:225px; height:40px;float: left; padding-top: 10px"></div>
+                <div id="spreedly-cvv" class="form-control" style="width:60px; height:40px;float: left; ; padding-top: 10px; margin-left: 5px"></div>
+            </div>
+        </div>
+        <div class="{% if payment_small %}col-md-4{% else %}col-md-5{% endif %} col-sm-12">
+            <div class="form-group">
+                <label for="">{% T Expires %}</label>
+                <div class="form-group--date-wrapper">
+                    <select type="text" id="month" style="max-width: 150px" class="form-control" name="credit_card[month]" placeholder="MM">
+                        <option></option>
+                        <option value="01">01 - {% T January %}</option>
+                        <option value="02">02 - {% T February %}</option>
+                        <option value="03">03 - {% T March %}</option>
+                        <option value="04">04 - {% T April %}</option>
+                        <option value="05">05 - {% T May %}</option>
+                        <option value="06">06 - {% T June %}</option>
+                        <option value="07">07 - {% T July %}</option>
+                        <option value="08">08 - {% T August %}</option>
+                        <option value="09">09 - {% T September %}</option>
+                        <option value="10">10 - {% T October %}</option>
+                        <option value="11">11 - {% T November %}</option>
+                        <option value="12">12 - {% T December %}</option>
+                    </select>
+                    <select type="text" id="year" class="form-control" name="credit_card[year]">
+                        <option></option>
+                        {% for year in data.Local.Years %}
+                        <option value="{{year}}">{{year}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="{% if payment_small %}col-sm-10{% else %}col-sm-12{% endif %}">
+            <div class="form-group">
+                <label for="">{% T Billing Address %}</label>
+                <textarea class="form-control" id="address1" rows="3" name="credit_card[address1]">{{ data.Coworker.AddressForInvoice }}</textarea>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="{% if payment_small %}col-sm-5{% else %}col-sm-6{% endif %}">
+            <div class="form-group">
+                <label for="">{% T City %}</label>
+                <input class="form-control" id="city" name="credit_card[city]" type="text" value="{{ data.Coworker.CityForInvoice }}" />
+            </div>
+        </div>
+        <div class="{% if payment_small %}col-sm-5{% else %}col-sm-6{% endif %}">
+            <div class="form-group">
+                <label for="">{% T State %}</label>
+                <input class="form-control" id="state" name="credit_card[state]" type="text" value="{{ data.Coworker.StateForInvoice }}" />
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="{% if payment_small %}col-sm-5{% else %}col-sm-6{% endif %}">
+            <div class="form-group">
+                <label for="">{% T Zip / Postcode %}</label>
+                <input class="form-control" id="zip" name="credit_card[zip]" type="text" value="{{ data.Coworker.PostCodeForInvoice }}" />
+            </div>
+        </div>
+        <div class="{% if payment_small %}col-sm-5{% else %}col-sm-6{% endif %}">
+            <div class="form-group">
+                <label for="">{% T Country %}</label>
+                <input class="form-control" id="country" name="credit_card[country]" type="text" value="{{ data.Coworker.Country.Name }}" />
+            </div>
+        </div>
+    </div>
+</form>
+<div class="form-actions btn-toolbar">
+    {% if gw_returnUrl != null %}
+    <button type="button" id="spreedly-ccpay-button" data-payUrl="https://{{ data.Domain }}/{{ data.Language }}/payments/SpreedlyPaymentToken/0?okRedirectUrl={{gw_returnUrl | UrlEncode}}&errorRedirectUrl={{ data.URL  | UrlEncode }}" disabled="disabled" class="btn btn--primary btn--sm">{% T Update payment details %}</button>
+    {% else %}
+    <button type="button" id="spreedly-ccpay-button" data-payUrl="https://{{ data.Domain }}/{{ data.Language }}/payments/SpreedlyPaymentToken/0" disabled="disabled" class="btn btn--primary btn--sm">{% T Update payment details %}</button>
+    {% endif %}
+</div>
+<div>
+    {% if data.Business.TransactionFee > 0 %}
+    <small class="help-block">
+        {% T Card payments are subject to a {0:0.0}% fee. || data.Business.TransactionFee %}
+    </small>
+    {% endif %}
+</div>
+
+
+<!-- END PAYMENT INFORMATION -->
+
+<script>
+
+</script>

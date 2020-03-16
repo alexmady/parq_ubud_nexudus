@@ -1,0 +1,33 @@
+<li class="col-sm-4 events-list__item">
+  <a href="{% Url Events, View, Id: event.Id, title: event.Name | Clean %}" class="events-list__cover">
+    {% if event.HasLargeImage %}
+    <img src="{% Url Events, GetLargeImage, id: event.Id, w: 720, h: 540 %}" alt="{{ event.Name | StripHtml }}">
+    {% elseif event.HasSmallImage %}
+    <img src="{% Url Events, GetSmallImage, id: event.Id, w: 720, h: 540 %}" alt="{{ event.Name | StripHtml }}">
+    {% endif %}
+  </a>
+  <div class="events-list__box">
+    <time class="events-list__time">{{ event.StartDate | FormatDate: 'd' }} - {{ event.StartDate | FormatDate: 't' }}</time>
+    <h3 class="h4 events-list__title"><a href="{% Url Events, View, Id: event.Id, title: event.Name | Clean %}">{{ event.Name | StripHtml }}</a></h3>
+    <div class="events-list__metadata">
+      
+      <span class="events-list__location">
+        {% if event.Location != null %}
+        {{ event.Location | StripHtml }}
+        {% else %}
+        {{ event.Business.Name }}
+        {% endif %}
+     </span>
+      
+      {% if event.HasTickets %}
+      {% if event.ChepeastProduct.Price == 0 and event.MostExpensiveProduct == 0 %}
+      <b class="events-list__price">{% T FREE %}</b>
+      {% elseif event.ChepeastProduct.Id != event.MostExpensiveProduct.Id %}
+      <b class="events-list__price">{{ event.ChepeastProduct.PriceFormatted }} - {{ event.MostExpensiveProduct.PriceFormatted }}</b>
+      {% else %}
+      <b class="events-list__price">{{ event.ChepeastProduct.PriceFormatted }}</b>
+      {% endif %}
+      {% endif %}
+    </div>
+  </div>
+</li>

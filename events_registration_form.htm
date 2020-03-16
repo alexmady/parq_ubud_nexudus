@@ -1,0 +1,57 @@
+<form action="" class="form your-input__form" data-bind="with: coworker">
+    <div class="form-group">
+        <label for="fullname">{% T Your full name %}</label>
+        <input type="text" required="required" class="form-control" id="fullname" data-bind="value: fullName" placeholder="{% T Your full name %}">
+        <small class="help-block validation-error" data-bind="validationMessage: fullName"></small>
+    </div>
+    <div class="form-group">
+        <label for="email">{% T Your email %}</label>
+        <input type="email" required="required" class="form-control" data-bind="value: email, valueUpdate: 'keyup'" id="email" placeholder="email@domain.com">
+        <small class="help-block validation-error" data-bind="validationMessage: email"></small>
+    </div>
+    {% if data.Local.Event.AskBuyerAddress %}
+    <div class="form-group">
+        <label for="fullname">{% T Address %}</label>
+        <textarea rows="5" required="required" id="Coworker_Address" name="Address" type="text" class="form-control" data-bind="value: address">{{ data.Address }}</textarea>
+        <small class="help-block validation-error" data-bind="validationMessage: address"></small>
+    </div>
+    <div class="form-group">
+        <label for="state">{% T State / Province  %}</label>
+        <input type="text" required="required" class="form-control" data-bind="value: state" id="state">
+        <small class="help-block validation-error" data-bind="validationMessage: state"></small>
+    </div>
+    <div class="form-group">
+        <label for="cityName">{% T City / Town %}</label>
+        <input type="text" required="required" class="form-control" data-bind="value: cityName" id="cityName">
+        <small class="help-block validation-error" data-bind="validationMessage: cityName"></small>
+    </div>
+    <div class="form-group">
+        <label for="postCode">{% T Postcode / Zip code %}</label>
+        <input type="text" required="required" class="form-control" data-bind="value: postCode" id="postCode">
+        <small class="help-block validation-error" data-bind="validationMessage: postCode"></small>
+    </div>
+    <div class="form-group">
+        <label for="taxIDNumber">{% T TAX/VAT Number %}</label>
+        <input type="text" class="form-control" data-bind="value: taxIDNumber" id="taxIDNumber">
+        <small class="help-block validation-error" data-bind="validationMessage: taxIDNumber"></small>
+    </div>
+    {% endif %}
+    {% if data.Business.TermsAndConditions != null %}
+    <div class="checkbox">
+        <label>
+            <input data-bind="checked: generalTermsAcceptedOnline" type="checkbox">
+            {% capture tcUrl %}{% Url TermsAndConditions, Index %}{% endcapture %}
+            <strong>{% T I agree to the <a target="_blank" href="{0}">terms and conditions</a>. || tcUrl %}</strong>
+        </label>
+    </div>
+    {% endif %}
+    <div data-bind="visible: $root.formError" style="display: none;" class="alert alert--danger alert--icon" role="alert">
+        <i class="fa fa-exclamation-circle"></i>
+        <b data-bind="text: $root.formError"></b>
+    </div>
+    <div id="purchase"></div>
+    <div class="form-actions">
+        <button class="btn btn--default--inverse btn--sm" data-bind="click: $root.validateRegistration, visible: !$root.alreadyRegistered()" type="button">{% T Continue %}</button>
+        <a href="{% Url Login, Index %}?returnUrl={{ data.URL }}" data-bind="visible: $root.alreadyRegistered()" style="display: none" class="btn btn--primary btn--sm purchase-login">{% T Log in %}</a>
+    </div>
+</form>

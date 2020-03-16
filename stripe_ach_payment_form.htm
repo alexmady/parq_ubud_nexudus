@@ -1,0 +1,95 @@
+<input type="hidden" id="stripePubKey" data-stripekey="{{data.Local.StripeACHPublicKey}}" />
+<p>
+    {% T Stripe Automated Clearing House (ACH) allows your bank account to be debited directly.  ACH currently only supports Stripe accounts in the USA.%}
+</p>
+{% if data.Coworker.HasAcceptedStripeACHAgreement %}
+{% if data.Coworker.HasVerifiedStripeACHDeposits %}
+<div class="alert alert-success">
+    <strong>
+        {% T Your bank account has been verifed and is set up for payments. %}
+    </strong>
+    <div class="form-actions btn-toolbar">
+        <a class="btn btn--primary btn--sm" href="https://{{ data.RootDomain }}/Callbacks/StripeACHReset/{{ data.Coworker.Id }}?returnUrl={{gc_returnUrl}}"><span aria-hidden="true" class="fa"></span> {% T Reset Account Details %}</a>
+    </div>
+</div>
+{% else %}
+{% unless data.Coworker.HasStripeACHBankToken %}
+<p>
+    {% T Enter your bank account details to complete your ACH agreement. %}
+</p>
+<form id="stripeACHform" action="//httpbin.org/post" method="POST" data-coworkerid="{{ data.Coworker.Id }}" data-sitelang="{{ data.Language  }}">
+    <div class="row">
+        <div class="{% if payment_small %}col-sm-5{% else %}col-sm-6{% endif %}">
+            <div class="form-group">
+                <label for="">{% T Individual or Company Name %}</label>
+                <input class="form-control" id="name" />
+            </div>
+        </div>
+        <div class="{% if payment_small %}col-sm-5{% else %}col-sm-6{% endif %}">
+            <div class="form-group">
+                <label for="">{% T Type %}</label>
+                <div class="form-group--date-wrapper">
+                    <select type="text" id="type" style="max-width: 150px" class="form-control" name="credit_card[month]" placeholder="MM">
+                        <option></option>
+                        <option value="individual">{% T Individual %}</option>
+                        <option value="company">{% T Company %}</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="{% if payment_small %}col-sm-5{% else %}col-sm-6{% endif %}">
+            <div class="form-group">
+                <label for="">{% T Routing Number %}</label>
+                <input class="form-control" id="routing-number" placeholder="110000000" />
+            </div>
+        </div>
+        <div class="{% if payment_small %}col-sm-5{% else %}col-sm-6{% endif %}">
+            <div class="form-group">
+                <label for="">{% T Account Number %}</label>
+                <input class="form-control" id="account-number" placeholder="000123456789" />
+            </div>
+        </div>
+    </div>
+    <button type="submit" class="btn btn--primary btn--sm">{% T Submit %}</button>
+
+</form>
+{% else %}
+    {% T In order to verify your bank account, Stripe has deposited 2 small amounts into your balance.  These deposits should take 1 to 2 days to appear.  When these deposits show in your statement, type the values into the 2 boxes below to verify your account. %}
+<form method="POST" class="payment-form form" id="stripe-amounts-verification-form">
+    <input type="hidden" id="returnUrl" name="returnurl" value="{{gc_returnUrl}}" />
+    <div class="row">
+        <div class="col-sm-2">
+            <div class="form-group">
+                <label for="">{% T Amount 1 %}</label>
+                <input type="number" class="form-control" id="stripeACHAmt1" name="amount[0]" />
+            </div>
+        </div>
+        <div class="col-sm-2">
+            <div class="form-group">
+                <label for="">{% T Amount 2 %}</label>
+                <input type="number" class="form-control" id="stripeACHAmt2" name="amount[1]" />
+            </div>
+        </div>
+    </div>
+    <button class="btn btn--primary btn--sm" id="stripe-ach-verify-amounts" type="submit">{% T Verify amounts %}</button>
+</form>
+
+<div class="form-actions btn-toolbar">
+    <a class="btn btn--primary btn--sm" href="https://{{ data.RootDomain }}/Callbacks/StripeACHReset/{{ data.Coworker.Id }}?returnUrl={{gc_returnUrl}}"><span aria-hidden="true" class="fa"></span> {% T Reset Account Details %}</a>
+</div>
+{% endunless %}
+{% endif %}
+{% else %}
+{% if gc_returnUrl != null %}
+    {% T By clicking "Accept agreement", you authorize "{0}" to automatically debit your bank account for any due invoices and, if necessary, credit your account to correct any erroneous debits. You will be asked for your bank account details after you agree with this. || data.Setting_Billing_BillToName %}
+<div class="form-actions btn-toolbar">
+    <a class="btn btn--primary btn--sm" href="https://{{ data.RootDomain }}/Callbacks/StripeACHAgreeToTerms/{{ data.Coworker.Id }}?bid={{data.Business.Id}}&returnUrl={{gc_returnUrl}}"><span aria-hidden="true" class="fa"></span> {% T Accept agreement %}</a>
+</div>
+{% else %}
+<div class="form-actions btn-toolbar">
+    <a class="btn btn--primary btn--sm" href="https://{{ data.RootDomain }}/Callbacks/StripeACHAgreeToTerms/{{ data.Coworker.Id }}"><span aria-hidden="true" class="fa fa-university"></span> {% T Accept agreement %}</a>
+</div>
+{% endif %}
+{% endif %}

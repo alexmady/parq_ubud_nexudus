@@ -1,0 +1,22 @@
+<!-- GUESTS  -->
+<div class="alert alert--info alert--icon" role="alert">
+  <i class="fa fa-info"></i>
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
+  <strong>{% T Heads Up! %}</strong> {% T This conversation is private and can only be seen by the following people: %}
+  <div class="row board-list--guests" style="max-height: 110px; overflow: auto;">
+    {% for member in data.Local.Guests %}
+    <div class="col-sm-3">
+      {% if member.Coworker != null %}
+      <a href="{% Url Directory, Profile, Id: member.Coworker.Id, name: member.Coworker.FullName | Clean %}">
+        {{ member.FullName }}
+      </a>
+      {% else %}
+      {{ member.FullName }}
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+<!-- END GUESTS -->

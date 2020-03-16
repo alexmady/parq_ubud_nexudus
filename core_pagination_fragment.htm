@@ -1,0 +1,44 @@
+{% if data.Local.Page > 1 or pagedRecords.size == data.Local.Top %}
+<nav>
+  <ul class="pagination">
+    {% if data.Local.Page > 1 %}
+    {% assign prevPage = data.Local.Page | Minus: 1 %}
+    <li>
+      <a href="{{ data.UrlPath }}?{{ data.UrlQuery | ReplaceQueryString: 'page', prevPage }}#jump" aria-label="{% T Previous %}">
+        <span aria-hidden="true"><i class="fa fa-caret-left"></i></span>
+      </a>
+    </li>
+    {% if data.Local.Page > 2 %}
+    <li><a href="{{ data.UrlPath }}?{{ data.UrlQuery | ReplaceQueryString: 'page', 1 }}#jump">1</a></li>
+    {% if data.Local.Page > 3 %}
+    <li class="disabled"><a href="javascript:;">...</span></a></li>
+    {% endif %}
+    {% endif %}
+    <li><a href="{{ data.UrlPath }}?{{ data.UrlQuery | ReplaceQueryString: 'page', prevPage }}#jump">{{ data.Local.Page | Minus: 1 }}</a></li>
+    {% else %}
+    <li class="disabled">
+      <a aria-label="{% T Previous %}">
+        <span aria-hidden="true"><i class="fa fa-caret-left"></i></span>
+      </a>
+    </li>
+    {% endif %}
+    <li class="active"><a href="#">{{ data.Local.Page }} <span class="sr-only">({% T current %})</span></a></li>
+    {% if pagedRecords.size == data.Local.Top %}
+    {% assign nextPage = data.Local.Page | Plus: 1 %}
+    <li><a href="{{ data.UrlPath }}?{{ data.UrlQuery | ReplaceQueryString: 'page', nextPage }}#jump">{{ data.Local.Page | Plus: 1 }}</a></li>
+    <li class="disabled"><a href="javascript:;">...</span></a></li>
+    <li>
+      <a href="{{ data.UrlPath }}?{{ data.UrlQuery | ReplaceQueryString: 'page', nextPage }}#jump" aria-label="{% T Next %}">
+        <span aria-hidden="true"><i class="fa fa-caret-right"></i></span>
+      </a>
+    </li>
+    {% else %}
+    <li class="disabled">
+      <a aria-label="{% T Next %}">
+        <span aria-hidden="true"><i class="fa fa-caret-right"></i></span>
+      </a>
+    </li>
+    {% endif %}
+  </ul>
+</nav>
+{% endif %}

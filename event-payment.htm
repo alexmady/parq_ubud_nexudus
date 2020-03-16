@@ -1,0 +1,131 @@
+{% extends master.master %}
+{% block title %}{{ data.Local.Event.Name }} | {% T Tickets %} | {{ data.Business.Name }}{% endblock %}
+{% block main %}
+<div class="container">
+    <!-- BREADCRUMBS -->
+    <ol class="breadcrumb">
+        <li><a href="#">{% T Home %}</a></li>
+        <li><a href="{% Url Events, Index %}">{% T Events %}</a></li>
+        <li><a href="{% Url Events, View, id: data.Local.Event.Id, title: data.Local.Event.Name | Clean %}">{{ data.Local.Event.Name }}</a></li>
+        <li><a href="{% Url Events, Tickets, id: data.Local.Event.Id, title: data.Local.Event.Name | Clean %}">{% T Get tickets %}</a></li>
+        <li class="active">{% T Payment %}</li>
+    </ol>
+    <!-- END BREADCRUMBS -->
+    <div class="row">
+        <div class="col-sm-8 col-sm-offset-2">
+            <!-- PURCHASE TICKETS -->
+            <div class="purchase">
+                <div class="notifications-placeholder"></div>
+                {% if data.Local.Invoice.Paid %}
+                <div class="alert alert--success alert--icon" role="alert">
+                    <i class="fa fa-check"></i>
+                    <b>{% T Purchase successfully completed. %}</b>
+                    <br>
+                    {% T We will email your tickets shortly. %}
+                </div>
+                {% endif %}
+                <div class="purchase-detail" style="{% if data.Local.Event.HasLargeImage == false %}padding-left:0{% endif %}">
+                    <h1 class="h3 purchase-detail__title">{{ data.Local.Event.Name }}</h1>
+                    <div class="purchase-detail__metadata">
+                        <div class="purchase-detail__when">
+                            <i class="fa fa-calendar"></i>
+                            <b class="purchase-detail__date">
+                                {{ data.Local.Event.StartDate | Date: 'd' }}
+                                {% if data.Local.Event.MultipleDays %}
+                                {{ data.Local.Event.EndDate | Date: 'd' }}
+                                {% endif %}
+                            </b>
+                            <time class="purchase-detail__time">
+                                {{ data.Local.Event.StartDate | Date: 't' }}
+                                - {{ data.Local.Event.EndDate | Date: 't' }}
+                            </time>
+                        </div>
+                        <div class="purchase-detail__where">
+                            <i class="fa fa-map-marker"></i>
+                            {% if data.Local.Event.Location != null %}
+                            <b class="events-detail__location">{{ data.Local.Event.Location }}</b>
+                            {% endif %}
+                            {% if data.Local.Event.VenueAddress != null %}
+                            <span class="events-detail__address">{{ data.Local.Event.VenueAddress }}</span>
+                            <a class="link--secondary events-detail__map" target="_blank" href="https://www.google.co.uk/maps/place/{{ data.Local.Event.VenueAddress | Replace:' ', '+' }}">{% T Map %}</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% if data.Local.Event.HasLargeImage %}
+                    <span class="purchase-detail__cover"><img src="{% Url Events, GetLargeImage, id: data.Local.Event.Id, w: 360, h: 360, mode: 'Max' %}?t={{ data.Local.Event.Name }}" alt=""></span>
+                    {% endif %}
+
+                </div>
+                <div class="receipt">
+                    <table class="table table--receipt">
+                        <thead>
+                            <tr>
+                                <th>{% T Transaction Number %} ({{ data.Local.Invoice.InvoiceNumber }})</th>
+                                <th class="text-right">{{ data.Local.Invoice.CreatedOn | Date: 'd' }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for line in data.Local.Invoice.Lines %}
+                            <tr>
+                                <th>{{ line.Description }}</th>
+                                <td class="text-right">{{ line.Quantity }} x {{ line.UnitPriceFormatted }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            {% if data.Local.Invoice.TaxAmount > 0 %}
+                            <tr>
+                                <td colspan="2" class="text-right">
+                                    <b>{% T Tax: %} {{ data.Local.Invoice.TaxAmountFormated }}</b>
+                                </td>
+                            </tr>
+                            {% endif %}
+                            <tr>
+                                <td colspan="2" class="text-right">
+                                    <b>{% T Total: %} {{ data.Local.Invoice.TotalFormated }}</b>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                {% if data.Local.Invoice.Paid == false %}
+                {% capture gw_returnUrl %}{{ data.URL }}{% endcapture %}
+                {% if data.Local.SpreedlyEnabled %}
+                <a class="btn btn-sm btn--primary btn-block spreedlyButton" data-description="{% if data.Local.Invoice.Coworker.CardNumber != null %}{% T Pay {0} for invoice #{1} using card ending on '{2}'? || data.Local.Invoice.TransactionTotalAmountFormatted || data.Local.Invoice.InvoiceNumber || data.Local.Invoice.Coworker.CardNumber %}{% endif %}" data-invoiceId="{{ data.Local.Invoice.Id }}" href="#"><i aria-hidden="true" class="fa fa-credit-card"></i> {% T Pay by Card %}</a>
+                {% endif %}
+                {% if data.Local.StripeEnabled %}
+                <a class="btn btn-sm btn--primary stripePayButton btn-block" data-description="{% T Invoice %} #{{invoice.InvoiceNumber}}" data-allow-remember-me="false" data-amount="{{ data.Local.Invoice.TransactionTotalAmount | Times: 100 | FormatDecimal: '0' }}" data-currency="{{ data.Local.Invoice..TransactionCurrency.Code }}" data-payurl="{% Url Invoices, Pay, Id: data.Local.Invoice..Id, provider: 'Stripe', returnUrl: gw_returnUrl %}" href="#"><i aria-hidden="true" class="fa fa-credit-card"></i> {% T Pay by Card %}</a>
+                {% endif %}
+                {% if data.Local.PayPalEnabled %}
+                <a class="btn btn-sm btn--primary btn-block" href="{% Url Invoices, Pay, Id: data.Local.Invoice.Id, provider: 'PayPal' %}"><i aria-hidden="true" class="fa fa-cc-paypal"></i> {% T Pay by PayPal %}</a>
+                {% endif %}
+
+
+                {% if data.Local.SpreedlyEnabled %}
+                <div class="section section--settings" id="payment-information">
+                    <h2 class="h3 section__title">{% T Payment %}</h2>
+                    {% assign payment_small = false %}
+                    {% assign payment_messages = false %}
+                    {% assign payment_address = false %}
+                    {% include gateway_payment_form.htm %}
+                </div>
+                {% endif %}
+                {% endif %}
+
+
+            </div>
+            <!-- END PURCHASE TICKETS -->
+
+            <div class="section">
+                <a href="{% Url Events, View, id: data.Local.Event.Id, title: data.Local.Event.Name | Clean %}" class="link--secondary link--back">
+                    <i class="fa fa-angle-left"></i>
+                    {% T Back to the event %}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+{% include payment_scripts.htm %}
+{% endblock %}

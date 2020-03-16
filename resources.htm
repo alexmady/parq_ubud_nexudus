@@ -1,0 +1,78 @@
+{% extends master.master %}
+{% block title %}{% T Terms and Conditions %}{% endblock %}
+{% block main %}
+<div class="container">
+
+        <div class="container">
+          <!-- BREADCRUMBS -->
+          <ol class="breadcrumb">
+            <li><a href="{{ business.HomeUrl }}">{% T Home %}</a></li>
+            <li class="active">{% T Meeting Rooms and Resources %}</li>
+          </ol>
+          <!-- END BREADCRUMBS -->
+        </div>
+
+        <!-- PAGE HEADER -->
+        <div class="page-header">
+          <h1>{% T Meeting Rooms and Resources %}</h1>
+        </div>
+        <!-- END PAGE HEADER -->
+
+        <!-- FILTERS -->
+        <div class="filters">
+            <ul class="nav filters__nav">
+                {% include bookings_resources_menu.htm %}
+            
+                <li class="active pull-right">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                    {% T Location %}: {{ data.Business.Name }} <span class="caret"></span>
+                    </a>
+                    {% include core_locations_list.htm %}
+                </li>
+            </ul>
+        </div>
+        <!-- END FILTERS -->
+
+        <!-- RESOURCES LIST -->
+        <ul class="row resources-list">
+          {% for resource in data.Resources %}
+          <li class="col-sm-6 resources-list__item">
+            <h2 class="h3 resources-list__title"><a href="#">The light room</a></h2>
+            <span class="label label--success">Available</span>
+            <a href="#" class="resources-list__cover"><img src="http://placehold.it/1110x822" alt=""></a>
+            <p class="resources-description">Proin malesuada elit ut ante fermentum pellentesque. Integer ac justo porta, bibendum purus molestie, consectetur mi. Sed condimentum fermentum libero, in malesuada ex malesuada eu. Etiam fermentum nec nisl sit amet porttitor... <a href="#" class="link--secondary">Read more</a></p>
+            <ul class="list-inline resources-services-list">
+              <li><span data-toggle="tooltip" title="Air conditioner"><i class="i-nexudus-ac"></i></span></li>
+              <li><span data-toggle="tooltip" title="Conference phone"><i class="i-nexudus-conference"></i></span></li>
+              <li><span data-toggle="tooltip" title="Projector"><i class="i-nexudus-projector"></i></span></li>
+              <li><span data-toggle="tooltip" title="Wifi"><i class="i-nexudus-wifi"></i></span></li>
+              <li><span data-toggle="tooltip" title="Whiteboard"><i class="i-nexudus-whiteboard"></i></span></li>
+              <li><span data-toggle="tooltip" title="TV set"><i class="i-nexudus-tvset"></i></span></li>
+              <li><span data-toggle="tooltip" title="Free coffee"><i class="i-nexudus-hotdrinks"></i></span></li>
+              <li><span data-toggle="tooltip" title="Soft drinks"><i class="i-nexudus-softdrinks"></i></span></li>
+            </ul>
+            <ul class="clearfix resources-details-list">
+              <li class="resources-details-list__item">
+                <span class="resources-details-list__title">Seating</span>
+                <b class="resources-details-list__value">85 p.</b>
+              </li>
+              <li class="resources-details-list__item">
+                <span class="resources-details-list__title">Hourly</span>
+                <b class="resources-details-list__value">80 €</b>
+              </li>
+              <li class="resources-details-list__item">
+                <span class="resources-details-list__title">Daily</span>
+                <b class="resources-details-list__value">250 €</b>
+              </li>
+            </ul>
+            <div class="btn-toolbar">
+              <a href="#" class="btn btn--primary btn--sm">Make a booking</a>
+            </div>
+          </li>
+          {% endfor %}
+          
+        </ul>
+        <!-- END RESOURCES LIST -->
+
+      </div>
+{% endblock %}

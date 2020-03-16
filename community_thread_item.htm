@@ -1,0 +1,40 @@
+<li class="comments-list__item" id="message-{{ message.Id }}">
+  <div class="user-badge">
+    <h3 class="h6 user-badge__name">
+      <a href="{% Url Directory, Profile, id: message.CoworkerId, name: message.CoworkerFullName | Clean %}">
+        {{message.CoworkerFullName}}
+      </a>
+    </h3>
+    <time class="user-badge__metadata timeago" datetime="{{ message.CreatedOn | FormatDate: 'yyyy-MM-ddTHH:mm:ssZ' }}">{{ message.CreatedOn | FormatDate: 'g' }}</time>
+    <a class="avatar user-badge__avatar" href="#">
+      <img height="48" width="48" src="{% Url Coworker, GetAvatar, id: message.CoworkerId, h:48, w:48 %}&noavatar=%2Fcontent%2Fthemes%2Fpublic%2Fdos%2Fimg%2Favatar-default.png" alt="{{message.CoworkerFullName}}">
+    </a>
+  </div>
+  <div class="comments-list__body">
+    {{ message.Message | MarkDown  }}
+  </div>
+  <div class="comments-list__tools">
+    {% if data.Coworker != null %}
+    <a href="#" data-on="{% T Like %}" data-off="{% T Unlike %}" data-message="{{ message.Id }}" class="btn btn--secondary--inverse btn--xs btn-like-message">
+      <i class="fa fa-heart-o i-space--right"></i>
+      <span>
+      {% if message.LikedByUser %}
+      {% T Unlike %}
+      {% else %}
+      {% T Like %}
+      {% endif %}
+      </span>
+    </a>
+    {% if message.UserId == data.User.Id %}
+    <a class="link--tertiary pull-right" href="#" onclick="return cm.deleteMessage('{% Url Conversations, DeleteMessage, id: message.Id %}')" class="link--secondary">
+      <i class="fa fa-trash-o  i-space--right"></i>{% T Delete %}
+    </a>
+    {% endif %}
+    {% endif %}
+  </div>
+  <a href="{% Url conversations, thread, id: data.Local.Thread.Id, page: data.Local.Page, limit: data.Local.Limit %}#message-{{ message.Id }}"
+    class="link--tertiary comments-list__link" data-toggle="tooltip" title="{% T Direct link to this message %}">
+    <i class="fa fa-link"></i>
+  </a>
+
+</li>

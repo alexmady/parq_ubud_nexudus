@@ -1,0 +1,38 @@
+{% extends master.master %}
+{% block title %}{% T Terms and Conditions %}{% endblock %}
+{% block main %}
+<div class="container">
+  <!-- BREADCRUMBS -->
+  <ol class="breadcrumb">
+    <li><a href="{{ data.Business.HomeUrl }}">{% T Home %}</a></li>
+    <li class="active">{% T Terms and Conditions %}</li>
+  </ol>
+  <!-- END BREADCRUMBS -->
+
+  <!-- PAGE HEADER -->
+  <div class="page-header page-header--with-label">
+    <h1>{% T Terms and Conditions %}</h1>
+  </div>
+  <!-- END PAGE HEADER -->
+  
+  <div id="terms-wrapper">
+    {% if data.Business.TermsAndConditions.size > 0 %}
+    <h4>{% T General Terms and Conditions %}</h4>
+    {{ data.Business.TermsAndConditions | StripHtml | MarkDown }}
+    {% endif %}
+    
+    {% if data.Coworker.ActiveContracts.size > 0 %}
+    {% for contract in data.Coworker.ActiveContracts %}
+    {% if contract.Tariff.TermsAndConditions.size > 0 %}
+    <h4>{% T Price Plan Terms and Conditions %} ({{ contract.Tariff.Name }})</h4>
+    {{ contract.Tariff.TermsAndConditions | StripHtml | MarkDown }}
+    {% endif %}
+    {% endfor %}
+    {% endif %}
+  </div>
+  
+
+
+  <a href="{% Url TermsAndConditions, Accept, returnUrl: data.Local.ReturnUrl %}" class="btn btn--primary btn--sm pull-right">{% T Accept & Continue %}</a>
+</div>
+{% endblock %}

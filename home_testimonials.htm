@@ -1,0 +1,41 @@
+{% if data.Wall.size > 0 %}
+<div class="home__section home__section--padded home__section--testimonials">
+  <div class="container">
+    <h2 class="h1 home__section__title">{% T What people at {0} are saying || data.Business.Name %}</h2>
+    <ul class="row testimonials-list"> {% for item in data.Wall | limit: 3 %}
+      <li class="col-sm-4 testimonials-list__item">
+        <blockquote class="testimonials-list__quote">
+          <div class="testimonials-list__body">
+            <p> {{ item.MessageText | StripHtml }} </p> <time class="testimonials-list__metadata">{{ item.CreatedOn | Date: 'd MMMM' }}</time>
+          </div>
+          
+          {% if item.FromUser.Coworker != null %}
+          <div class="user-badge">
+            <h3 class="h6 user-badge__name">
+              <a href="{% Url Directory, Profile, Id: item.FromUser.Coworker.Id, name: item.FromUser.Coworker.FullName | Clean %}">
+                {{ item.FromUser.Coworker.FullName | Capitalize }}
+              </a>
+            </h3>
+            <p class="user-badge__position">{{ item.FromUser.Coworker.CompanyName }}</p>
+            <a class="avatar user-badge__avatar" href="{% Url Directory, Profile, Id: item.Fromuser.Coworker.Id, name: item.Fromuser.Coworker.FullName | Clean %}">
+              <img src="{% Url Coworker, GetAvatar, id: item.FromUser.Coworker.Id, h:48, w:48 %}&noavatar=%2Fcontent%2Fthemes%2Fpublic%2Fdos%2Fimg%2Favatar-default.png" alt="{{ item.FromUser.FullName | Capitalize }}">          
+            </a>
+          </div>
+          {% endif %}
+        </blockquote>
+      </li>
+      {% endfor %} </ul> 
+      
+      <div class="btn-toolbar text-center hide"> 
+        <a href="{% Url Testimonials, Index %}" class="btn btn--primary">
+          {% if data.Wall.size  > 3 %}
+          {% T See all testimonials %}
+          {% else %}
+          {% T Leave a testimonial %}
+          {% endif %}
+        </a> 
+      </div> 
+      
+    </div>
+</div>
+{% endif %}

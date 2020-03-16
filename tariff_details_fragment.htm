@@ -1,0 +1,18 @@
+<h4 class="h6 settings__plan__suscription__title">
+{{ data.Local.Contract.Tariff.Name }} 
+<span>
+{% if data.Local.Contract.Tariff.InvoiceInMonths and data.Local.Contract.Tariff.InvoicePeriod == 1 %}
+  ({{ data.Local.Contract.PriceFormatted }} / {% T month %})
+{% else %}
+  {% if data.Local.Contract.Tariff.InvoiceInMonths %}
+  ({{ data.Local.Contract.PriceFormatted }} / {{ data.Local.Contract.Tariff.InvoicePeriod }} {% T months %})</span>
+  {% else %}
+  ({{ data.Local.Contract.PriceFormatted }} / {{ data.Local.Contract.Tariff.InvoicePeriod }} {% T weeks %})</span>
+  {% endif %}
+{% endif %}
+</span>
+</h4>
+<div>
+  {{ data.Local.Contract.Tariff.Description }}
+  
+</div>

@@ -1,0 +1,97 @@
+{% extends master.master %}
+{% block title %}{% T Additional Products %} | {{ data.Business.Name }}{% endblock %}
+{% block main %}
+<div class="container">
+
+
+  <!-- BREADCRUMBS -->
+  <ol class="breadcrumb">
+    <li><a href="{{ data.Business.HomeUrl }}">{% T Home %}</a></li>
+    <li><a href="{% Url Profile, Index %}">{% T My Account %}</a></li>
+    <li><a href="{% Url Invoices, Index %}">{% T Plans and Products %}</a></li>
+    <li class="active">{% T Additional Products %}</li>
+  </ol>
+  <!-- END BREADCRUMBS -->
+
+    <!-- ADITIONAL PRODUCTS -->
+    <h1 class="h3">{% T Additional products %}</h1>
+    <p class="alert alert-info" data-bind="visible: products().length == 0" style="display: none">
+        {% T There are no products available %}
+    </p>
+    <form action="" class="form" data-bind="visible: products().length > 0">
+
+        <ul class="purchase-list" data-bind="foreach: products">
+            <li class="purchase-list__item">
+                
+                <div class="row">
+                <div class="col-sm-4">
+                    <h3 class="h5 purchase-list__title" data-bind="text: Name"></h3>
+                    <p class="purchase-list__description" data-bind="text: Description"></p>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group form-inline">
+                        <label for="">{% T Payment: %}</label>
+                        <select class="form-control form-control--auto" data-bind="booleanValue: RegularCharge, disable: AlwaysRecurrent() || AlwaysOneOff()">
+                            <option value="true">{% T Add to membership %}</option>
+                            <option value="false">{% T One-off Payment %}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-sm-2">
+                    <div class="form-group form-inline">
+                        <label for="">{% T Qty: %}</label>
+                        <select class="form-control form-control--auto" data-bind="value: Quantity, optionsCaption: '', options: $root.qtys">
+                        </select>
+                    </div>
+                </div>
+                <div class="col-sm-2">
+                    <span class="purchase-list__price" data-bind="text: PriceFormatted"></span>
+                </div>
+                </div>
+            </li>
+            
+        </ul>
+
+        
+        <div class="purchase-total" data-bind="visible: totalOneOff() > 0" style="display: none">
+            <b>{% T Discount Code: %}</b>
+            <input type="text" data-bind="value: discountCode, valueUpdate: 'keyup'" />
+            <div data-bind="with: discountCodeInfo">
+                <small class="help-block" data-bind="text: description"></small>
+                <small class="help-block" style="color: red" data-bind="text: discountMessage"></small>
+            </div>
+        </div>
+        <div class="purchase-total" data-bind="visible: totalOneOff() > 0" style="display: none">
+            <b>{% T One-off Payment: %} {{ data.Business.Currency.Code }} <span data-bind="text: totalOneOff"></span></b>
+        </div>
+        <div class="purchase-total" data-bind="visible: totalTariff() > 0" style="display: none">
+            <b>{% T Add to membership: %} {{ data.Business.Currency.Code }} <span data-bind="text: totalTariff"></span></b>
+        </div>
+
+        <div class="btn-toolbar form-actions text-right">
+        <a href="#" class="btn btn--link">Cancel</a>
+        <a href="#" class="btn btn--primary" data-bind="click: doPurchase, enable: doPurchaseEnabled, text: doPurchaseEnabled() ? '{% T Continue %}' : '{% T Please wait... %}'">{% T Purchase %}</a>
+        </div>
+
+    </form>
+    <!-- END ADITIONAL PRODUCTS -->
+
+    </div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+    $(function(){
+        var settings = {
+            lang: '{{ data.Language }}',
+            onlyTimePasses: '{{ data.Local.OnlyTimePasses }}',
+            productId: '{{ data.Local.ProductId }}',
+            tag: '{{ data.Local.Tag }}',
+            businessGuid: '{{ data.Local.BusinessGuid }}',
+            isMember: {% if data.Coworker.Tariff != null %}true{% else %}false{% endif %}
+        }
+        var sm = new StoreManager(settings);
+        sm.loadData();
+    })
+</script>
+{% endblock %}

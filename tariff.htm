@@ -1,0 +1,109 @@
+{% extends signup.master %}
+{% block title %}{% T Join us %} | {{ data.Business.Name }}{% endblock %}
+{% block main %}
+<div class="container">
+    <!-- CREDENTIALS -->
+    <div class="credentials credentials--step">
+
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+
+                <!-- LOGO OR SPACE NAME -->
+                <a class="navbar-brand" href="{{ data.Business.HomeUrl }}">
+                    {% if data.Business.HasLogo %}
+                    <img src="{% Url Business, GetLogo, w:600, h:150, mode: 'max' %}" alt="{{ data.Business.Name }}">
+                    {% else %}
+                    <img src="http://placehold.it/600x150/FFFFFF?text={{ data.Business.Name }}" alt="{{ data.Business.Name }}">
+                    {% endif %}
+                </a>
+                <!-- END LOGO OR SPACE NAME -->
+
+                <!-- CREDENTIALS HEADER -->
+                <header class="credentials__header">
+                <h1 class="h2">{% T Choose your Membership %}</h1>
+                </header>
+                <!-- END CREDENTIALS HEADER -->
+
+                <!-- CREDENTIALS STEPS -->
+                <ul class="row steps">
+                  <li class="col-xs-3"><span>1</span> <b>{% T Personal details %}</b></li>
+                  <li class="col-xs-3 active"><span>2</span> <b>{% T Subscription plan %}</b></li>
+                  <li class="col-xs-3"><span>3</span> <b>{% T Additional products %}</b></li>
+                  <li class="col-xs-3"><span>4</span> <b>{% T Payment Details %}</b></li>
+                </ul>
+                <!-- END CREDENTIALS STEPS -->
+
+                {% if data.Local.SelectedTariff != null %}
+                {% capture continueUrl %}{% Url Profile, NewContract, businessGuid: data.BusinessGuid, tariffGuid: data.Local.SelectedTariff.UniqueId %}{% endcapture %}     
+                <h4>{% T This is what you selected: %}</h4>
+                <div class="credentials__box">
+                    <h4 class="h6 settings__plan__suscription__title">
+                        {{ data.Local.SelectedTariff.Name }} 
+                        <span>
+                        {% if data.Local.SelectedTariff.InvoiceInMonths and data.Local.SelectedTariff.InvoicePeriod == 1 %}
+                        ({{ data.Local.SelectedTariff.PriceFormatted }} / {% T month %})
+                        {% else %}
+                        {% if data.Local.SelectedTariff.InvoiceInMonths %}
+                        ({{ data.Local.SelectedTariff.PriceFormatted }} / {{ data.Local.SelectedTariff.InvoicePeriod }} {% T months %})</span>
+                        {% else %}
+                        ({{ data.Local.SelectedTariff.PriceFormatted }} / {{ data.Local.SelectedTariff.InvoicePeriod }} {% T weeks %})</span>
+                        {% endif %}
+                        {% endif %}
+                        </span>
+                    </h4>
+                    <div>
+                        {{ data.Local.SelectedTariff.Description }}
+                    </div>
+                    <div class="subscriptions-list__start__date">
+                    <p>{% T Choose a start date %}</p>
+                    <input type="text" class="pickadate form-control" placeholder="{% T Today %}" />
+                </div>
+                {% if data.Local.SelectedTariff.TermsAndConditions != null %}
+                <small>
+                    {% T By selecting this plan, you agree to these <a href="#" data-href="/{0}/termsandconditions/view/{1}?returnUrl={2}%26startdate=|date|">terms and conditions</a> ||data.Language||data.Local.SelectedTariff.Id||continueUrl %}.
+                </small>
+                {% endif %}
+                <div class="btn-toolbar suscriptions-list__join"> 
+                    
+                    <a href="#" data-href="{{continueUrl}}&startdate=|date|" class="btn btn--primary">
+                        {% T Continue with this plan %}
+                        <i class="fa fa-chevron-right"></i>    
+                    </a>  
+                </div>
+                </div>
+
+                {% endif %}
+            </div>
+        </div>
+
+        {% if data.Local.SelectedTariff != null %}
+        <h4>{% T And these are other options: %}</h4>
+        {% endif %}
+
+        <!-- SUSCRIPTIONS -->
+        {% include core_priceplans_table.htm %}
+        <!-- END SUSCRIPTIONS -->
+
+        {% if (data.Setting_Signup_MemberMustChooseAPricePlan == null) %}
+        {% if (data.Setting_Signup_ShowStoreOnSignUp == 'true' %}
+        <p>{% T Not ready to join a plan? %}</p>
+        <div class="form-actions">
+          <button class="btn btn--primary" href="#" onclick="window.location = '{% Url Store, SignupProducts, onlytimepasses: true, businessGuid: data.Local.BusinessGuid %}'">{% T Buy a daily pass %}</button>
+          <button class="btn btn--seconday" href="#" onclick="window.location = '{% Url Store, SignupProducts, businessGuid: data.Local.BusinessGuid %}'">{% T View other products %}</button>  
+        </div>
+        {% endif %}
+        {% endif %}
+        <hr/>
+        <div class="form-actions">
+          <button class="btn btn--seconday" href="#" onclick="window.location = '{% Url Allowances, Plans %}'"><i class="fa fa-angle-left i-space--right"></i> {% T go back %}</button>  
+        </div>
+
+        {% include signup_footer.htm %}
+    </div>
+    <!-- END CREDENTIALS -->
+
+</div>
+{% endblock %}
+{% block scripts %}
+{% include core_priceplans_table_scripts.htm %}
+{% endblock %}

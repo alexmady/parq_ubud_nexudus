@@ -1,0 +1,18 @@
+{% extends master.master %}
+{% block title %}{{ data.Local.Page.Title }}{% endblock %}
+{% block main %}
+
+<div class="container">
+	<!-- BREADCRUMBS -->
+	<ol class="breadcrumb">
+		<li><a href="{{ data.Business.HomeUrl }}">{% T Home %}</a></li>
+		<li class="active">{{ data.Local.Title }}</li>
+	</ol>
+	<!-- END BREADCRUMBS -->
+	<h1>{{ data.Local.Title }}</h1>
+	{{ data.Local.Text | MarkDown }}
+
+</div>
+{% endblock %}
+{% block scripts %}
+{% endblock %}

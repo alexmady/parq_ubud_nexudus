@@ -1,0 +1,10 @@
+{% capture url %}{% Url Legal, EsignFrame, Id: data.Local.File.Id %}{% endcapture %}
+<style>
+    body {padding: 0; margin: 0}
+</style>
+<iframe id="hs-frame" border=0 src="https://{{data.Business.WebAddress}}.{{data.PublicSiteSubDomain}}/{{data.Language }}/user/login?t={{ data.User.AccessToken }}&redirecturl={{url | UrlEncode }}" style="border: none; padding: 0, margin: 0; width: 100%; height: 650px">
+</iframe>
+<script>
+    var wHeight = window.innerHeight;
+    document.getElementById("hs-frame").style.height = wHeight + "px";
+</script>

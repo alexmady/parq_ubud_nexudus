@@ -1,0 +1,191 @@
+{% extends signup.master %}
+
+{% block main %}
+<style>
+    .survey__section {
+        margin: 10px;
+        padding: 5px;
+    }
+
+    .survey__description {
+        margin-bottom: 20px;
+    }
+</style>
+<div class="container">
+
+    <!-- CREDENTIALS -->
+    <div class="credentials credentials--step">
+
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+
+                <!-- LOGO OR SPACE NAME -->
+                <a class="navbar-brand" href="{{ data.Business.HomeUrl }}">
+                    {% if data.Business.HasLogo %}
+                    <img src="{% Url Business, GetLogo, w:600, h:150, mode: 'max' %}" alt="{{ data.Business.Name }}">
+                    {% else %}
+                    <img src="http://placehold.it/600x150/FFFFFF?text={{ data.Business.Name }}" alt="{{ data.Business.Name }}">
+                    {% endif %}
+                </a>
+                <!-- END LOGO OR SPACE NAME -->
+                <!-- CREDENTIALS HEADER -->
+                <header class="credentials__header">
+                    <h1 class="h2" data-bind="text: $root.surveyRun.SurveyDrop.Name"></h1>
+                </header>
+                <!-- END CREDENTIALS HEADER -->
+                <hr />
+                <!-- CREDENTIALS STEPS -->
+                <ul class="row steps">
+                    <li class="col-xs-6 active"><span>1</span> <b>{% T Survey Questions %}</b></li>
+                    <li class="col-xs-6"><span>2</span> <b>{% T Completed %}</b></li>
+                </ul>
+
+                <div class="notifications-placeholder"></div>
+                <form id="survey-form" action="{% Url Survey, Index %}" method="POST" enctype="multipart/form-data" class="form" data-bind="with: questions">
+
+                    <div class="survey__description" data-bind="text: $root.surveyRun.SurveyDrop.Description"></div>
+                    <!-- ko foreach: { data: $root.questions, as: 'question' } -->
+                    <fieldset class="survey__section"
+                              data-bind="attr: {id: 'customfields-' + $root.questions.indexOf(question) }">
+                        <div>
+                            <!-- ko template: { name: 'field-template-survey-' + $data.QuestionType().toLowerCase() + ($data.QuestionType() === 'Dropdown' && $data.AllowMultipleOptions() ? '-multi' : '') } -->
+                            <!-- /ko -->
+                        </div>
+                    </fieldset>
+                    <!-- /ko -->
+                    <div data-bind="text: console.log($data)"></div>
+                    <div class="btn-toolbar form-actions">
+                        <button class="btn btn--primary btn--sm" data-bind="click: $root.submitquestionnaire, disable: $root.busy" type="button">
+                            <span data-bind="visible: !$root.busy()"><i class="fa fa-floppy-o" aria-hidden="true"></i> {% T Submit %}</span>
+                            <span data-bind="visible: $root.busy()" style="display: none">{% T Submitting... %}</span>
+                        </button>
+                    </div>
+                </form>
+
+
+
+            </div>
+        </div>
+    </div>
+
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% capture returnUrl %}{% Url Survey, Thankyou %}{% endcapture %}
+<script>
+    $(function () {
+        var settings = {
+        url: '{% Url Survey, Submit, returnUrl: returnUrl %}',
+        coworker: {{ data.NewCoworker | Json prefix: false }},
+        questions: {{ data.Local.Questions | Json prefix: false, maxDepth: 0 }},
+        surveyRun: {{ data.Local.SurveyRun | Json prefix: false, maxDepth: 0 }},
+        form: $('#survey-form'),
+        formError: '{% T Please make sure all the required fields are complete. %}',
+        successMessage: '{% T Your survey has been submitted. %}',
+        errorMessage: '{% T The survey could not be submitted, please try again. %}'}
+    manager = new SurveyManager(settings);
+    manager.init();
+  })
+</script>
+<script>
+function SurveyManager(settings) {
+    var self = this;
+
+    var SurveyViewModel = function () {
+        var self = this;
+
+        this.datePickerOptions = {
+            today: '',
+            clear: '',
+            selectYears: true,
+            selectMonths: true,
+            close: "{% T Close %}",
+            format: 'dddd, dd mmmm yyyy'
+        };
+
+        this.questions = ko.mapping.fromJS(settings.questions);
+        this.surveyRun = ko.mapping.fromJS(settings.surveyRun);
+
+        this.busy = ko.observable(false);
+
+        this.submitquestionnaire = function () {
+            if (ko.validatedObservable) {
+                var validatedvm = ko.validatedObservable(surveyVM);
+                if (surveyVM.errors().length > 0) {
+                    surveyVM.errors.showAllMessages(true);
+                    app.showErrorMessage(settings.formError);
+                    return;
+                }
+            }
+
+            surveyVM.busy(true);
+
+            var data = {
+                questions: JSON.parse(ko.mapping.toJSON(surveyVM.questions)),
+                surveyRun: settings.surveyRun
+            };
+
+            data.questions.map(function (question) {
+                if (question.SurveyAnswer.Value !== null) {
+                    if (Array.isArray(question.SurveyAnswer.Value)) {
+                        question.SurveyAnswer.Value = question.SurveyAnswer.Value.join();
+                    }
+                }
+                return question;
+            });
+
+            $.ajax({
+                url: settings.url,
+                type: 'POST',
+                data: JSON.stringify(data),
+                cache: false,
+                contentType: "application/json",
+            })
+                .done(function (result) {
+                    if (result.SuccessMessage) {
+                        app.showMessage(settings.successMessage || result.SuccessMessage);
+                    }
+                    else if (result.RedirectTo) {
+                        window.location = result.RedirectTo;
+                    }
+                    else {
+                        app.showErrorMessage(result.ErrorMessage || settings.errorMessage);
+                    }
+
+                    surveyVM.busy(false);
+                })
+                .fail(function () {
+                    app.showMessage(settings.errorMessage);
+                    surveyVM.busy(false);
+                });
+
+            return false;
+        }
+
+    };
+
+    var surveyVM = new SurveyViewModel();
+
+    self.init = function () {
+        applyBindings();
+    }
+
+    function applyBindings() {
+        //Valdidation
+        ko.validation.init({
+            registerExtenders: true,
+            messagesOnModified: true,
+            insertMessages: false,
+            parseInputAttributes: true,
+            decorateInputElement: true
+        }, true);
+        surveyVM.errors = ko.validation.group(surveyVM, { deep: true });
+
+        ko.applyBindings(surveyVM);
+    }
+}
+</script>
+{% include custom_fields_templates_survey.htm %}
+{% endblock %}

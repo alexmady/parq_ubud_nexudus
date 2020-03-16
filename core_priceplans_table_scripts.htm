@@ -1,0 +1,30 @@
+<script>
+    $(function(){
+        
+        var setDate = function(dateString) {
+            $('a[data-href]').each(function(){
+                var el = $(this);
+                var url = el.attr('data-href');
+                url = url.replace('|date|', dateString)
+                el.attr('href', url);
+            })
+
+            $('a[data-href]').click(function() { $(this).attr('disabled', 'disabled' ); });
+        }
+        var picker = $('.pickadate').pickadate({
+            min: new Date(),
+            onSet: function(obj){
+                if(obj.clear == null){
+                    setDate('');
+                }
+                if(obj.select){
+                    var selectedDate = new Date(obj.select);
+                    var dateString = moment(selectedDate).format('YYYY-MM-DD');
+                    setDate(dateString);
+                }
+            }
+        });
+
+        setDate(moment().format('YYYY-MM-DD'));
+    })
+</script>

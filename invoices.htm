@@ -1,0 +1,62 @@
+{% extends master.master %}
+{% block main %}
+<div class="container">
+    <!-- BREADCRUMBS -->
+    <ol class="breadcrumb">
+        <li><a href="{{ data.Business.HomeUrl }}">{% T Home %}</a></li>
+        <li><a href="{% Url Profile, Index %}">{% T My Account %}</a></li>
+        <li class="active">{% T Invoices %}</li>
+    </ol>
+    <!-- END BREADCRUMBS -->
+    <!-- SETTINGS -->
+    <div class="settings">
+        <div class="row">
+            <div class="col-sm-3">
+                {% include my_account_navigation.htm %}
+            </div>
+            <div class="col-sm-9">
+                <div class="notifications-placeholder"></div>
+                {% include payment_history.htm %}
+
+                {% if data.Coworker.EnableGoCardlessPayments %}
+                <div class="section section--settings" id="gocardless">
+                    <h2 class="h3 section__title">{% T Direct Debit Payments %}</h2>
+                    {% capture gc_returnUrl %}{% Url Invoices, Index %}{% endcapture %}
+                    {% include gocardless_payment_form.htm %}
+                </div>
+                {% endif %}
+
+                {% if data.Setting_EziDebit_Enabled %}
+                <div class="section section--settings" id="razordebit">
+                    <h2 class="h3 section__title">{% T Payment Details %}</h2>
+                    <a href="{{ data.Local.EziDebitDDRLink }}?uRef={{data.Guid}}&a={{ data.Setting_EziDebit_PublicKey }}&debits=4&callback={{ data.AbsoluteUri }}/EziDebitResult&cmethod=get&fName={{data.Coworker.GuessedFirstName}}&lName={{data.Coworker.GuessedLastName}}&email={{data.Coworker.Email}}&addr={{data.Coworker.BillingAddress}}&state={{data.Coworker.BillingState}}&pcode={{data.Coworker.BillingPostCode}}" class="btn btn--primary btn--sm">{% T Update Payment Details %}</a>
+                </div>
+                {% endif %}
+                {% if data.Local.SpreedlyEnabled %}
+                <div class="section section--settings" id="payment-information">
+                    <h2 class="h3 section__title">{% T Credit/Debit Card Payments %}</h2>
+                    {% assign payment_small = true %}
+                    {% include gateway_payment_form.htm %}
+                </div>
+                {% endif %}
+
+                {% if data.Local.StripeACHEnabled %}
+                <div class="section section--settings" id="stripeach">
+                    <h2 class="h3 section__title">{% T Stripe ACH Payments %}</h2>
+                    {% capture gc_returnUrl %}{% Url Invoices, Index %}{% endcapture %}
+                    {% include stripe_ach_payment_form.htm %}
+                </div>
+                {% endif %}
+
+
+
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% include payment_scripts.htm %}
+{% endblock %}

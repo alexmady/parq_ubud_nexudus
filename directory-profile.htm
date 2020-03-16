@@ -1,0 +1,363 @@
+{% extends master.master %}
+{% block title %}{{ data.Local.Coworker.FullName | StripHtml }} | {{ data.Business.Name }} {% endblock %}
+
+{% block main %}
+<div class="container">
+  <!-- BREADCRUMBS -->
+  <ol class="breadcrumb">
+    <li><a href="{{ data.Business.HomeUrl }}">{% T Home %}</a></li>
+    <li><a href="{% Url Directory, Members %}?{{ data.UrlQuery | ReplaceQueryString name: 'page', value: null }}">{% T Members %}</a></li>
+    <li class="active">{{ data.Local.Coworker.FullName | StripHtml }}</li>
+  </ol>
+  <!-- END BREADCRUMBS -->
+
+</div>
+
+<!-- USER PROFILE -->
+<div class="user-profile">
+  
+  <!-- USER PROFILE HEADER -->
+  <div class="user-profile__header" style="background-image: url('{% Url Coworker, GetBanner, id: data.Local.Coworker.Id %}?noavatar=%2Fcontent%2Fthemes%2Fpublic%2Fdos%2Fimg%2Favatar-default.png')">
+    <div class="container">
+      <div class="user-badge user-badge--xl">
+        <h1 class="h3 user-badge__name">
+          <a href="{% Url Directory, Profile, Id: data.Local.Coworker.Id, name: data.Local.Coworker.FullName | Clean %}">
+            {{ data.Local.Coworker.FullName }}
+          </a>
+        </h1>
+        <p class="user-badge__position">
+          {{ data.Local.Coworker.Position }}
+          {% if data.Local.Coworker.Position != null %}/{% endif %}
+          {{ data.Local.Coworker.CompanyName }}
+        </p>
+        
+        <p class="user-badge__position">
+          {% for team in data.Local.Coworker.PublicTeams %}
+          <a href="{% Url Directory, Team, id: team.Id, name: team.Name | Clean %}">{{ team.Name }}</a>{% if forloop.last == false %}, {% endif %}
+          {% endfor %}
+        </p>
+        {% for cm in data.Local.CustomFields %}
+        {% if data.Local.Coworker[cm.FieldName] != null or cm.FieldType == 'Boolean' %}
+        <p class="user-badge__position">
+          {% T cm.NameInSearch %}:
+          {% if cm.FieldType != 'Boolean' %}
+          <a href="{% Url Directory, Members %}?Custom{{ cm.CustomFieldIndex }}={{ data.Local.Coworker[cm.FieldName] }}">{{ data.Local.Coworker[cm.FieldName] }}</a>
+          {% endif %}
+          {% if cm.FieldType == 'Boolean' and data.Local.Coworker[cm.FieldName] == 'true' %}
+          <a href="{% Url Directory, Members %}?Custom{{ cm.CustomFieldIndex }}=true">{% T yes %}</a>
+          
+          {% elseif cm.FieldType == 'Boolean' and data.Local.Coworker[cm.FieldName] != 'true' %}
+          {% T no %}
+          {% endif %}
+        </p>
+        {% endif %}
+        {% endfor %}
+        
+        <a class="avatar user-badge__avatar" href="#">
+          <img src="{% Url Coworker, GetAvatar, id: data.Local.Coworker.Id, h: 166, w: 166 %}&noavatar=%2Fcontent%2Fthemes%2Fpublic%2Fdos%2Fimg%2Favatar-default.png" alt="">
+        </a>
+        {% if data.Local.Coworker.IsNew %}
+        <span class="label label--success">{% T New Member %}</span>
+        {% endif %}
+        {% if data.Local.Coworker.IsAdmin %}
+        <span class="label label--default">{% T Staff %}</span>
+        {% endif %}
+         <ul class="list-inline user-badge__social">
+          {% if data.Local.Coworker.ProfileWebsite.size > 0 %}
+          <li><a target="_blank" href="{{ data.Local.Coworker.ProfileWebsite }}" class="link--tertiary"><i class="fa fa-globe"></i></a></li>
+          {% endif %}
+          {% if data.Local.Coworker.Twitter.size > 0 %}
+          <li><a target="_blank" href="http://twitter.com/{{ data.Local.Coworker.Twitter }}" class="link--tertiary"><i class="fa fa-twitter"></i></a></li>
+          {% endif %}
+          {% if data.Local.Coworker.Linkedin.size > 0 %}
+          <li><a target="_blank" href="{{ data.Local.Coworker.Linkedin }}" class="link--tertiary"><i class="fa fa-linkedin"></i></a></li>
+          {% endif %}
+          {% if data.Local.Coworker.Facebook.size > 0 %}
+          <li><a target="_blank" href="{{ data.Local.Coworker.Facebook }}" class="link--tertiary"><i class="fa fa-facebook"></i></a></li>
+          {% endif %}
+          {% if data.Local.Coworker.Skype.size > 0 %}
+          <li><a href="callto://{{ data.Local.Coworker.Skype }}" class="link--tertiary"><i class="fa fa-skype"></i></a></li>
+          {% endif %}
+          {% if data.Local.Coworker.Google.size > 0 %}
+          <li><a target="_blank" href="{{ data.Local.Coworker.Google }}" class="link--tertiary"><i class="fa fa-google-plus"></i></a></li>
+          {% endif %}
+          {% if data.Local.Coworker.Github.size > 0 %}
+          <li><a target="_blank" href="{{ data.Local.Coworker.Github }}" href="{{ data.Local.Coworker.Google }}" class="link--tertiary"><i class="fa fa-github"></i></a></li>
+          {% endif %}
+          {% if data.Local.Coworker.Pinterest.size > 0 %}
+          <li><a target="_blank" href="{{ data.Local.Coworker.Pinterest }}" class="link--tertiary"><i class="fa fa-pinterest"></i></a></li>
+          {% endif %}
+          {% if data.Local.Coworker.Flickr.size > 0 %}
+          <li><a target="_blank" href="{{ data.Local.Coworker.Flickr }}" class="link--tertiary"><i class="fa fa-flickr"></i></a></li>
+          {% endif %}
+          {% if data.Local.Coworker.Instagram.size > 0 %}
+          <li><a target="_blank" href="{{ data.Local.Coworker.Instagram }}" class="link--tertiary"><i class="fa fa-instagram"></i></a></li>
+          {% endif %}
+          {% if data.Local.Coworker.Vimeo.size > 0 %}
+          <li><a target="_blank" href="{{ data.Local.Coworker.Vimeo }}" class="link--tertiary"><i class="fa fa-vimeo"></i></a></li>
+          {% endif %}
+          {% if data.Local.Coworker.Tumblr.size > 0 %}
+          <li><a target="_blank" href="{{ data.Local.Coworker.Tumblr }}" class="link--tertiary"><i class="fa fa-tumblr"></i></a></li>
+          {% endif %}
+          {% if data.Local.Coworker.Blogger.size > 0 %}
+          <li><a target="_blank" href="{{ data.Local.Coworker.Blogger }}"  class="link--tertiary"><i class="fa fa-blogger"></i></a></li>
+          {% endif %}
+        </ul>
+        {% if data.Local.CheckedIn %}
+        <span class="user-badge__presence" data-toggle="tooltip" title="" data-original-title="{% T {0} is at {1} || data.Local.Coworker.FullName || data.Business.Name %}"></span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <!-- END USER PROFILE HEADER -->
+
+  <div class="container">
+
+    <div class="row">
+
+      <div class="col-sm-9">
+
+        <!-- USER PROFILE ABOUT -->
+        <div class="user-profile__about">
+
+          {% if data.Local.Coworker.ProfileSummary != null %}
+          <h2 class="h3">{% T About Me %}</h2>
+          <div class="user-profile__about__bio">
+            {{ data.Local.Coworker.ProfileSummary | StripHtml | MarkDown  }}
+          </div>
+          {% endif %}
+
+          {% for field in data.Local.ProfileCustomFields %}
+          {% if data.Local.Coworker[field.FieldName].size > 0 %}
+          <h2 class="h3">{% T field.Name %}</h2>
+          <div class="user-profile__about__bio">
+            {{ data.Local.Coworker[field.FieldName] | StripHtml | MarkDown  }}
+          </div>
+          {% endif %}
+          {% endfor %}
+
+          {% if data.Local.Coworker.ProfileTagsList.size > 0 %}
+          <div class="tags-list">
+            <i class="fa fa-tags i-space--right--small"></i>
+            <ul>
+              {% for tag in data.Local.Coworker.ProfileTagsList %}
+              <li><a href="{% Url Directory, Members, tag: tag %}" class="link--secondary">{{ tag }}</a></li>
+              {% endfor %}
+            </ul>
+          </div>
+          {% endif %}
+
+        </div>
+        <!-- END USER PROFILE ABOUT -->
+
+        <!-- USER PROFILE PAGINATOR -->
+        {% if data.Local.PreviousMember != null or  data.Local.NextMember != null %}
+        <div class="section">
+          <h3 class="h4">{% T More people in this category %}</h3>
+
+          <nav>
+            <ul class="paginator clearfix">
+              {% if data.Local.PreviousMember != null %}
+              <li>
+                <a href="{% Url Directory, Profile, Id: data.Local.PreviousMember.Id, name: data.Local.PreviousMember.FullName | Clean, page: data.Local.Page | Minus: 1 %}&{{ data.UrlQuery | ReplaceQueryString name: 'page', value: null }}" class="link--secondary">
+                  <i class="fa fa-chevron-left"></i>
+                </a>
+                <div class="user-badge">
+                  <h3 class="h6 user-badge__name">
+                    <a href="{% Url Directory, Profile, Id: data.Local.PreviousMember.Id, name: data.Local.PreviousMember.FullName | Clean, page: data.Local.Page | Minus: 1 %}&{{ data.UrlQuery | ReplaceQueryString name: 'page', value: null }}">
+                      {{data.Local.PreviousMember.FullName}}    
+                    </a>
+                  </h3>
+                  <p class="user-badge__position">
+                    {{ data.Local.PreviousMember.Position }}
+                    {% if data.Local.PreviousMember.Position != null %}/{% endif %}
+                    {{ data.Local.PreviousMember.CompanyName }}
+                  </p>
+                  <a class="avatar user-badge__avatar" href="{% Url Directory, Profile, Id: data.Local.PreviousMember.Id, name: data.Local.PreviousMember.FullName | Clean, page: data.Local.Page | Minus: 1 %}&{{ data.UrlQuery | ReplaceQueryString name: 'page', value: null }}">
+                    <img src="{% Url Coworker, GetAvatar, id: data.Local.PreviousMember.Id, h: 48, w: 48 %}?noavatar=%2Fcontent%2Fthemes%2Fpublic%2Fdos%2Fimg%2Favatar-default.png" alt="">
+                  </a>
+                </div>
+              </li>
+              {% else %}
+              <li></li>
+              {% endif %}
+              {% if data.Local.NextMember != null %}
+              <li>
+                <div class="user-badge user-badge--inverse">
+                  <h3 class="h6 user-badge__name">
+                    <a href="{% Url Directory, Profile, Id: data.Local.NextMember.Id, name: data.Local.NextMember.FullName | Clean, page: data.Local.Page | Plus: 1 %}&{{ data.UrlQuery | ReplaceQueryString name: 'page', value: null }}">
+                      {{data.Local.NextMember.FullName}}
+                    </a>
+                  </h3>
+                  <p class="user-badge__position">
+                    {{ data.Local.NextMember.Position }}
+                    {% if data.Local.NextMember.Position != null %}/{% endif %}
+                    {{ data.Local.NextMember.CompanyName }}
+                  </p>
+                  <a class="avatar user-badge__avatar" href="{% Url Directory, Profile, Id: data.Local.NextMember.Id, name: data.Local.NextMember.FullName | Clean, page: data.Local.Page | Plus: 1 %}&{{ data.UrlQuery | ReplaceQueryString name: 'page', value: null }}">
+                    <img src="{% Url Coworker, GetAvatar, id: data.Local.NextMember.Id, h: 48, w: 48 %}?noavatar=%2Fcontent%2Fthemes%2Fpublic%2Fdos%2Fimg%2Favatar-default.png" alt="">
+                  </a>
+                </div>
+                <a href="{% Url Directory, Profile, Id: data.Local.NextMember.Id, name: data.Local.NextMember.FullName | Clean, page: data.Local.Page | Plus: 1 %}&{{ data.UrlQuery | ReplaceQueryString name: 'page', value: null }}" class="link--secondary">
+                  <i class="fa fa-chevron-right"></i>
+                </a>
+              </li>
+              {% else %}
+              <li></li>
+              {% endif %}
+            </ul>
+          </nav>
+
+        </div>
+        <!-- END  USER PROFILE PAGINATOR -->
+        {% endif %}
+
+        <!-- CONVERSATIONS -->
+        {% if data.Setting_PublicWebSite_CommunityBoard %}
+        <div class="section">
+
+          {% if data.Coworker == null %}
+          <div class="alert alert--credentials" role="alert">
+            <h3 class="h6">{% T Log in or signup to start a conversation with {0} || data.Local.Coworker.FullName %}</h3>
+            <div class="btn-toolbar">
+              <a href="{% Url Login, Index %}?returnUrl={% Url Directory, Profile, Id: data.Local.Coworker.Id, name: data.Local.Coworker.FullName | Clean %}" class="btn btn--default--inverse btn--sm">{% T Log in %}</a>
+              <a href="{% Url Signup, Index %}" class="btn btn--default btn--sm">{% T Sign up %}</a>
+            </div>
+          </div>
+          {% else %}
+          <h2 class="h4 section__title">{% T Start a private conversation with {0} || data.Local.Coworker.FullName %}</h2>
+          <div class="your-input">
+            <form method="post" action="{% Url Conversations, Start %}" class="form your-input__form" data-bind="with: formData, submit: $root.submitForm" id="new-message-form" novalidate>
+              <input type="hidden" name="messageToCoworkerId" value="{{ data.Local.Coworker.Id }}" />
+              <div class="form-group">
+                <label for="message_subject">{% T Topic %}</label>
+                <input type="text" data-bind="value: subject" required="required" maxlength="254"  id="message_subject" name="CommunityThread.Subject" value="{{data.Local.CommunityThread.Subject}}" class="form-control" placeholder="{% T Keep it relevant, less is more... %}">
+                <small class="help-block validation-error" data-bind="validationMessage: subject"></small>
+              </div>
+              <div class="form-group">
+                <label for="reply-box-server">{% T Message %}</label>
+                <textarea required="required" data-bind="value: message" cols="30" rows="4" id="reply-box-server" name="CommunityThread.Message" class="form-control" placeholder="Add your message...">{{data.Local.CommunityThread.Message}}</textarea>
+                <small class="help-block validation-error" data-bind="validationMessage: message"></small>
+              </div>
+              <div class="form-group">
+                <label for="message_tags-topic">{% T Tags %}</label>
+                <input type="text" maxlength="254" data-bind="value: tags"  id="message_tags" name="CommunityThread.Tags" value="{{data.Local.CommunityThread.Subject}}" class="form-control">
+                <small class="help-block validation-error" data-bind="validationMessage:  tags"></small>
+                <small class="help-block">{% T Help others find your posts by tagging them. Separate tags by commas (,). %}</small>
+              </div>
+              <div class="form-actions">
+                <button class="btn btn--default--inverse btn--sm" type="submit">{% T Send Private Message %}</button>
+              </div>
+            </form>
+          </div>
+          {% endif %}
+
+          {% if data.Local.Threads.size > 0 %}
+          <h2 class="h4 section__title">{% T Recent conversations from {0} || data.Local.Coworker.FullName %}</h2>
+
+          <ul class="conversations-list">
+            {% for thread in data.Local.Threads %}
+            <li class="conversations-list__item">
+              <h3 class="h6 conversations-list__title">
+                <a href="{% Url Conversations, Thread, id: thread.Id, name: thread.Subject | Clean %}">
+                {{ thread.Subject }}
+                </a>
+              </h3>
+              <div class="conversations-list__metadata">
+                <time>{{ thread.CreatedOn | FormatDate: 'F' }}</time> {% T by %} <a href="#" class="link--default">{{ thread.FullName }}</a>
+              </div>
+              <ul class="list-inline conversations-list__reputation">
+                <li><i class="fa fa-heart-o"></i> {% T {0} like(s) || thread.LikeCount %} </li>
+                <li><i class="fa fa-comment-o"></i> {% T {0} comment(s) || thread.MessageCount %}</li>
+              </ul>
+            </li>
+            {% endfor %}
+          </ul>
+          {% endif %}
+          
+
+        </div>
+        <!-- END CONVERSATIONS -->
+        {% endif %}
+
+
+      </div>
+
+      <div class="col-sm-3">
+
+        <!-- TWITTER TIMELINE -->
+        {% if data.Local.Coworker.Twitter.size > 0 %}
+        <aside class="sidebar-aside">
+          <h4 class="h5 sidebar-aside__heading">{% T {0} on Twitter || data.Local.Coworker.Salutation %}</h4>
+          <a class="twitter-timeline" href="https://twitter.com/{{ data.Local.Coworker.Twitter }}"
+                  data-tweet-limit="2"
+                  data-widget-id="430399305858285569"
+                  data-chrome="noheader nofooter transparent noborders"
+                  data-screen-name="{{ data.Local.Coworker.Twitter | Replace: '@','' }}" data-show-replies="false">Tweets by @{{ data.Local.Coworker.Twitter | Replace: '@',''  }}</a>
+        </aside>
+        {% endif %}
+        <!-- END TWITTER TIMELINE -->
+        
+
+        <!-- RELATED USERS -->
+        {% for list in data.Local.RelatedLists %}
+        {% if list.size > 0 %}
+        <aside class="sidebar-aside">
+          <h4 class="h5 sidebar-aside__heading">{% T More {0} || data.Local.Coworker.ProfileTagsList[forloop.index0] %}</h4>
+
+          <!-- USERS LIST -->
+          <ul class="users-list">
+            {% for member in list %}
+            {% include directory_related_item.htm %}
+            {% endfor %}
+          </ul>
+          <!-- END USERS LIST -->
+          <!-- VIEW MORE -->
+          <p class="sidebar-aside__more">
+            <a href="{% Url Directory, Members, tag: data.Local.Coworker.ProfileTagsList[forloop.index0] %}" class="link--secondary">
+              {% T See all %}
+              <i>→</i>
+            </a>
+          </p>
+          <!-- END VIEW MORE -->
+        </aside>
+        <!-- END RELATED USERS -->
+        {% endif %}
+        {% endfor %}
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+<!-- USER PROFILE -->
+{% endblock %}
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.css">
+<script>
+$(function(){
+    $('#message_tags').tagsinput({
+      trimValue: true,
+      freeInput: true,
+      maxTags: 3,
+      maxChars: 15
+    });
+
+
+    var settings = {
+        formId: 'new-message-form',
+        formError: '{% T Please make sure all the required fields are complete. %}',
+        formData: {
+            subject: null,
+            message: null,
+            tags: null
+        }
+    }
+    var fm = new SimpleFormManager(settings);
+    fm.init();
+})
+</script>
+{% endblock %}

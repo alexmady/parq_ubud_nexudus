@@ -1,0 +1,237 @@
+{% extends master.master %}
+{% block scripts %}
+<script>
+  var manager;
+  $(function(){
+    var settings = {
+      url: '{% Url Team, Profile, _resource: "." %}',
+      team: {{ data.Local.Team | Json, false, 1, 2 }},
+      profileTags: {{ data.Local.ProfileTags | Json, prefix: false }},
+      form: $('#profile-form'),
+      formError: '{% T Please make sure all the required fields are complete. %}',
+      successMessage: '{% T Your profile has been updated. %}',
+      errorMessage: '{% T We could not update your profile, please try again later. %}'
+    };
+    manager = new TeamProfileManager(settings);
+    manager.init();
+
+
+  })
+</script>
+{% include custom_fields_templates.htm %}
+{% endblock %}
+{% block main %}
+<div class="container">
+    <!-- BREADCRUMBS -->
+    <ol class="breadcrumb">
+        <li><a href="{{ data.Business.HomeUrl }}">{% T Home %}</a></li>
+        <li class="active">{% T My Team %}</li>
+    </ol>
+    <!-- END BREADCRUMBS -->
+    <!-- SETTINGS -->
+    <div class="settings">
+        <div class="row">
+            <div class="col-sm-3">
+                {% include my_account_navigation.htm %}
+            </div>
+
+            <div class="col-sm-9">
+                <div class="notifications-placeholder"></div>
+                <!-- ACCOUNT DETAILS -->
+                <form id="profile-form" action="{% Url Team, Profile %}" method="POST" enctype="multipart/form-data" class="form" data-bind="with: team">
+
+                    <fieldset class="section section--settings" id="account-details">
+
+                        <legend class="h3 section__title">{% T Team Details %}</legend>
+
+                        <div class="row">
+                            <div class="col-sm-8">
+                                <div class="form-group required">
+                                    <label class="control-label" for="Name">{% T Name %}</label>
+                                    <input type="text" class="form-control" name="Team.Name" id="Name" data-bind="value: Name" required="required">
+                                    <small class="help-block validation-error" data-bind="validationMessage: Name"></small>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group required">
+                                    <label class="control-label" for="ProfileWebsite">{% T Website %}</label>
+                                    <input placeholder="http://example.com" type="text" class="form-control" name="Team.ProfileWebsite" id="ProfileWebsite" data-bind="value: ProfileWebsite" required="required">
+                                    <small class="help-block validation-error" data-bind="validationMessage: ProfileWebsite"></small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-group col-sm-12 {% if data.Setting_Forms_ProfileSummary == 2 %}required{% endif %}">
+                                <label for="ProfileSummary">{% T About us %}</label>
+                                <textarea class="form-control" rows="3" id="ProfileSummary" data-bind="simplemde: { value: ProfileSummary }" {% if data.Setting_Forms_ProfileSummary= =2 %}required{% endif %} placeholder="{% T Keep it relevant, less is more... %}"></textarea>
+                                <small class="help-block validation-error" data-bind="validationMessage: ProfileSummary"></small>
+                                <p class="help-block">{% T You can use MarkDown syntax to give format to your team summary %}</p>
+                            </div>
+                        </div>
+
+                        <div class="user-badge user-badge--lg">
+                            <span class="avatar user-badge__avatar">
+                                <img id="Coworker_Avatar_Img" style="border: 1px solid black; padding: 3px" src="{% Url Team, GetAvatar, id: data.Local.Team.Id, h:128, w: 128, mode: 'Pad' %}&noavatar=%2Fcontent%2Fthemes%2Fpublic%2Fdos%2Fimg%2Favatar-default.png" alt="">
+                            </span>
+                            <div class="form-group">
+                                <label for="Coworker_Avatar">{% T Logo %}</label>
+                                <input type="file" data-bind="file: {data: TeamLogo, allowed: ['image/jpeg', 'image/jpg', 'image/png'] }" id="Team_TeamLogo" name="Team_TeamLogo">
+                                <p class="help-block">
+                                    {%  T File smaller than 10MB and at least 400px by 400px. %}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <div class="checkbox form-group">
+                                    <label>
+                                        <input data-bind="checked: ProfileIsPublic" type="checkbox">
+                                        <strong>{% T List team in the directory %}</strong>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="btn-toolbar form-actions">
+                            <button class="btn btn--primary btn--sm" data-bind="click: $root.saveDetails, disable: $root.busy" type="button">
+                                <span data-bind="visible: !$root.busy()"><i class="fa fa-floppy-o" aria-hidden="true"></i> {% T Save changes %}</span>
+                                <span data-bind="visible: $root.busy()" style="display: none">{% T Saving... %}</span>
+                            </button>
+                            <a href="{% Url Directory, Team, Id: data.Local.Team.Id, name: data.Local.Team.Name | Clean %}" target="_blank" class="btn btn--secondary--inverse btn--sm">{% T View team profile %}</a>
+                        </div>
+
+                    </fieldset>
+                    <fieldset>
+                        <div class="row" data-bind="ifnot: $root.profileTags()">
+                            <div class="col-sm-12">
+                                <div class="form-group">
+                                    <label class="control-label" for="ProfileTags">{% T Team skills %}</label>
+                                    <input type="text" class="form-control" id="ProfileTags" data-bind="tagsinput: ProfileTagsArray">
+                                    <p class="help-block">{% T Press enter after each skill. Keep it relevant, less is more... %}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row" data-bind="if: $root.profileTags()">
+                            <div class="col-sm-12">
+                                <div class="form-group">
+                                    <label class="control-label" for="ProfileTags">{% T Team skills %}</label>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- ko foreach: ko.partitioned($root.profileTags,3) -->
+                        <div class="row" data-bind="foreach: { data: $data, as: 'tag' }">
+                            <div class="col-sm-4">
+                                <div class="form-group form-group--related-top">
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox" data-bind="checked: $root.team.ProfileTagsArray, value: tag.toLowerCase()"> <span data-bind="text: tag"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /ko -->
+
+                        <div class="btn-toolbar form-actions">
+                            <button class="btn btn--primary btn--sm" data-bind="click: $root.saveDetails, disable: $root.busy" type="button">
+                                <span data-bind="visible: !$root.busy()"><i class="fa fa-floppy-o" aria-hidden="true"></i> {% T Save changes %}</span>
+                                <span data-bind="visible: $root.busy()" style="display: none">{% T Saving... %}</span>
+                            </button>
+                        </div>
+                    </fieldset>
+                    <fieldset>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <div class="form-group">
+                                    <label class="control-label" for="Team_SignupLink">{% T Invite Link %}</label>
+                                    <div class="input-group">
+                                        <input readonly="readonly" class="form-control" type="text" id="Team_SignupLink" value="{{ data.Business.HomeUrl }}/{{ data.Language }}/signup/{{ data.Coworker.PaysForTeam.UniqueId }}" class="span12">
+                                        <span class="input-group-addon">
+                                            <i class="fa fa-copy" style="cursor: pointer" onclick="app.copyToClipboard('{{ data.Business.HomeUrl }}/{{ data.Language }}/signup/{{ data.Coworker.PaysForTeam.UniqueId }}'); app.showMessage('{% T The link has been copied to your clipboard %}')" data-toggle="tooltip" title="" data-original-title="{% T Copy link to clipboard %}"></i>
+                                        </span>
+                                    </div>
+
+                                    <small class="help-block">
+                                        {% T You can send this link to anyone who you want to add to your team %}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                    </fieldset>
+                    <style>
+                        @media only screen and (min-width: 992px) {
+                            .users-list__item:nth-child(3n+1) {
+                                clear: none !important;
+                            }
+
+                            .users-list__item:nth-child(2n+1) {
+                                clear: left !important;
+                            }
+                        }
+                    </style>
+
+                    <fieldset>
+                        <legend class="h3 section__title">{% T Members %}</legend>
+                        <ul class="row users-list" data-bind="foreach: $root.team.AllTeamMembers">
+
+                            <li class="col-sm-6 col-md-6 users-list__item">
+                                <div class="user-badge user-badge--lg">
+                                    <h3 class="h6 user-badge__name" data-bind="text: FullName"></h3>
+
+
+
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox" data-bind="checked: CanMakeBookings" value="true"> <span>{% T Can make bookings %}</span>
+                                        </label>
+                                    </div>
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox" data-bind="checked: CanPurchaseProducts" value="true"> <span>{% T Can purchase products %}</span>
+                                        </label>
+                                    </div>
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox" data-bind="checked: CanPurchaseEvents" value="true"> <span>{% T Can purchase events %}</span>
+                                        </label>
+                                    </div>
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox" data-bind="checked: CanAccessCommunity" value="true"> <span>{% T Can access community %}</span>
+                                        </label>
+                                    </div>
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox" data-bind="checked: AllowNetworkCheckin" value="true"> <span>{% T Can access network %}</span>
+                                        </label>
+                                    </div>
+
+                                    <a class="avatar user-badge__avatar" href="#">
+                                        <img data-bind="attr: { src: '/en/coworker/getavatar/' + Id() + '?h=128&w=128'  }" src="/content/themes/public/dos/img/avatar-default.png" alt="{{ member.FullName }}">
+                                    </a>
+
+
+
+
+                                </div>
+                            </li>
+
+                        </ul>
+
+                        <div class="btn-toolbar form-actions">
+                            <button class="btn btn--primary btn--sm" data-bind="click: $root.saveDetails, disable: $root.busy" type="button">
+                                <span data-bind="visible: !$root.busy()"><i class="fa fa-floppy-o" aria-hidden="true"></i> {% T Save changes %}</span>
+                                <span data-bind="visible: $root.busy()" style="display: none">{% T Saving... %}</span>
+                            </button>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+            
+            </form>
+        </div>
+
+    </div>
+    <!-- END SETTNGS -->
+    {% endblock %}

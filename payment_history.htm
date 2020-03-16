@@ -1,0 +1,223 @@
+<!-- PAYMENT HISTORY -->
+
+<fieldset class="section section--settings" id="payment-history">
+    <legend class="h3 section__title">{% T Invoices and Payments %}</legend>
+
+    {% if data.Coworker.HasAcceptedStripeACHAgreement %}
+    {% if data.Coworker.HasVerifiedStripeACHDeposits %}
+    <div class="alert alert-success">
+        <strong>
+            {% T Your bank account has been verifed and is set up for payments. We will use these details to process any due invoices. %}
+        </strong>
+    </div>
+    {% endif %}
+    {% endif %}
+
+    {% if data.Local.UnPaidInvoices.size == 0  and data.Local.PaidInvoices.size == 0 %}
+    <p class="alert alert--info alert--icon">
+        <i class="fa fa-info"></i>
+        <b>{% T You have no invoices or payments. %}</b>
+    </p>
+    {% else %}
+    <table class="table table-striped table--settings">
+        <thead>
+        <th>{% T Date %}</th>
+        <th></th>
+        <th>{% T Amount %}</th>
+        <th>{% T Due %}</th>
+        <th>{% T Status %}</th>
+        <th></th>
+        </thead>
+        <tbody>
+            {% for invoice in data.Local.UnPaidInvoices %}
+            <tr>
+                <td>
+                    <strong>
+                        #{{invoice.InvoiceNumber}}
+                    </strong>
+                    - {{ invoice.CreatedOn | FormatDate: 'd' }}
+                    {% if invoice.CustomData == null %}
+                    <small class="help-block">
+                        {% if data.Coworker.HasGoCardlessContractNumber and data.Coworker.EnableGoCardlessPayments %}
+                        {% T To be paid by Direct Debit by {0:D} || invoice.DueDate  %}
+                        {% elseif data.Coworker.RegularPaymentProvider == 'StripeACH' %}
+                        {% T To be paid by Stripe ACH by {0:D} || invoice.DueDate  %}
+                        {% elseif data.Coworker.RegularPaymentProvider == 'MultiGateway' %}
+                        {% T To be paid using card ending in {0} on {1:D} || data.Coworker.CardNumber || invoice.DueDate  %}
+                        {% else %}
+                        {% T To be paid by {0:D} || invoice.DueDate  %}
+                        {% endif %}
+                    </small>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if data.Setting_Members_PrintInvoices == "true" %}
+                    <a class="link--primary" data-toggle="tooltip" data-original-title="{% T Download invoice %}" title="" href="{% Url Invoices, Print, guid: invoice.UniqueId, lang: data.Language %}"><i class="fa fa-download"></i></a>
+                    {% endif %}
+                </td>
+                <td>
+                    {{ invoice.TotalFormated }}
+                </td>
+                <td>
+                    {% if invoice.DueAmount <= 0 %}
+                    <span class="text-success">
+                        {{ invoice.DueAmountFormated }}
+                    </span>
+                    {% else %}
+                    <span class="text-danger">
+                        {{ invoice.DueAmountFormated }}
+                    </span>
+                    {% endif %}
+                </td>
+                {% if invoice.CustomData == null or invoice.CustomData contains 'tok_' or invoice.CustomData contains 'vt_' %}
+                <td class="text-danger" style="white-space: nowrap;">
+                    <i class="fa fa-exclamation-circle"></i> {% T Pending %}
+                </td>
+                <td>
+
+                    {% if data.Coworker.EnableGoCardlessPayments and data.Coworker.HasGoCardlessContractNumber == false %}
+                    <a class="btn btn-sm btn--secondary btn-block" href="https://{{ data.RootDomain }}/Callbacks/GoCardlessPre/{{ invoice.Coworker.Id }}"> <i aria-hidden="true" class="fa fa-university"></i> {% T Set up Direct Debit  %}</a>
+                    {% endif %}
+
+
+
+                    {% if data.Local.SpreedlyEnabled %}
+                    {% capture totalWithFees %}{{ invoice.TotalAmount | Times: data.Business.TransactionFee | DividedBy: 100 | Plus: invoice.TotalAmount | FormatDecimal: invoice.Currency.Format }}{% endcapture %}
+                    <a class="btn btn-sm btn--secondary btn-block spreedlyButton" data-description="{% if invoice.Coworker.CardNumber != null %}{% T Pay {0} for invoice #{1} using card ending on '{2}'? || totalWithFees || invoice.InvoiceNumber || invoice.Coworker.CardNumber %}{% endif %}" data-invoiceId="{{ invoice.Id }}" href="#">
+                        <i aria-hidden="true" class="fa fa-credit-card"></i>
+                        {% T Pay by Card %}
+                        {% if data.Business.TransactionFee > 0 %}
+                        ({{ totalWithFees }})
+                        {% endif %}
+                    </a>
+                    {% if data.Business.TransactionFee > 0 %}
+                    <small class="help-block">
+                        {% T Card payments are subject to a {0:0.0}% fee. || data.Business.TransactionFee %}
+                    </small>
+                    {% endif %}
+                    {% endif %}
+
+                    {% if data.Coworker.Id == invoice.Coworker.Id %}
+
+                    {% if data.Local.ForteEnabled %}
+                    <a class="btn btn-sm btn--secondary btn-block" api_login_id="{{ data.Local.ForteApiLoginId }}" allowed_methods="echeck" billing_name_attr="edit" billing_name="{{ invoice.BillToName }}" billing_company_name_attr="edit" billing_company_name="{{ invoice.Coworker.CompanyName }}" billing_street_line1_attr="edit" billing_street_line1="{{ invoice.BillToAddress }}" billing_locality_attr="edit" billing_locality="{{ invoice.BillToCity }}" billing_postal_code_attr="edit" billing_postal_code="{{ invoice.BillToPostCode }}" billing_region_attr="edit" billing_region="{{ invoice.Coworker.StateForInvoice }}" billing_email_address_attr="edit" billing_email_address="{{ invoice.Coworker.Email }}" save_token="true" method="sale" callback="forteCallback" version_number="1.0" total_amount="{{ invoice.TransactionTotalAmount | FormatDecimal: '0.00' }}" utc_time="{{ data.Local.UtcTimeTicks }}" order_number="{{ invoice.InvoiceNumber }}" signature="{{ invoice.ForteSignature }}"><i aria-hidden="true" class="fa fa-university"></i> {% T Pay by Bank Transfer %}</a>
+                    {% endif %}
+                    {% if data.Local.MidtransEnabled %}
+                    <a class="btn btn-sm btn--secondary btn-block btn-midtrans" data-invoiceId="{{invoice.Id}}" data-token="{{ invoice.CustomData }}"><i class="fa fa-credit-card"></i> {% T Checkout  %}</a>
+                    {% endif %}
+
+                    {% if data.Local.PeachPaymentsEnabled %}
+                    <a class="btn btn-sm btn--secondary btn-block btn-peachpayments" data-invoiceId="{{invoice.Id}}" data-token="{{ invoice.PeachPaymentsSignature }}"><i class="fa fa-credit-card"></i> {% T Pay %}</a>
+                    {% endif %}
+
+                    {% if data.Setting_AuthorizeNet_EnableSubscriptions %}
+                    {% if data.Coworker.HasSetupRegularPayments == false %}
+                    <a class="btn btn-sm btn--secondary ccPayButton btn-block" data-description="{% T Invoice %} #{{invoice.InvoiceNumber}}" data-payurl="{% Url Invoices, Pay, Id: invoice.Id, provider: 'authorizeNetSubscription' %}" href="#"><i aria-hidden="true" class="fa fa-credit-card"></i> {% T Setup regular payments %}</a>
+                    {% endif %}
+                    {% endif %}
+
+                    {% if data.Local.PayPalEnabled %}
+                    <a class="btn btn-sm btn--secondary btn-block" href="{% Url Invoices, Pay, Id: invoice.Id, provider: 'PayPal' %}"><i aria-hidden="true" class="fa fa-cc-paypal"></i> {% T Pay by PayPal %}</a>
+                    {% endif %}
+
+                    {% if data.Local.AdyenEnabled  %}
+                    <a class="btn btn-sm btn--secondary btn-block" href="{% Url Invoices, Pay, Id: invoice.Id, provider: 'Adyen' %}"><i aria-hidden="true" class="fa fa-paypal"></i> {% T Pay by Card %}</a>
+                    {% endif %}
+
+                    {% if data.Local.StripeEnabled %}
+                    <a class="btn btn-sm btn--secondary stripePayButton btn-block" data-description="{% T Invoice %} #{{invoice.InvoiceNumber}}" data-allow-remember-me="false" data-amount="{{ invoice.TransactionTotalAmount | Times: 100 | FormatDecimal: '0' }}" data-currency="{{ invoice.TransactionCurrency.Code }}" data-payurl="{% Url Invoices, Pay, Id: invoice.Id, provider: 'Stripe' %}" href="#"><i aria-hidden="true" class="fa fa-credit-card"></i> {% T Pay by Card %}</a>
+                    {% endif %}
+
+                    {% if data.Local.USAEPayEnabled %}
+                    <a class="btn btn-sm btn--secondary btn-block ccPayButton" data-description="{% T Invoice %} #{{invoice.InvoiceNumber}}" data-payurl="{% Url Invoices, Pay, Id: invoice.Id, provider: 'usaEPay' %}" href="#"><i aria-hidden="true" class="fa fa-credit-card"></i> {% T Pay by Card %}</a>
+                    {% endif %}
+
+                    {% if data.Setting_RazorPay_Enabled %}
+                    <a class="btn btn-sm btn--secondary btn-block razorpay" data-email="{{ invoice.Coworker.Email }}" data-description="{{invoice.InvoiceNumber}}" data-payurl="http://{{ data.Domain }}{% Url CallBacks, PayCoworkerInvoice, result: 'OK', provider: 'razorPay', invoiceownerid: data.Coworker.Id,  invoiceId: invoice.Id %}" data-amount="{{ invoice.TransactionTotalAmount | Times: 100 | FormatDecimal: '0' }}" data-currency="{{ invoice.TransactionCurrency.Code }}" href="#"><i aria-hidden="true" class="fa fa-credit-card"></i> {% T Pay by Card %}</a>
+                    {% endif %}
+
+                    {% if data.Local.EpayEnabled and data.Coworker.HasGoCardlessContractNumber == false %}
+                    <a class="btn btn-sm btn--secondary btn-block epay" data-email="{{ invoice.Coworker.Email }}" data-hash="{{ invoice.EpaySingature }}" data-description="{{invoice.InvoiceNumber}}" data-payurl="http://{{ data.Domain }}{% Url CallBacks, PayCoworkerInvoice, result: 'OK', provider: 'ePay', invoiceownerid: data.Coworker.Id,  invoiceId: invoice.Id %}" data-amount="{{ invoice.TransactionTotalAmount | Times: 100 | FormatDecimal: '0' }}" data-currency="{{ invoice.TransactionCurrency.Code }}" href="#"><i aria-hidden="true" class="fa fa-credit-card"></i> {% T Pay by Card %}</a>
+                    {% endif %}
+                    {% if invoice.LiqdPayData %}
+                    <form method="POST" action="https://www.liqpay.ua/api/3/checkout" accept-charset="utf-8">
+                        <input type="hidden" name="data" value="{{invoice.LiqdPayData}}" />
+                        <input type="hidden" name="signature" value="{{invoice.LiqdPaySignature}}" />
+                        <button type="submit" class="btn btn-sm btn--secondary btn-block"><i aria-hidden="true" class="fa fa-credit-card"></i> {% T Pay by Card %}</button>
+                    </form>
+                    {% endif %}
+
+                    {% if data.Setting_AuthorizeNet_Enabled %}
+                    {% if data.Coworker.HasSetupRegularPayments == false %}
+                    <a class="btn btn-sm btn--secondary btn-block" href="#" data-description="{% T Invoice %} #{{invoice.InvoiceNumber}}" data-payurl="{% Url Invoices, Pay, Id: invoice.Id, provider: 'authorizeNetDirect' %}" href="#"><span aria-hidden="true" class="icon i-16 icon-credit-credit"></span> {% T Pay by Card %}</a>
+                    {% endif %}
+                    {% endif %}
+
+                    {% endif %}
+                </td>
+                {% else %}
+                <td class="text-warning" colspan="2">
+                    <i class="fa fa-clock-o"></i> {% T Processing your payment... %}
+                </td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+
+            {% for invoice in data.Local.PaidInvoices %}
+            <tr>
+                <td>
+                    <strong>
+                        #{{invoice.InvoiceNumber}}
+                    </strong>
+                    - {{ invoice.CreatedOn | FormatDate: 'd' }}
+                </td>
+                <td>
+                    {% if data.Setting_Members_PrintInvoices == "true" %}
+                    <a class="link--primary" data-toggle="tooltip" title="" data-original-title="{% T Download invoice %}" title="" href="{% Url Invoices, Print, guid: invoice.UniqueId, lang: data.Language %}"><i class="fa fa-download"></i></a>
+                    {% endif %}
+                </td>
+                <td>
+                    {{ invoice.TotalFormated }}
+                </td>
+                <td>
+                    {% if invoice.DueAmount <= 0 %}
+                    <span class="text-success">
+                        {{ invoice.DueAmountFormated }}
+                    </span>
+                    {% else %}
+                    <span class="text-danger">
+                        {{ invoice.DueAmountFormated }}
+                    </span>
+                    {% endif %}
+
+                </td>
+                <td colspan="2">
+                    {% if invoice.CreditNote %}
+                    {% T Credit Note %}
+                    {% else %}
+                    <span class="text-success">
+                        <i class="fa fa-check-circle"></i> {% T Paid on {0:D} || invoice.PaidOn %}
+                    </span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            <tr class="info">
+                <td colspan="3">
+                    {% T You account has a current balance of: %}
+                </td>
+                <td colspan="3">
+                    <strong>
+                        {{ data.Local.CurrentBalance | FormatDecimal: data.Business.Currency.Format }}
+
+                    </strong>
+                </td>
+
+            </tr>
+
+        </tbody>
+    </table>
+    {% endif %}
+</fieldset>
+
+<!-- END PAYMENT HISTORY -->

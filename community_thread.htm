@@ -1,0 +1,240 @@
+{% extends master.master %}
+{% block title %}{{ data.Local.Thread.Subject | StripHtml | StripNewlines | TruncateWords: 10 }} | {% T Community %} | {{ data.Business.Name }} {% endblock %}
+{% block scripts %}
+<link rel="stylesheet" type="text/css" href="/content/themes/public/js/libs/jquery.mentionsInput/jquery.mentionsInput.css" />
+<script src="/content/themes/public/js/libs/jquery.elastic/jquery.elastic.source.js"></script>
+<script src="/content/themes/public/js/libs/underscore/underscore-min.js"></script>
+<script src="/content/themes/public/js/libs/jquery.mentionsInput/jquery.mentionsInput.js"></script>
+<script src="/scripts/jquery.timeago.js"></script>
+<script src="/scripts/jquery.timeago.{{ data.Language }}.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/ekko-lightbox/4.0.1/ekko-lightbox.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ekko-lightbox/4.0.1/ekko-lightbox.js"></script>
+<script>
+  var cm = new CommunityBoardManager();
+  $(function(){
+    cm.init();
+
+    //Lightbox
+    $(document).on('click', '[data-toggle="lightbox"]', function(event) {
+        event.preventDefault();
+        $(this).ekkoLightbox({
+          loadingMessage: '{% T Please wait... %}'
+        });
+    });
+  })
+
+    var settings = {
+        formId: 'new-message-form',
+        formError: '{% T Please make sure all the required fields are complete. %}',
+        formData: {
+            subject: null,
+            message: null,
+            tags: null
+        }
+    }
+    var fm = new SimpleFormManager(settings);
+    fm.init();
+</script>
+{% endblock %}
+
+{% block main %}
+<div class="container">
+
+  <!-- BREADCRUMBS -->
+  <ol class="breadcrumb">
+    <li><a href="{{ data.Business.HomeUrl }}">{% T Home %}</a></li>
+    <li><a href="{% Url Community, Index %}">{% T Message Board %} </a></li>
+    <li class="active">{{ data.Local.Thread.Subject | StripHtml }}</li>
+  </ol>
+  <!-- END BREADCRUMBS -->
+
+  <div class="row">
+
+    <div class="col-sm-8 col-sm-offset-2">
+      <div class="notifications-placeholder"></div>
+
+      <!-- BOARD DETAIL -->
+      <div class="board-detail">
+
+        <!-- USER PAGE HEADER -->
+        <div class="page-header page-header--user">
+
+          <h1 class="h2">{{ data.Local.Thread.Subject | StripHtml }}</h1>
+
+          <div class="page-header__metadata">
+            <time class="timeago" datetime="{{ data.Local.Thread.CreatedOn | FormatDate: 'yyyy-MM-ddTHH:mm:ssZ' }}">{{ data.Local.Thread.CreatedOn | FormatDate: 'g' }}</time> {% T by %} 
+            <a href="{% Url Directory, Profile, Id: data.Local.Thread.CoworkerId, name: data.Local.Thread.FullName | Clean %}" class="link--default">
+              {{ data.Local.Thread.FullName }}
+            </a>
+          </div>
+          {% if data.Local.Thread.Private %}
+          <i class="fa fa-lock"></i>
+          {% T This conversation is private %}
+          {% endif %}
+
+          {% if data.Local.Thread.Tags.size > 0 %}
+          <div class="tags-list">
+            <i class="fa fa-tags i-space--right--small"></i>
+            <ul>
+              {% for tag in data.Local.Thread.Tags %}
+              <li><a href="{% Url Conversations, Index, tag: tag %}" class="link--secondary">{{ tag }}</a></li>
+              {% endfor %}
+            </ul>
+          </div>
+          {% endif %}
+
+          <div class="user-badge user-badge--md page-header__user">
+            <a class="avatar user-badge__avatar" href="{% Url Directory, Profile, Id: data.Local.Thread.CoworkerId, name: data.Local.Thread.FullName | Clean %}">
+              <img src="{% Url Coworker, GetAvatar, id: data.Local.Thread.CoworkerId, h:64, w:64 %}&noavatar=%2Fcontent%2Fthemes%2Fpublic%2Fdos%2Fimg%2Favatar-default.png" alt="{{ thread.FullName }}">
+            </a>
+            <span style="{% if data.Local.Thread.FollowedByUser == false %}display: none{% endif %}" class="user-badge__presence" id="follow-icon-thread-{{data.Local.Thread.Id}}" data-toggle="tooltip" title="{% T You are following this conversation %}"></span>
+            
+          </div>
+
+        </div>
+        <!-- END USER PAGE HEADER -->
+
+        <!-- BOARD BODY -->
+        <div class="article-content">
+          {% if data.Local.Group.GroupAccess == "Private" or data.Local.Thread.Private %}
+          {% include community_thread_guests.htm %}
+          {% endif %}
+          {{ data.Local.Thread.Message | MarkDown }}
+        </div>
+        <!-- END BOARD BODY -->
+
+        <!-- ARTICLE TOOLS -->
+        <div class="article-tools clearfix">
+
+          <ul class="list-inline article-tools__list article-tools__list--left">
+            
+            <li data-toggle="tooltip" title="{% if data.Local.Thread.LikeCount != 0 %}{{ data.Local.Thread.Likes | Join: ', ' }}{% endif %}">
+              <i class="fa fa-heart-o i-space--right"></i>
+              {% if data.Local.Thread.LikeCount == 1 %} 1 {% T like %}{% else %}{{ data.Local.Thread.LikeCount }} {% T likes %}{% endif %} 
+            </li>
+            {% if data.Coworker != null %}
+            <li>
+              <a href="#" class="btn btn--primary--inverse btn--sm btn-like-thread" data-state="{% if data.Local.Thread.LikedByUser %}1{% else %}0{% endif %}" data-on="{% T Like %}" data-off="{% T Unlike %}" data-thread="{{ data.Local.Thread.Id }}"> 
+                <i class="fa fa-heart-o i-space--right"></i>
+                <span>
+                {% if data.Local.Thread.LikedByUser %}
+                {% T Unlike %}
+                {% else %}
+                {% T Like %}
+                {% endif %}
+                </span>
+              </a>
+            </li>
+            <li>
+              <a href="#" class="btn btn--secondary--inverse btn--sm btn-follow-thread" id="follow-thread-{{ data.Local.Thread.Id }}" data-state="{% if data.Local.Thread.FollowedByUser %}1{% else %}0{% endif %}" data-on="{% T Follow %}" data-off="{% T Unfollow %}" data-thread="{{ data.Local.Thread.Id }}">
+                <i class="fa fa-commenting-o i-space--right"></i>
+                <span>
+                {% if data.Local.Thread.FollowedByUser %}
+                {% T Unfollow %}
+                {% else %}
+                {% T Follow %}
+                {% endif %}
+                </span>
+              </a>
+            </li>
+            {% endif %}
+          </ul>
+          
+
+          {% if data.Coworker != null %}
+          <ul class="list-inline article-tools__list article-tools__list--right">
+            <li>
+              <a href="#" class="link--secondary btn-mute-thread" id="mute-thread-{{ data.Local.Thread.Id }}" data-state="{% if data.Local.Thread.MutedForUser %}1{% else %}0{% endif %}" data-on="{% T Mute %}" data-off="{% T Unmute %}" data-thread="{{ data.Local.Thread.Id }}">
+              {% if data.Local.Thread.MutedForUser %}
+              {% T Unmute %}
+              {% else %}
+              {% T Mute %}
+              {% endif %}
+              </a>
+            </li>
+            {% if data.Local.Thread.UserId == data.User.Id %}
+            <li><a href="#" onclick="return cm.deleteThread('{% Url Conversations, DeleteThread, id: data.Local.Thread.Id %}')" class="link--secondary">Delete</a></li>
+            {% endif %}
+          </ul>
+          {% endif %}
+
+        </div>
+        <!-- END ARTICLE TOOLS -->
+        {% if data.Local.Thread.FileIDs.size > 0 %}
+        <div class="board-list_media">
+          <div class="board-list_media_files">
+            {% for id in data.Local.Thread.FileIDs %}
+            {% include community_thread_file.htm %}
+            {% endfor %}
+          </div>
+          <div style="clear:both;"></div>
+          <small class="help-block">
+            {% T Please be careful when downloading these files, some file types may harm your computer. %}
+          </small>
+        </div>
+        {% endif %}
+
+      </div>
+      <!-- END BOARD DETAIL -->
+
+      <!-- COMMENTS -->
+      <div class="section" id="jump">
+        
+        <h2 class="h4 section__title">
+          {% if data.Local.Thread.MessageCount == 0 %}
+          {% T Be the first one to leave a reply %}
+          {% else %}
+          {% if data.Local.Thread.MessageCount == 1 %} 1 {% T reply %}{% else %}{{ data.Local.Thread.MessageCount }} {% T replies %}{% endif %}
+          {% endif %}
+        </h2>
+
+        {% if data.Coworker == null %}
+        <a href="{% Url Login, Index %}?returnUrl={% Url Community, Thread, id: data.Local.Thread.Id, name: data.Local.Thread.Subject | Clean %}" class="btn btn--primary btn--sm">
+          {% T Login to join this conversation %}
+        </a>
+        {% else %}
+        <div class="your-input">
+          <div class="user-badge">
+            <h3 class="h6 user-badge__name">{% T Leave a reply %}</h3>
+            <p>{{ data.Local.Thread.Subject | StripHtml }}</p>
+            <a class="avatar user-badge__avatar" href="{% Url Directory, Profile, id: data.Coworker.Id, name: data.Coworker.FullName | Clean %}">
+              <img height="48" width="48" src="{% Url Coworker, GetAvatar, id: data.Coworker.Id, h:48, w:48 %}&noavatar=%2Fcontent%2Fthemes%2Fpublic%2Fdos%2Fimg%2Favatar-default.png" alt="{{ data.Coworker.FulLName }}">
+            </a>
+          </div>
+          <form action="{% Url Conversations, PostMessage, id: data.Local.Thread.Id %}" method="POST" class="form your-input__form" id="new-message-form" data-bind="with: formData, submit: $root.submitForm" novalidate>
+            {% AntiforgeryToken %}
+            <div class="form-group">
+              <textarea required="required" id="reply-box" cols="30" data-bind="value: message" rows="4" class="form-control" placeholder="{% T Type your message here  %}"></textarea>
+              <textarea style="display: none" name="CommunityMessage.Message" id="reply-box-server"></textarea>
+              <small class="help-block validation-error" data-bind="validationMessage: message"></small>
+              <p class="help-block">{% T Invite other people to this conversation by mentioning them: type the '@' symbol followed by their name. %}</p>
+              
+            </div>
+            <div class="form-actions">
+              <button data-bind="disable: $root.busy" class="btn btn--default--inverse btn--sm" type="submit">{% T Submit %}</button>
+            </div>
+          </form>
+        </div>
+        {% endif %}
+      </div>
+
+        <ul class="comments-list">
+          {% for message in data.Local.Messages %}
+          {% include community_thread_item.htm %}
+          {% endfor %}
+        </ul>
+
+        <!-- PAGINATION -->
+        {% assign pagedRecords = data.Local.Messages %}
+        {% include core_pagination_fragment.htm %}
+        <!-- END PAGINATION -->
+
+        
+      <!-- END COMMENTS -->
+
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

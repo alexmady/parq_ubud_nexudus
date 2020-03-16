@@ -1,0 +1,103 @@
+{% extends master.master %}
+{% block title %}{% T Help %} | {{ data.Business.Name }}{% endblock %}
+{% block main %}
+<div class="container">
+  <!-- BREADCRUMBS -->
+  <ol class="breadcrumb">
+    <li><a href="{{ data.Business.HomeUrl }}">{% T Home %}</a></li>
+    <li><a href="{% Url Support, Index %}">{% T Help %}</a></li>
+    <li class="active">{% T New help request %}</li>
+  </ol>
+  <!-- END BREADCRUMBS -->
+  <div class="row">
+    <div class="col-md-8 col-md-offset-2">
+      <!-- NEW CONTENT -->
+      <div class="new-content">
+        <!-- USER PAGE HEADER -->
+        <div class="page-header page-header--user">
+          <a href="{% Url Support, Index %}" class="link--secondary link--back">
+            <i class="fa fa-angle-left"></i>
+            {% T Back to help message list %}
+          </a>
+
+          <h1 class="h2">{% T Create a new help request %}</h1>
+
+          <div class="user-badge user-badge--md page-header__user">
+            <a class="avatar user-badge__avatar" href="#">
+              <img src="{% Url Coworker, GetAvatar, id: data.Coworker.Id, h:64, w:64 %}&noavatar=%2Fcontent%2Fthemes%2Fpublic%2Fdos%2Fimg%2Favatar-default.png" alt="">
+            </a>
+          </div>
+
+        </div>
+        <!-- END USER PAGE HEADER -->
+
+        <!-- HELP NEW FORM -->
+        <form class="form" action="{% Url Support, NewMessage %}" method="POST" data-bind="with: formData, submit: $root.submitForm" id="new-message-form" novalidate>
+
+          <div class="form-group" data-bind="visible: departments().length > 0">
+              <label for="">{% T Department %}</label>
+              <div class="dropdown">
+                <input data-bind="value: helpDeskDepartment() ? helpDeskDepartment().Id : null" name="Message.HelpDeskDepartment" type="hidden"">
+            
+                  <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                      <span data-bind="text: helpDeskDepartment() ? helpDeskDepartment().Name : '{% T Select a department %}'"></span>
+                      <span class="caret"></span>
+                  </button>
+                  <ul data-bind="foreach: departments" class="dropdown-menu" role="menu">
+                      <li class="" role="menuitem" tabindex="-1">
+                          <a href="#" data-bind="click: function() { $root.formData.helpDeskDepartment($data) }">
+                          <span data-bind="text: Name" class="dropdown-menu--images__title"></span>
+                          <span data-bind="text: Description" class="dropdown-menu--images__subtitle"></span>
+                          </a>
+                      </li>    
+                  </ul>
+              </div>
+          </div>
+
+          <div class="form-group">
+            <label for="Message_Subject">{% T Subject %}</label>
+            <input data-bind="value: subject" required="required" name="Message.Subject" type="text" class="form-control input--lg" id="name="Message_Subject"" placeholder="{% T i.e. Cold water tap dripping %}" value="{{ data.Local.Message.Subject }}">
+            <small class="help-block validation-error" data-bind="validationMessage: subject"></small>
+          </div>
+
+          <div class="form-group">
+            <label for="Message_MessageText">{% T Message %}</label>
+            <textarea data-bind="value: messageText" required="required" name="Message.MessageText" id="Message_MessageText" cols="30" rows="6" class="form-control" placeholder="{% T i.e. The cold water tap in the ground floor kitchen is dripping, could you send maintenance to have a look? Thanks! %}">{{ data.Local.Message.MessageText }}</textarea>
+            <small class="help-block validation-error" data-bind="validationMessage: messageText"></small>
+          </div>
+
+          <div class="btn-toolbar form-actions">
+            <button class="btn btn--primary btn--sm" type="submit">{% T Submit your help request %}</button>
+            <a href="{% Url Support, Index %}" class="btn btn--link btn--sm">{% T Cancel %}</a>
+          </div>
+
+        </form>
+        <!-- END HELP NEW FORM -->
+
+      </div>
+      <!-- END NEW CONTENT -->
+
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  $(function(){
+    var settings = {
+        formId: 'new-message-form',
+        formError: '{% T Please make sure all the required fields are complete. %}',
+        formData: {
+            helpDeskDepartment: null,
+            departments: {{ data.Local.Departments | Json, prefix: false }},
+            subject: '{{ data.Local.Message.MessageText }}',
+            messageText: '{{ data.Local.Message.MessageText }}'
+        }
+    }
+    var fm = new SimpleFormManager(settings);
+    fm.init();
+  })
+</script>
+{% endblock %}

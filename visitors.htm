@@ -1,0 +1,126 @@
+{% extends master.master %}
+{% block scripts %}
+<script>
+  $(function(){
+    var navManager = new LateralNavigationManager();
+    navManager.initLateralSmoothNav();
+    $('#nav-lateral-select').val('{{ data.URL }}');
+
+    var formSettings = {
+        formId: 'new-visitor-form',
+        formError: '{% T Please make sure all the required fields are complete. %}',
+        formData: {
+            email: '',
+            fullName: '',
+            expectedArrivalDate: new Date(),
+            expectedArrivalTime: new Date(),
+        }
+    }
+    var fm = new SimpleFormManager(formSettings);
+    fm.init();
+  })
+</script>
+{% endblock %}
+{% block main %}
+ <div class="container">
+
+  <!-- BREADCRUMBS -->
+  <ol class="breadcrumb">
+    <li><a href="{{ data.Business.HomeUrl }}">{% T Home %}</a></li>
+    <li><a href="{% Url Profile, Index %}">{% T My Account %}</a></li>
+    <li class="active">{% T My Bookings %}</li>
+  </ol>
+  <!-- END BREADCRUMBS -->
+    <!-- SETTINGS -->
+    <div class="settings">
+
+      <div class="row">
+
+        <div class="col-sm-3">
+          {% include my_account_navigation.htm %}
+        </div>
+
+        <div class="col-sm-9">
+
+          <!-- YOUR VISITORS -->
+          <div class="notifications-placeholder"></div>
+            <fieldset class="section section--settings">
+              <legend class="h3 section__title">{% T Your visitors %}</legend>
+            
+                <table class="table table-striped table--settings">
+                  <thead>
+                    <th>{% T Full Name %}</th>
+                    <th>{% T Email %}</th>
+                    <th>{% T Expected at %}</th>
+                  </thead>
+                  <tbody>
+                    {% if data.Local.Visitors.size == 0 %}
+                    <tr>
+                      <td colspan="3">
+                        {% T You have no expected visitors %}
+                      </td>
+                    </tr>
+                    {% endif %}
+                    {% for visitor in data.Local.Visitors %}
+                    <tr>
+                      <th>{{ visitor.FullName }}</th>
+                      <td><a href="mailto:{{visitor.Email}}">{{ visitor.Email }}</a></td>
+                      <td>{{ visitor.ExpectedArrival | FormatDate: 'F' }}</td>
+                      <td class="text-right">
+                        <i class="fa fa-trash"></i>
+                        <a class="link--secondary" href="#" onclick="app.showQuestion('{% T Remove visitor? %}').then(function(result){ if(result) window.location='{% Url Profile, DeleteVisitor, Id: visitor.Id %}'; })">
+                          {% T Remove visitor %}</a>
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+                <h3>{% T Register a visitor %}</h3>
+                <div class="row">
+                  <div class="col-sm-12">
+                    <div class="your-input" data-mh="contact-box">
+                      <form id="new-visitor-form" action="NewVisitor" method="POST" class="form your-input__form" data-bind="with: formData, submit: $root.submitForm" novalidate>
+                        <input type="hidden"  name="Visitor.ExpectedArrival" data-bind="value: moment(expectedArrivalDate()).format('YYYY-MM-DD') + 'T' + moment(expectedArrivalTime()).format('HH:mm')" />
+                              
+                        <div class="form-group">
+                          <label for="email-from required">{% T Full Name %}</label>
+                          <input type="text" data-bind="value: fullName" required="required"  name="Visitor.FullName" class="form-control" id="fullNmae" placeholder="{% T The full name of the person you are expecting %}">
+                          <small class="help-block validation-error" data-bind="validationMessage: fullName"></small>
+                        </div>
+                        <div class="form-group required">
+                          <label for="email-subject">{% T Visitor Email %}</label>
+                          <input type="email" data-bind="value: email" required="required" name="Visitor.Email" class="form-control" id="email" placeholder="{% T We will send a visitor registration email to this address %}">
+                          <small class="help-block validation-error" data-bind="validationMessage: email"></small>
+                        </div>
+                        <div class="row">
+                          <div class="col-sm-6">
+                            <div class="form-group required">
+                              <label for="email-message">{% T Expected Arrival Date %}</label>
+                              <input type="date"  required="required" data-bind="pickadate:{ value: expectedArrivalDate, options: { clear: false, min: new Date() } }" class="form-control" />
+                              <small class="help-block validation-error" data-bind="validationMessage: expectedArrivalDate"></small>
+                            </div>
+                          </div>
+                          <div class="col-sm-6">
+                            <div class="form-group required">
+                              <label for="email-message">{% T Expected Arrival Time %}</label>
+                              <input type="date"  required="required" data-bind="pickatime:{ value: expectedArrivalTime, options: { clear: false, interval: 15 } }" class="form-control" />
+                              <small class="help-block validation-error" data-bind="validationMessage: expectedArrivalTime"></small>
+                            </div>
+                          </div>
+                        </div>
+                        
+
+                        <div class="form-actions">
+                          <button class="btn btn--default--inverse btn--sm" data-bind="disable: $root.busy" type="submit">{% T Register Visitor %}</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+              </div>
+            </fieldset>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

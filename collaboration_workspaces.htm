@@ -1,0 +1,160 @@
+{% extends master.master %}
+{% block script %}
+
+<script src="/content/themes/public/js/libs/jquery.validate/jquery.validate.min.js"></script>
+<script src="/content/themes/public/default/js/knockout-2.3.0.js"></script>
+<script src="/content/themes/public/default/js/knockout.utils.js"></script>
+<script src="/content/themes/public/default/js/utils/ajaxservice.js"></script>
+<script src="/content/themes/public/default/js/collaboration/workspaces.js"></script>
+<script>
+    $(function () {
+
+        $.ajaxSetup({
+            // Disable caching of AJAX responses
+            cache: false
+        });
+
+        var manager = new Nexudus.Spaces.Collaboration.WorkSpacesManager();
+        ko.applyBindings(manager);
+        manager.init();
+    });
+</script>
+{% endblock %}
+{% block content %}
+
+<div id="wrapper">
+  <!-- CONTAINER -->
+  <div id="main" class="container">
+    <!-- BREADCRUMB -->
+    <ul class="breadcrumb">
+      <li><a href="{% Url PublicHome, Index %}">{% T Home %}</a> <span class="divider">/</span></li>
+      <li class="active">{% T Workspaces %}</li>
+    </ul>
+    <!-- END BREADCRUMB -->
+    <div class="row">
+      <h2 class="page-title span12">{% T Your workspaces %}</h2>
+      <!-- CONTENT -->
+      <section id="content" class="span12">
+        <!-- ko foreach: myWorkSpaces -->
+        <article class="workspace-card" >
+          <a href="#" data-bind="attr: { href: '{% Url Workspace, Index %}/' + Id }" class="workspace-link" visible:>
+            <span data-bind="click: function () { $parent.toggleDeleteDialog($data); }" aria-hidden="true" class="img-circle icon icon-remove"></span>
+            <h5 data-bind="text: Name"></h5>
+            <p class="summary" data-bind="text: Description">
+            </p>
+            <div class="members" >
+              <!-- ko foreach: Members -->
+              <img class="img-circle" height="40" width="40" data-bind="attr: { src: '/es/coworker/getavatar/' + Id + '?h=40&amp;w=40', title: FullName, title: FullName }">
+              <!-- /ko -->
+              <span data-bind="click: function () { $root.openAddMemberDialog($data) }" aria-hidden="true" title="{% T Add a new member %}" class="icon i-16 icon-plus"></span>
+            </div>
+          </a>
+        </article>
+        <!-- /ko -->
+        <article class="workspace-card" data-bind="visible: !newFormDisplayed()" style="display: none">
+          <a href="#" data-bind="click: toggleNewWorkSpaceForm" class="workspace-link">
+            <h5>{% T Create workspace %}</h5>
+            <p style="text-align: center; margin-top: 40px" class="summary">
+              <span aria-hidden="true" class="img-circle icon i-64 icon-plus"></span>
+            </p>
+            <div class="members">
+              <img class="img-circle" height="40" width="40" src="/es/coworker/getavatar/{{ data.Coworker.Id }}?h=40&amp;w=40" title="{{ data.Coworker.FullName }}" alt="{{ data.Coworker.FullName }}">  
+            </div>
+          </a>
+        </article>
+        <article class="workspace-card" style="display: none" data-bind="fadeVisible: newFormDisplayed">
+          <form id="new-workspace-form" >
+            <a href="#" class="workspace-link" data-bind="with: newWorkSpace">
+              <h5>
+                <input class="required" type="text" style="width: 170px" data-bind="value: Name" placeholder="{% T Name for the workspace %}" />
+              </h5>
+              <p style="text-align: center; margin-top: 10px" class="summary">
+                <textarea class="required" style="width: 170px; height: 50px" data-bind="value: Description" placeholder="{% T A short description of this workspace %}"></textarea>
+              </p>
+              <div class="members">
+                <label for="new-workspace-visible-members">
+                  <input type="checkbox" id="new-workspace-visible-members" data-bind="checked: VisibleInMySpaces" />
+                  Show to members of this space</label>
+                <label for="new-workspace-visible-everone">
+                  <input type="checkbox" id="new-workspace-visible-everone" data-bind="checked: VisibleByEveryone" />
+                  Show to everyone</label>
+                <button type="button" class="btn btn-small btn-orange" data-bind="click: $parent.saveNewWorkSpace">{% T Save %}</button>
+                <button type="button" class="btn btn-small btn-link" data-bind="click: $parent.toggleNewWorkSpaceForm">{% T Cancel %}</button>
+              </div>
+            </a>
+          </form>
+        </article>
+        <div class="row" data-bind="visible: publicWorkSpaces().length > 0">
+          <h2 class="page-title span12">{% T Workspaces shared with you %}</h2>
+          <section id="Section1" class="span12">
+            <!-- ko foreach: publicWorkSpaces -->
+            <article class="workspace-card" >
+              <a href="#" class="workspace-link" visible:>
+                <h5 data-bind="text: Name"></h5>
+                <p class="summary" data-bind="text: Description">
+                </p>
+                <div class="members" >
+                  <!-- ko foreach: Members -->
+                  <img class="img-circle" height="40" width="40" data-bind="attr: { src: '/es/coworker/getavatar/' + Id + '?h=40&amp;w=40', title: FullName, title: FullName }">
+                  <!-- /ko -->
+                </div>
+              </a>
+            </article>
+            <!-- /ko -->
+          </section>
+        </div>
+      </section>
+      <!-- END CONTENT -->
+      
+    </div>
+  </div>
+  <!-- END CONTAINER -->
+</div>
+
+<div class="modal hide fade" data-bind="showModal: workSpaceToDelete, with: workSpaceToDelete">
+  <div class="modal-header">
+    <h3 data-bind="text: '{% T Delete workspace %}'"></h3>
+  </div>
+  <div class="modal-body">
+    <strong>{% T Would you like to delete this workspace? %}</strong><br/>
+  </div>
+  <div class="modal-footer">
+    <a href="#" class="btn btn-link" data-bind="click: $root.cancelDeleteWorkSpace">{%T Cancel %}</a>
+    <a href="#" class="btn btn-danger" data-bind="click: $root.deleteWorkSpace">{%T Yes, delete Workspace %}</a>
+  </div>
+</div>
+
+<div class="modal hide fade" data-bind="showModal: workSpaceToAddMembers, with: workSpaceToAddMembers">
+  <div class="modal-header">
+    <h3>{% T Add members to workspace %}</h3>
+  </div>
+  <div class="modal-body">
+    <form class="form-search" style="width:100%">
+      <div class="input-append">
+        <input data-bind="value: $root.memberSearchText, valueUpdate: 'keyup'" type="text" style="width:70%" class="search-query" placeholder="{% T Name, email or skill... %}">
+        <button type="button" data-bind="click: $root.searchMembers" class="btn">{% T Search %}</button>
+      </div>
+    </form>
+    <hr/>
+    <div data-bind="visible: $root.membersSearchResult().length == 0">
+      <small class="pull-left">{% T Not finding the right people? %} <a href="/{{ data.Language }}/directory">{% T check the directory %}</a></small>
+    </div>
+    <div data-bind="foreach: $root.membersSearchResult" >
+      <div class="media">
+        <a class="pull-left" href="#">
+          <img class="img-circle media-object" height="60" width="60" data-bind="attr: { src: '/es/coworker/getavatar/' + Id + '?h=60&amp;w=60', title: FullName, title: FullName }">
+        </a>
+        <div class="media-body">
+          <h4 class="media-heading" data-bind="text: FullName"></h4>
+          <span data-bind="pills: ProfileTags, visible: ProfileTags"></span><br data-bind="    visible: ProfileTags"/>
+          <a target="_blank" data-bind="attr: { href: '/{{data.Language}}/directory/profile/' + Id + '/' + Permalink }">{% T Profile %}</a>
+          | <a target="_blank" href="#" data-bind="click: function () { $root.addMember($parent.Id, Id); }">{% T Add member %}</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <a href="#" class="btn btn-link" data-bind="click: $root.cancelAddMembers">{%T Finish %}</a>
+  </div>
+</div>
+{% endblock %}

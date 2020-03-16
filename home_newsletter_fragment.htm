@@ -1,0 +1,18 @@
+{% if data.Setting_HomePage_NewsletterSignUp %}
+<div class="home__section home__section--padded home__section--newsletter">
+  <div class="container">
+    <h3>{% T Sign up for updates %}</h3>
+    <p>{% T Sign up to get the latest information about news, offers and events %}</p>
+    <div class="row">
+      <div class="col-sm-6 col-sm-offset-3">
+        <form action="{% Url Newsletter, SignUp %}" method="post" data-bind="with: formData, submit: $root.submitForm" class="form form-inline form--newsletter" id="newsletter-form" novalidate>
+          <input autocomplete="off" required="required" data-bind="value: email" type="email" name="email" class="form-control input--sm" placeholder="{% T Enter your email %}">
+          <small class="help-block validation-error" data-bind="validationMessage: email"></small>
+          
+          <button class="btn btn--default btn--sm" type="submit">{% T Submit %}</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}

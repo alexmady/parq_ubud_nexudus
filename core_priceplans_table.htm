@@ -1,0 +1,84 @@
+<div class="suscriptions">
+    <!-- Nav tabs for large devices -->
+    <ul class="nav nav-tabs hidden-xs" role="tablist">
+        {% for group in data.Local.PricePlanGroups %}
+        <li role="presentation" class="{% if forloop.index0 == 0 %}active{% endif %}"><a href="#tariffs-{{group  | Clean }}" aria-controls="tariffs-{{group  | Clean }}" role="tab" data-toggle="tab">{% T group %}</a></li>
+        {% endfor %}
+    </ul>
+    <!-- Nav select for small devices --><select class="form-control nav-selector js-tab-select-navigation visible-xs" data-content="#tab-content-memberships">
+        {% for group in data.Local.PricePlanGroups %}
+        <option value="#tariffs-{{group  | Clean }}">{% T group %}</option>
+        {% endfor %}
+    </select>
+    <!-- Tab panes -->
+    <div class="tab-content" id="tab-content-memberships">
+        {% for group in data.Local.PricePlanGroups %}
+        <div role="tabpanel" class="tab-pane {% if forloop.index0 == 0 %}active{% endif %}"
+             id="tariffs-{{group  | Clean }}">
+
+            <ul class="row suscriptions-list">
+
+                {% for service in data.Local.PricePlans %}
+
+                {% if data.Local.Contract != null %}
+                {% capture continueUrl %}{% Url Profile, ChangeContractDo, id: data.Local.Contract.Id, tariffId: service.Id, businessGuid: data.Local.BusinessGuid %}{% endcapture %}
+                {% elseif data.Controller == 'profile' %}
+                {% capture continueUrl %}{% Url Profile, NewContract, tariffGuid: service.UniqueId, businessGuid: data.Local.BusinessGuid %}{% endcapture %}
+                {% else %}
+                {% capture continueUrl %}{% Url Signup, Index, tariffGuid: service.UniqueId, businessGuid: data.Local.BusinessGuid %}{% endcapture %}
+                {% endif %}
+
+                {% if service.GroupName == group or (service.GroupName == null and group == "Price Plans") %}
+                <li class="col-sm-4 suscriptions-list__item">
+                    <h4 class="suscriptions-list__title">{{ service.Name }}</h4>
+                    {% if service.InvoiceEvery == 1 %}
+                    <p class="suscriptions-list__frequency">{% T Monthly %}</p>
+                    {% elseif service.InvoiceEvery == 12 %}
+                    <p class="suscriptions-list__frequency">{% T Annually %}</p>
+                    {% elseif service.InvoiceEveryWeeks == 1 %}
+                    <p class="suscriptions-list__frequency">{% T Weekly %}</p>
+                    {% elseif service.InvoiceEvery > 1 %}
+                    <p class="suscriptions-list__frequency">{% T Every {0} months || service.InvoiceEvery %}</p>
+                    {% elseif service.InvoiceEveryWeeks > 1 %}
+                    <p class="suscriptions-list__frequency">{% T Every {0} weeks || service.InvoiceEveryWeeks %}</p>
+                    {% endif %}
+                    <p class="suscriptions-list__price">{{ service.PriceFormatted }}</p>
+                    <ul class="suscriptions-list__details">
+                        <li class="suscriptions-list__details__item"> {{ service.Description }} </li>
+                    </ul>
+                    {% if data.Controller == 'profile' and data.Action == 'tariff' %}
+                    <div class="subscriptions-list__start__date">
+                        <p>{% T Choose a start date %}</p>
+                        <input type="text" class="pickadate form-control" placeholder="{% T Today %}" />
+                    </div>
+                    {% endif %}
+                    <div class="btn-toolbar suscriptions-list__join">
+                        {% if service.TermsAndConditions != null and data.Coworker != null %}
+                            {% if data.Local.Contract != null %}
+                            <a href="#" data-href="/{{data.Language}}/termsandconditions/view/{{service.Id}}?returnUrl={{continueUrl}}%26startdate=|date|" class="btn btn--primary">{% T Review Terms and Conditions %}</a>
+                            {% elseif data.Controller == 'profile' %}
+                            <a href="#" data-href="/{{data.Language}}/termsandconditions/view/{{service.Id}}?returnUrl={{continueUrl}}%26startdate=|date|" class="btn btn--primary">{% T Review Terms and Conditions %}</a>
+                            {% elseif data.Controller == 'publichome' %}
+                            <a href="#" data-href="/{{data.Language}}/termsandconditions/view/{{service.Id}}?returnUrl={{continueUrl}}" class="btn btn--primary">{% T Review Terms and Conditions %}</a>
+                            {% else %}
+                            <a href="#" data-href="/{{data.Language}}/termsandconditions/view/{{service.Id}}?returnUrl={{continueUrl}}%26startdate=|date|" class="btn btn--primary">{% T Review Terms and Conditions %}</a>
+                            {% endif %}
+                        {% else %}
+                            {% if data.Local.Contract != null %}
+                            <a href="#" data-href="{{continueUrl}}&startdate=|date|" class="btn btn--primary">{% T Change to this plan %}</a>
+                            {% elseif data.Controller == 'profile' %}
+                            <a href="#" data-href="{{continueUrl}}&startdate=|date|" class="btn btn--primary">{% T Select this plan %}</a>
+                            {% else %}
+                            <a href="#" data-href="{{continueUrl}}" class="btn btn--primary">{% T Sign up %}</a>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+
+                </li>
+                {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+        {% endfor %}
+    </div>
+</div>

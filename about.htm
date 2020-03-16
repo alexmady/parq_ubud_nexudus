@@ -1,0 +1,120 @@
+{% extends master.master %}
+{% block title %}{% T About {0} || data.Business.Name %}{% endblock %}
+{% block main %}
+<div class="container">
+  <!-- BREADCRUMBS -->
+  <ol class="breadcrumb">
+    <li><a href="{{ business.HomeUrl }}">{% T Home %}</a></li>
+    <li class="active">{% T About %}</li>
+  </ol>
+  <!-- END BREADCRUMBS -->
+</div>
+
+<!-- CARROUSEL -->
+{% include about_carrousel.htm %}
+<!-- END CARROUSEL -->
+
+<div class="container">
+  {% if data.Business.AboutUs != null %}
+  <!-- ABOUT DETAIL -->
+  <div class="about-detail">
+    <div class="row">
+      <div class="col-sm-{% if data.Business.HasBanner %}6{% else %}12{% endif %}">
+        <div class="about-description">
+          {{ data.Business.AboutUs }}
+        </div>
+      </div>
+      {% if data.Business.HasBanner %}
+      <div class="col-sm-6">
+        <img src="{% Url Business, GetBanner, w: 920, h: 680, mode: 'max' %}" alt="">
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  <!-- END ABOUT DETAIL -->
+  {% endif %}
+
+  <!-- SPACE LOCATIONS -->
+  {% if data.Businesses.size > 2 %}
+  <div class="section">
+  {% include home_locations.htm %}
+  </div>
+  {% endif %}
+  <!-- END SPACE LOCATIONS -->
+
+  <!-- CONTACT -->
+  <div class="section">
+    {% include about_contact_form.htm %}
+  </div>
+  <!-- END CONTACT -->
+
+  {% if data.AllAdminMembers.size > 0 %}
+  <!-- USERS LIST -->
+  <div class="section">
+
+    <h2 class="h3 section__title">{% T The {0} team || data.Business.Name %} </h2>
+
+    <ul class="row users-list">
+      {% for member in data.AllAdminMembers %}
+      {% include directory_list_item.htm %}
+      {% endfor %}
+    </ul>
+
+  </div>
+  <!-- END USERS LIST -->
+  {% endif %}
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+    var geocoder;
+    var map;
+    function initialize() {
+        geocoder = new google.maps.Geocoder();
+        var latlng = new google.maps.LatLng(0,0);
+        var mapOptions = {
+            zoom: 16,
+            scrollwheel: false,
+            center: latlng,
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+        }
+        map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
+        codeAddress();
+    }
+
+    function codeAddress() {
+        var address = "{{data.Business.Address | Replace: '\n', ' ' | Replace: '\r', ''}}";
+        geocoder.geocode( { 'address': address}, function(results, status) {
+            if (status == google.maps.GeocoderStatus.OK) {
+                map.setCenter(results[0].geometry.location);
+                var marker = new google.maps.Marker({
+                    map: map,
+                    position: results[0].geometry.location,
+                    markers: [
+                      { 'address': results[0].geometry.location }
+                    ]
+                });
+            } else {
+                showErrorMessage("We couldn't map your address. Try changing the format and order of each element of your address. Error: " + status);
+            }
+        });
+    }
+
+    google.maps.event.addDomListener(window, 'load', initialize);
+
+    var message = {{ data.Local | Json, maxDepth: 0 }};
+    var formSettings = {
+        formId: 'contact-form',
+        formError: '{% T Please make sure all the required fields are complete. %}',
+        formData: {
+            email: message.FromName,
+            header: message.Header,
+            body: message.Body
+        }
+    }
+    var fm = new SimpleFormManager(formSettings);
+    fm.init();
+
+</script>
+{% endblock %}

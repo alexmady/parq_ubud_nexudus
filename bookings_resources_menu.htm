@@ -1,0 +1,56 @@
+<li class="{% if data.Local.SelectedResourceType != null or data.Local.Resource == null %}active{% endif %}">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+      {% if data.Local.SelectedResourceType != null %}
+      {{ data.Local.SelectedResourceType.Name }} <span class="caret"></span>
+      {% else %}
+      {% T All resources %} <span class="caret"></span>
+      {% endif %}
+  </a>
+  <ul class="dropdown-menu " role="menu">
+      <li class="{% if data.Local.SelectedResourceType == null and data.Local.Resource == null %}active{% endif %}"  role="menuitem" tabindex="-1">
+          <a data-url="{% Url Bookings, Calendar %}" href="{% Url Bookings, Calendar %}">
+          <span class="dropdown-menu--images__title">{% T All resources %}</span>
+          <span class="dropdown-menu--images__subtitle">{% T {0} resource(s) || data.Resources.size %}</span>
+          </a>
+      </li>
+      {% for type in data.Local.ResourceTypes %}
+      <li class="{% if data.Local.SelectedResourceType.Id == type.Id %}active{% endif %}"  role="menuitem" tabindex="-1">
+          <a data-url="{% Url Bookings, Calendar, resourceTypeId: type.Id %}" href="{% Url Bookings, Calendar, resourceTypeId: type.Id %}">
+          <span class="dropdown-menu--images__title">{{ type.Name }}</span>
+          <span class="dropdown-menu--images__subtitle">{% T {0} resource(s) || type.Resources.size %}</span>
+          </a>
+      </li>
+  {% endfor %}
+  </ul>
+</li>
+{% for group in data.ResourceGroups %}
+<li class="{% if data.Local.Resource != null and data.Local.Resource.GroupName == group %}active{% endif %}">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+      {{ group }}{% if data.Local.Resource != null and data.Local.Resource.GroupName == group %}:
+      {{ data.Local.Resource.Name }}
+      {% endif %}
+      <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu dropdown-menu--images" role="menu">
+      {% for resource in data.Resources %}
+      {% if resource.GroupName == group or resource.GroupName == null %}
+      <li class="{% if resource.Id == data.Local.Resource.Id %}active{% endif %}" role="menuitem" tabindex="-1">
+          <a data-url="{% Url Bookings, Calendar, resourceId: resource.Id %}" href="{% Url Bookings, Calendar, resourceId: resource.Id %}">
+          {% if resource.HasImage %}
+          <img src="{% Url PublicResources, GetImage, id: resource.Id, h: 32, w: 32 %}" alt="{{ resource.Name }}" class="avatar dropdown-menu--images__cover">
+          {% else %}
+          <img src="http://placehold.it/32x32?text=?" alt="{{ resource.Name }}" class="avatar dropdown-menu--images__cover">
+          {% endif %}
+          <span class="dropdown-menu--images__title">{{ resource.Name }}</span>
+          {% if resource.Allocation != null %}
+          <span class="dropdown-menu--images__subtitle">{% T {0} seats || resource.Allocation %}</span>
+          {% else %}
+          <span class="dropdown-menu--images__subtitle">{{ resource.ResourceTypeName }}</span>
+          {% endif %}
+          </a>
+      </li>    
+      {% endif %}
+      {% endfor %}
+  </ul>
+</li>
+{% endfor %}

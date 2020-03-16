@@ -1,0 +1,88 @@
+{% extends signup.master %}
+{% block title %}{% T e-Signature %}{% endblock %}
+{% block main %}
+
+<div class="container">
+    <!-- CREDENTIALS -->
+    <div class="credentials credentials--step">
+
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+
+                <!-- LOGO OR SPACE NAME -->
+                <a class="navbar-brand" href="#">
+                    {% if data.Business.HasLogo %}
+                    <img src="{% Url Business, GetLogo, w:600, h:150, mode: 'max' %}" alt="{{ data.Business.Name }}">
+                    {% else %}
+                    <img src="http://placehold.it/600x150/FFFFFF?text={{ data.Business.Name }}" alt="{{ data.Business.Name }}">
+                    {% endif %}
+                </a>
+                <!-- END LOGO OR SPACE NAME -->
+
+                    <!-- CREDENTIALS HEADER -->
+                    <header class="credentials__header">
+                    <h1 class="h2">{% T Document eSignature %}</h1>
+                    </header>
+                    <hr/>
+                    <!-- END CREDENTIALS HEADER -->
+                    <div class="credentials__box">
+                        {% if data.Local.IsComplete %}
+                        <div class="alert alert--success alert--icon" role="alert">
+                            <i class="fa fa-check"></i>
+                            <b>
+                                {% T Thank you, this document has been signed. %}
+                            </b>
+                            {% T We will email you the signed copy shortly. %}
+                        </div>
+                        {% else %}
+                        <p>
+                            {% T {0} is requesting you to sign the following document: || data.Business.Name %}
+                        </p>
+                        {% endif %}
+                        <p>
+                            <strong>{% T File: %}</strong> {{ data.Local.File.Name }}
+                        </p>
+                        {% if data.Local.File.Description != null %}
+                        <p>
+                            <strong>{% T Descrption: %}</strong><br />
+                            {{ data.Local.File.Description }}
+                        </p>
+                        {% endif %}
+                        {% if data.Local.IsComplete == false %}
+                        <p>
+                            <button onclick="openHelloSignDialog();" class="btn btn--primary">
+                                <i class="fa fa-pencil"></i>
+                                {% T Review and sign this document %}
+                            </button>
+                        </p>
+                        <script type="text/javascript" src="https://s3.amazonaws.com/cdn.hellosign.com/public/js/hellosign-embedded.LATEST.min.js"></script>
+                        <script>
+                            HelloSign.init("{{ data.Local.EsignClientId }}");
+
+                            function openHelloSignDialog(){
+                                HelloSign.open({
+                                    url: "{{ data.Local.ESignUrl }}",
+                                    allowCancel: true,
+                                    uxVersion: 2,
+                                    messageListener: function(eventData) {
+                                        if (eventData.event == HelloSign.EVENT_CANCELED) {
+                                            location.reload(true);
+                                        }
+                                        if (eventData.event == HelloSign.EVENT_SIGNED) {
+                                            HelloSign.close();
+                                            location.reload(true);
+                                        }
+                                    }
+                                });
+                            }
+                        </script>
+
+                        {% endif %}
+                    </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

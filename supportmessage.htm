@@ -1,0 +1,115 @@
+{% extends master.master %}
+{% block title %}{{ data.Local.Message.Subject | StripHtml | TruncateWords: 10 }} | {% T Help %} | {{ data.Business.Name }}{% endblock %}
+{% block main %}
+<div class="container">
+  <!-- BREADCRUMBS -->
+  <ol class="breadcrumb">
+    <li><a href="{{ data.Business.HomeUrl }}">{% T Home %}</a></li>
+    <li><a href="{% Url Support, Index %}">{% T Help %}</a></li>
+    <li class="active">{{ data.Local.Message.Subject | StripHtml }}</li>
+  </ol>
+  <!-- END BREADCRUMBS -->
+  <div class="row">
+    <div class="col-sm-8 col-sm-offset-2">
+      <!-- HELP DETAIL -->
+      <div class="help-detail">
+        <div class="notifications-placeholder"></div>
+        <!-- PAGE HEADER -->
+        <div class="page-header page-header--user">
+          <h1 class="h2">{{ data.Local.Message.Subject | StripHtml }}</h1>
+          {% if data.Local.Message.Department != null %}
+          <span class="label">{{ data.Local.Message.Department.Name }}</span>
+          {% endif %}
+          {% if data.Local.Message.Closed %}
+          <span class="label label--danger">Closed</span>
+          {% endif %}
+          <div class="page-header__metadata">
+            <time>{{ data.Local.Message.CreatedOn | Date: 'd' }}</time> {% T by %} 
+            <a href="{% Url Directory, Profile, id: data.Local.Message.Coworker.Id, name: data.Local.Message.Coworker.FullName | Clean %}" class="link--default">{{ data.Local.Message.Coworker.FullName }}</a>
+            
+          </div>
+
+          <div class="user-badge user-badge--md page-header__user">
+            <a class="avatar user-badge__avatar" href="{% Url Directory, Profile, id: data.Local.Message.Coworker.Id, name: data.Local.Message.Coworker.FullName | Clean %}">
+              <img src="{% Url Coworker, GetAvatar, id: data.Local.Message.Coworker.Id, h:64, w:64 %}&noavatar=%2Fcontent%2Fthemes%2Fpublic%2Fdos%2Fimg%2Favatar-default.png" alt="">
+            </a>
+          </div>
+
+        </div>
+        <!-- END PAGE HEADER -->
+
+        <!-- HELP BODY -->
+        <div class="article-content">
+          {{ data.Local.Message.MessageText | StripHtml | NewlineToBr}}
+        </div>
+        <!-- END HELP BODY -->
+
+        <!-- ARTICLE TOOLS -->
+        {% if data.Local.Message.Closed == false %}
+        <div class="btn-toolbar">
+          <a href="#reply" class="btn btn--primary btn--sm">{% T Leave a reply %}</a>
+          <a href="{% Url Support, CloseRequest, id: data.Local.Message.Id %}" class="btn btn--link btn--sm">Close help request</a></li>
+        </div>
+        {% endif %}
+        <!-- END ARTICLE TOOLS -->
+
+      </div>
+      <!-- END HELP DETAIL -->
+
+      <!-- COMMENTS -->
+      <div class="section">
+        {% if data.Local.Message.Comments.size > 0 %}
+        <h2 class="h4 section__title">
+          {% if data.Local.Message.Comments.size == 1 %}
+          {% T 1 reply %}
+          {% else %}
+          {% T {0} replies || data.Local.Message.Comments.size %}
+          {% endif %}
+        </h2>
+
+        <ul class="comments-list">
+          {% for comment in data.Local.Message.Comments %}
+          <li class="comments-list__item">
+            <div class="user-badge">
+              <h3 class="h6 user-badge__name"><a href="#">{{ comment.Coworker.FullName }}</a></h3>
+              <time class="user-badge__metadata">{{ comment.CreatedOn | Date: 'D' }} - {{ comment.CreatedOn | Date: 't' }}</time>
+              <a class="avatar user-badge__avatar" href="#">
+                <img src="{% Url Coworker, GetAvatar, id: comment.Coworker.Id, h:48, w:48 %}&noavatar=%2Fcontent%2Fthemes%2Fpublic%2Fdos%2Fimg%2Favatar-default.png" alt=""></a>
+            </div>
+            <div class="comments-list__body">
+              <p>
+                {{ comment.MessageText | StripHtml | NewlineToBr }}
+              </p>
+            </div>
+          </li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+        {% if data.Local.Message.Closed == false %}
+        <div class="your-input" id="reply">
+          <div class="user-badge">
+            <h3 class="h6 user-badge__name">Your reply</h3>
+            <a class="avatar user-badge__avatar" href="#">
+              <img src="{% Url Coworker, GetAvatar, id: data.Coworker.Id, h:48, w:48 %}&noavatar=%2Fcontent%2Fthemes%2Fpublic%2Fdos%2Fimg%2Favatar-default.png" alt=""></a>
+          </div>
+          <form action="{% Url Support, NewComment %}" class="form your-input__form" method="post">
+            {% AntiforgeryToken %}
+            <input type="hidden" name="Comment.HelpDeskMessage" value="{{data.Local.Message.Id}}" />
+            <div class="form-group">
+              <textarea required="required" name="Comment.MessageText" cols="30" rows="4" class="form-control" placeholder="{% T Type your reply here... %}"></textarea>
+            </div>
+            <div class="form-actions">
+              <button class="btn btn--default--inverse btn--sm" type="submit">{% T Post your reply %}</button>
+            </div>
+          </form>
+        </div>
+        {% endif %}
+      </div>
+      <!-- END COMMENTS -->
+
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

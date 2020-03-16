@@ -1,0 +1,359 @@
+{% extends master.master %}
+{% block title %}{% if data.Local.Resource != null %} {{ data.Local.Resource.Name }} | {% endif %}{% T Events and bookings %} | {{ data.Business.Name }}{% endblock %}
+{% block main %}
+
+{% assign type = '' %}
+{% assign qsType = data.QueryString["type"] %}
+{% if qsType != null %}{% assign type = qsType %}{% endif %}
+
+{% assign showMemberDetails = data.Setting_Calendars_ShowMemberDetailsInFeed %}
+{% assign defaultView = data.Setting_Calendars_DefaultView %}
+{% assign resourceInAgendaView = 6 %}
+{% if defaultView == 1 and data.Local.Resources.size > resourceInAgendaView %}{% assign defaultView = 'timelineDay' %}{% endif %}
+{% if defaultView == 1 and data.Local.Resources.size <= resourceInAgendaView %}{% assign defaultView = 'agendaDay' %}{% endif %}
+{% if defaultView == 2 %}{% assign defaultView = 'agendaWeek' %}{% endif %}
+{% if defaultView == 3 %}{% assign defaultView = 'month' %}{% endif %}
+{% if defaultView == 4 %}{% assign defaultView = 'list' %}{% endif %}
+{% if data.Local.ShowAll == false %}{% assign defaultView = 'list' %}{% endif %}
+{% if data.Local.OnlyEvents == true %}{% assign defaultView = 'month' %}{% endif %}
+
+{% assign qsView = data.QueryString["view"] %}
+{% if qsView != null %}{% assign defaultView = qsView %}{% endif %}
+
+<div class="container">
+    <!-- BREADCRUMBS -->
+    <ol class="breadcrumb">
+        <li><a href="{{ data.Business.HomeUrl }}">{% T Home %}</a></li>
+        {% if data.Local.ShowAll %}
+        <li class="active">{% T Bookings %}</li>
+        {% else %}
+        <li class="active">{% T My Bookings %}</li>
+        {% endif %}
+    </ol>
+    <!-- END BREADCRUMBS -->
+    <div class="alert alert-danger" role="alert" id="rotate_device_alert">
+        <script>
+            if(window.addEventListener) {
+                window.addEventListener("orientationchange", function() {
+                    location.reload();
+                });
+            }
+        </script>
+        <style>
+        @media only screen and (min-width: 600px) {
+            #rotate_device_alert {
+                display: none;
+            }
+        }
+        </style>
+        <strong>{% T Heads up! %}</strong> 
+        {% T Rotate your device to a horizontal position to see the full calendar %}
+    </div>
+    <!-- PAGE HEADER -->
+    <div class="page-header page-header--flex">
+        <div class="page-header--flex__item">
+            {% if data.Local.ShowAll %}
+            <h1>{% T Bookings %}</h1>
+            {% else %}
+            <h1>{% T My Bookings %}</h1>
+            {% endif %}
+        </div>
+        <div class="page-header--flex__item">
+            <div class="btn-toolbar">
+                {% if data.Coworker != null %}
+                <a href="{% Url Bookings, My %}" class="btn btn--secondary">{% T My bookings %}</a>
+                {% endif %}
+                <a href="#" onclick="bookingManager.createBooking(); return false;" class="btn btn--primary">{% T Make a booking %}</a>
+            </div>
+        </div>
+    </div>
+    <!-- END PAGE HEADER -->
+    <!-- FILTERS -->
+    <div class="filters">
+        <ul class="nav filters__nav">
+            {% include bookings_resources_menu.htm %}
+
+            <li class="active pull-right">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                    {% T Location %}: {{ data.Business.Name }} <span class="caret"></span>
+                </a>
+                {% include core_locations_list.htm %}
+            </li>
+        </ul>
+    </div>
+    <!-- END FILTERS -->
+    <!-- BOOKINGS -->
+    <div class="bookings">
+        <!-- BOOKINGS CALENDAR -->
+        <div id="calendar" class="fc fc-ltr fc-unthemed">
+            <div class="calendar-loading-bar hide">
+                <div class="progress" style="width: 100%">
+                    <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+                        <span class="sr-only">{% T Loading... %}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- END BOOKINGS CALENDAR -->
+        <!-- MODAL DIALOGS -->
+        {% include bookings_registration_form.htm %}
+        {% include bookings_booking_form.htm %}
+        {% include bookings_carousel.htm %}
+        <!-- END MODAL DIALOGS -->
+    </div>
+    <!-- END BOOKINGS -->
+</div>
+{% endblock %}
+{% block scripts %}
+
+<script>
+
+var resources = [
+    {% if data.Local.Resource == null %}
+        {% for resource in data.Local.Resources %}
+            {% assign resourceGroupKey = resource.GroupName | Clean %}
+            {% assign resourceGroupName = resource.GroupName %}
+            {% if resourceGroupKey == '' %}
+                {% assign resourceGroupKey = 'resources' %}
+                {% assign resourceGroupName = 'Resources' %}
+            {% endif %}
+            {% if type == resourceGroupKey or type == '' %}
+            {
+                id:{{ resource.Id }},
+                UniqueId: '{{ resource.UniqueId }}',
+                imageUrl: '{% if resource.HasImage %}{% Url PublicResources, GetImage, id: resource.Id, h: 200, w: 312 %}{% else %}http://placehold.it/312x200?text=?{% endif %}',
+                thumbUrl: '{% if resource.HasImage %}{% Url PublicResources, GetImage, id: resource.Id, h: 32, w: 32 %}{% else %}http://placehold.it/32x32?text=?{% endif %}',
+                groupName: '{% T resourceGroupName %}',
+                title:'{{ resource.Name | Replace: "'", "\'" }}',
+                resourceTypeName:'{{ resource.ResourceTypeName | Replace: "'", "\'" }}',
+                eventColor: getColurFromName('{{ resource.Name | Replace: "'", "\'" }}')},
+            {% endif %}
+        {% endfor %}
+        {% else %}
+        {
+            id:{{ data.Local.Resource.Id }},
+            imageUrl: '{% if data.Local.Resource.HasImage %}{% Url PublicResources, GetImage, id: data.Local.Resource.Id, h: 200, w: 312 %}{% else %}http://placehold.it/312x200?text=?{% endif %}',
+            thumbUrl: '{% if data.Local.Resource.HasImage %}{% Url PublicResources, GetImage, id: data.Local.Resource.Id, h: 32, w:32 %}{% else %}http://placehold.it/32x32?text=?{% endif %}',
+            groupName: '{% T resourceGroupName %}',
+            title:'{{ data.Local.Resource.Name | Replace: "'", "\'" }}',
+            resourceTypeName:'{{ data.Local.Resource.ResourceTypeName | Replace: "'", "\'" }}',
+            eventColor: getColurFromName('{{ data.Local.Resource.Name | Replace: "'", "\'" }}')}
+    {% endif %}
+];
+var bookingManager = new BookingManager({
+    dateTimeFormat: 'D, dd MM yyyy - HH:ii P',
+    resources: resources,
+    roundMinutesTo: 30,
+    coworker: {
+        Id: {% if data.Coworker != null %}{{data.Coworker.Id}}{% else %}null{% endif %}
+    },
+    guestBookings: {% if data.Setting_Bookings_EnableGuestBookings %}true{% else %}false{% endif %},
+    loginUrl: '{% Url Login, Index, lang: data.Language %}&returnUrl={{ data.URL }}',
+    availableUrl: '{% Url Bookings, GetBookingPrice %}',
+    dayAvailableUrl: '{% Url Bookings, GetAvailabilityAt %}',
+    productsUrl: '{% Url Bookings, GetResourceProducts %}',
+    newBookingUrl: '{% Url Bookings, NewBookingJson %}',
+    updateBookingUrl: '{% Url Bookings, BookingJson %}',
+    visitorsUrl: '{% Url Bookings, GetBookingVisitors %}',
+    bookingUrl:  '{% Url Bookings, BookingJson %}',
+    deleteBookingUrl:  '{% Url Bookings, DeleteJson %}',
+    paymentUrl: '{% Url Bookings, Pay %}'
+});
+bookingManager.getBalance();
+bookingManager.applyBindings();
+
+var fc = $('#calendar').fullCalendar({
+    schedulerLicenseKey: '0011856468-fcs-1444557994',
+    lang: '{{ data.Language }}',
+    allDaySlot: false,
+    titleFormat: $(window).width() >= 768 ? 'ddd, MMM Do YYYY' : 'MMM DD' ,
+    scrollTime: '06:00',
+    minTime:'06:00',
+    aspectRatio: 1.8,
+    height: 'auto',
+    firstDay: 1,
+    editable: false,
+    selectable: true,
+    selectHelper: true,
+    select: function(start, end, allDay, view, resourceObj) {
+        var calendar = $('#calendar');
+        if(resourceObj)
+            $('#Booking_Resource').val(resourceObj.id);
+        else
+            $('#Booking_Resource').val(null);
+
+        start = start.clone().local();
+        end = end.clone().local();
+
+        if(start.hours() == 0) start.hours(8);
+        if(end.hours() == 0) end = null;
+
+        {% if data.Coworker != null %}
+        bookingManager.createBooking({
+            resourceId: resourceObj ? resourceObj.id : null,
+            date: start.toDate(),
+            endDate: end != null ? end.toDate() : null
+        });
+        {% elseif data.Setting_Bookings_EnableGuestBookings %}
+        bookingManager.createBooking({
+            resourceId: resourceObj ? resourceObj.id : null,
+            date: start.toDate(),
+            endDate: end != null ? end.toDate() : null
+        });
+        {% else %}
+        app.showMessage("{% T Login to make a booking %}");
+        {% endif %}
+        calendar.fullCalendar('unselect');
+    },
+    resourceLabelText: '{{ data.Business.Name | Replace: "'", "\'" }}',
+    resourceGroupField: 'groupName',
+    viewRender: function (view) {
+
+        //Update all links with data-url parameter so when clicked they preserve the current date and view of the calendar.
+        var date = view.intervalStart.format('YYYY-MM-DD');
+        $('a[data-url]').each(function(){
+            var url = $(this).attr('data-url');
+            var newUrl = url + (url.indexOf('?') > -1 ? '&' : '?') +'date=' + date + '&view=' + view.name + '&showAll={{ data.Local.ShowAll }}';
+            $(this).attr('href', newUrl);
+        });
+
+        //Store the current URL in the calendar element. This is used by several scripts to be able to
+        //reload the current calendar state.
+        var currentUrl = window.location.href;
+        var calendarUrl = currentUrl.replace(/(date=)[^\&]+/, '');
+        calendarUrl = calendarUrl.replace(/(view=)[^\&]+/, '');
+        calendarUrl = calendarUrl + (calendarUrl.indexOf('?') > -1 ? '' : '?') +'date=' + date + '&view=' + view.name;
+        $('#calendar').attr('data-calendar-url', calendarUrl);
+    },
+    resources: resources,
+    eventClick: function(calEvent, jsEvent, view) {
+        if(calEvent.url)
+            window.location = calEvent.url;
+        else if(calEvent.private) {
+            app.showMessage("{% T You cannot view this booking %}", "{% T This booking was made by another user and you cannot see its details. %}");
+            return false;
+        }
+        else
+        {
+            bookingManager.showBooking(calEvent);
+            return false;
+        }
+    },
+    dayClick: function(date, evData, jsEvent, resourceObj ) {
+		date = date.clone().local().toDate();
+        bookingManager.createBooking({
+            resourceId: resourceObj ? resourceObj.id : null,
+            date: date
+        });
+    },
+    defaultView: $(window).width() < 768 ? 'list' : '{% if data.Local.Resource.Id > 0 %}agendaDay{% else %}{{defaultView}}{% endif %}',
+    editable: true,
+    displayEventEnd: true,
+    defaultDate: moment('{{ data.Local.CurrentDate | FormatDate: 'yyyy-MM-dd' }}'),
+    header: {
+        left:   'title',
+        center: $(window).width() < 768 ? null : 'month,agendaWeek,{% if data.Local.Resource.Id > 0 or data.Resources.size <= resourceInAgendaView %}agendaDay{% else %}timelineDay{% endif %},list',
+        right:  $(window).width() < 768 ? 'prev,next' : 'today prev,next'
+    },
+    resourceRender: function(resourceObj, dataTds, eventTd) {
+        {% for resource in data.Resources %}
+        {% if resource.HasImage %}
+        if(resourceObj.id == {{ resource.Id }}){
+            dataTds.find('.fc-cell-text').prepend('<img data-toggle="lightbox" href="#resource-image-{{resource.Id}}"  style="cursor: pointer; display: inline; margin-right: 10px; border: 1px solid rgb(51, 51, 51)" src="{% Url PublicResources, GetImage, id: resource.Id, h: 20, w: 20 %}" />');
+            $('#calendar').append('<div id="resource-image-{{resource.Id}}" class="lightbox hide fade"  tabindex="-1" role="dialog" aria-hidden="true"><div class="lightbox-content"><img src="{% Url PublicResources, GetImage, id: resource.Id, h: 600, w: 800 %}"/><div class="lightbox-caption"><p>{{ resource.Name }}</p></div></div></div>');
+        }
+        {% endif %}
+        {% endfor %}
+
+    },
+    eventRender: function (event, element) {
+        var color = 'black';
+        if(event.teamBooking) color = '#484848';
+        if(event.url) color = '#a1a1a1';
+        if(event.private) color = getColurFromName(event.resourceName);
+
+		if(event.coworkerFullName){
+            $(element).attr("data-original-title", event.coworkerFullName)
+            $(element).tooltip({ container: "body"})
+        }
+
+        element.css('background-color', color);
+        element.css('border-color', color);
+        element.find('div.fc-title').html(element.find('div.fc-title').text());
+    },
+    loading: function( isLoading, view ) {
+        if(isLoading) {
+            $('.calendar-loading-bar').removeClass('hide');
+        } else {
+            $('.calendar-loading-bar').addClass('hide');
+        }
+    },
+    eventSources: [
+        {% if data.Local.OnlyEvents == false %}
+        {
+            url: '{% Url Bookings, FullCalendarBookings %}',
+            type: 'POST',
+            data: {
+                resourcetypeid: '{{ data.Local.SelectedResourceType.Id }}',
+                resourceId: '{{ data.Local.Resource.Id }}',
+                showAllBookings: '{{ data.Local.ShowAllBookings }}',
+                showMemberDetails: '{{ showMemberDetails }}',
+                myBookingsColor: 'black',
+                group: '{{ data.Local.Group | Clean }}',
+                showAll: '{{ data.Local.ShowAll }}'
+            },
+            error: function() {
+                app.showMessage('We could not load the booking calendar');
+            },
+        },
+        {% endif %}
+        {
+            url: '{% Url Bookings, FullCalendarEvents %}',
+            type: 'POST',
+            data: {
+                resourcetypeid: '{{ data.Local.SelectedResourceType.Id }}',
+                resourceId: '{{ data.Local.Resource.Id }}',
+                showAllBookings: '{{ data.Local.ShowAllBookings }}',
+                showMemberDetails: '{{ showMemberDetails }}',
+            },
+            color: '#c0392b',
+            error: function() {
+                app.showMessage('We could not load the events calendar');
+            },
+        },
+    ]
+});
+
+function getColurFromName(name){
+    var colors = [
+        "#1abc9c",
+        "#2ecc71",
+        "#3498db",
+        "#9b59b6",
+        "#16a085",
+        "#27ae60",
+        "#2980b9",
+        "#8e44ad",
+        "#f1c40f",
+        "#e67e22",
+        "#e74c3c",
+        "#f39c12",
+        "#d35400",
+        "#c0392b"
+    ];
+    // Generate a Hash for the String
+    var hash = function(word) {
+        var hash = 0;
+        for (var i = 0; i < word.length; i++) {
+            var charCode = word.charCodeAt(i);
+            hash += charCode;
+        }
+        return hash;
+    };
+
+    var index = hash(name) % colors.length;
+    return colors[index];
+}
+
+</script>
+{% endblock %}

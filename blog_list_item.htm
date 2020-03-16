@@ -1,0 +1,22 @@
+<li class="col-sm-4 blog-list__item">
+  <a href="{% Url Blog, Read, Id: post.Id, title: post.Title | Clean %}" class="blog-list__cover">
+    {% if post.HasLargeImage %}
+    <img src="{% Url Blog, GetLargeImage, id: post.Id, h: 540, w: 720 %}" alt="{{ post.Title | StripHtml }}">
+    {% endif %}
+  </a>
+  <div class="blog-list__metadata">
+    {{ post.PostedBy.FullName }}
+    <span class="blog-list__date">{% T on %} {{ post.PublishDate | FormatDate: 'd' }}</span>
+    <span class="blog-list__comments-count">
+      <i class="fa fa-comment-o"></i>
+      <a class="link--default" href="{% Url Blog, Read, Id: post.Id, title: post.Title | Clean %}#comments">
+      {% T {0} comment(s) || post.Comments.size %}
+      </a>
+    </span>
+  </div>
+  <h3 class="h4 blog-list__title">
+    <a href="{% Url Blog, Read, Id: post.Id, title: post.Title | Clean %}">
+      {{ post.Title | StripHtml }}
+    </a>
+  </h3>
+</li>

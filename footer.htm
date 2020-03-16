@@ -1,0 +1,144 @@
+<footer class="site-footer">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-5">
+                <!-- SITE FOOTER SECTION: COWORKING -->
+                <div class="site-footer__section">
+
+                    <h3 class="h5">{{ data.Business.Name }}</h3>
+                    <p>
+                        {{ data.Business.ShortIntroduction }}
+                    </p>
+
+                </div>
+                <!-- END SITE FOOTER SECTION: COWORKING -->
+                <!-- SITE FOOTER SOCIAL -->
+                <ul class="list-inline site-footer__social">
+                    {% if data.Setting_Social_Facebook.size > 0 %}
+                    <li><a href="{{ data.Setting_Social_Facebook }}"><i class="fa fa-facebook"></i></a></li>
+                    {% endif %}
+                    {% if data.Setting_Social_Twitter.size > 0 %}
+                    <li><a href="https://twitter.com/{{ data.Setting_Social_Twitter }}"><i class="fa fa-twitter"></i></a></li>
+                    {% endif %}
+                    {% if data.Setting_Social_Flickr.size > 0 %}
+                    <li><a href="{{ data.Setting_Social_Flickr }}"><i class="fa fa-flickr"></i></a></li>
+                    {% endif %}
+                    {% if data.Setting_Social_Instagram.size > 0 %}
+                    <li><a href="{{ data.Setting_Social_Instagram }}"><i class="fa fa-instagram"></i></a></li>
+                    {% endif %}
+
+                </ul>
+                <!-- END SITE FOOTER SOCIAL -->
+
+            </div>
+
+            <div class="col-xxs-12 col-xs-6 col-sm-4 col-md-2">
+
+                <!-- SITE FOOTER SECTION: LINKS -->
+                <div class="site-footer__section">
+
+                    <ul>
+                        {% if data.Setting_PublicWebSite_AboutUs %}
+                        <li><a href="{% Url About, Index %}">{% T About %}</a></li>
+                        {% endif %}
+                        {% if data.Resources.size > 0 %}
+                        <li><a href="{% Url Bookings, Calendar  %}">{% T Bookings %}</a></li>
+                        {% endif %}
+                        {% if data.Setting_PublicWebSite_Directory %}
+                        <li><a href="{% Url Directory, Members %}">{% T Members %}</a></li>
+                        {% endif %}
+                        {% if data.Setting_PublicWebSite_Help %}
+                        <li><a href="{% Url Support, Index %}">{% T Help %}</a></li>
+                        {% endif %}
+                    </ul>
+
+                </div>
+                <!-- END SITE FOOTER SECTION: LINKS -->
+
+            </div>
+
+            <div class="col-xxs-12 col-xs-6 col-sm-4 col-md-2">
+
+                <!-- SITE FOOTER SECTION: LINKS -->
+                <div class="site-footer__section">
+
+                    <ul>
+                        {% if data.Setting_PublicWebSite_Events %}
+                        <li><a href="{% Url Events, Index %}">{% T Events %}</a></li>
+                        {% endif %}
+                        {% if data.Setting_Blog_Enabled %}
+                        <li><a href="{% Url Blog, Index %}">{% T Blog %}</a></li>
+                        {% endif %}
+                        {% if data.Setting_PublicWebSite_Contact %}
+                        <li><a href="{% Url Contact, Index %}">{% T Contact %}</a></li>
+                        {% endif %}
+
+                    </ul>
+
+                </div>
+                <!-- END SITE FOOTER SECTION: LINKS -->
+
+            </div>
+
+            <div class="col-xs-12 col-sm-4 col-md-3">
+
+                <!-- SITE FOOTER SECTION: LANGUAGE -->
+                <div class="site-footer__section site-footer__section--language">
+
+                    <h3 class="h5">{% T Language %}</h3>
+                    <div class="dropup">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{ data.CurrentLanguage }} <span class="caret"></span></a>
+                        <ul class="dropdown-menu" role="menu">
+                            {% for language in data.Languages %}
+                            <li class="{% if language.Name == data.CurrentLanguage %}active{% endif %}"><a role="menuitem" tabindex="-1" href="{{ data.Business.HomeUrl }}/{{ language.Culture }}">{{ language.Name }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                </div>
+                <!-- END SITE FOOTER SECTION: LANGUAGE -->
+
+            </div>
+
+        </div>
+
+        <div class="row">
+
+            <div class="col-md-6 col-md-push-6">
+                {% if data.Setting_Footer_SayingText != "" %}
+                <!-- SITE FOOTER QUOTE -->
+                <blockquote class="site-footer__quote">
+                    <p>“{{ data.Setting_Footer_SayingText }}”.</p>
+                    <cite>{{ data.Setting_Footer_SayingAuthor }}</cite>
+                </blockquote>
+                <!-- SITE FOOTER QUOTE -->
+                {% endif %}
+            </div>
+
+            <div class="col-md-6 col-md-pull-6">
+
+                <!-- SITE FOOTER LEGAL -->
+                <div class="site-footer__legal">
+
+                    <ul class="list-inline">
+                        <li><a href="{% Url TermsAndConditions, Index %}">{% T Terms and conditions %}</a></li>
+                        {% if data.Setting_Legal_Cookies.size > 0 %}
+                        <li><a href="{% Url Legal, Cookies %}">{% T Cookies policy %}</a></li>
+                        {% endif %}
+                        {% if data.Setting_Legal_Privacy.size > 0 %}
+                        <li><a href="{% Url Legal, Privacy %}">{% T Privacy policy %}</a></li>
+                        {% endif %}
+                    </ul>
+
+                    <p>{{ data.Now | FormatDate: 'yyyy' }} © {{ data.Business.Name }}. {% T All rights reserved. %}</p>
+
+                </div>
+                <!-- END SITE FOOTER LEGAL -->
+
+            </div>
+
+        </div>
+
+    </div>
+
+</footer>

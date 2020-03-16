@@ -1,0 +1,277 @@
+{% extends signup.master %}
+{% block title %}{% T Join us %} | {{ data.Business.Name }}{% endblock %}
+{% block main %}
+
+<div class="container">
+    <!-- CREDENTIALS -->
+    <div class="credentials credentials--step">
+
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <!-- LOGO OR SPACE NAME -->
+                <a class="navbar-brand" href="{{ data.Business.HomeUrl }}">
+                    {% if data.Business.HasLogo %}
+                    <img src="{% Url Business, GetLogo, w:600, h:150, mode: 'max' %}" alt="{{ data.Business.Name }}">
+                    {% else %}
+                    <img src="http://placehold.it/600x150/FFFFFF?text={{ data.Business.Name }}" alt="{{ data.Business.Name }}">
+                    {% endif %}
+                </a>
+                <!-- END LOGO OR SPACE NAME -->
+                <!-- CREDENTIALS HEADER -->
+                <header class="credentials__header">
+                    <h1 class="h2">{% T Personal details %}</h1>
+                </header>
+                <!-- END CREDENTIALS HEADER -->
+                <hr />
+                <!-- CREDENTIALS STEPS -->
+                <ul class="row steps">
+                    <li class="col-xs-3 active"><span>1</span> <b>{% T Personal details %}</b></li>
+                    <li class="col-xs-3"><span>2</span> <b>{% T Subscription plan %}</b></li>
+                    <li class="col-xs-3"><span>3</span> <b>{% T Additional products %}</b></li>
+                    <li class="col-xs-3"><span>4</span> <b>{% T Payment Details %}</b></li>
+                </ul>
+                
+                {% if data.Businesses.size > 1 %}
+                <h4>{% T Your Home Location %}</h4>
+                <div class="credentials__box">
+                    <form class="form" data-bind="with: coworker">
+                        <div class="form-group required">
+                            <p>
+                                {% T Choose your home location %}
+                            </p>
+                            <label for="">{% T Home Location %}</label>
+                            <select class="form-control" data-bind="value: InvoicingBusiness.Id" required>
+                                {% for business in data.Businesses %}
+                                {% if business.Businesses.size == 0 %}
+                                <option {% if data.Business.Id == business.Id %}selected{% endif %} value="{{business.Id}}">{{ business.Name }}</option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                            <small class="help-block validation-error" data-bind="validationMessage: Gender"></small>
+                    
+                        </div>
+                    </form>
+                </div>
+                {% endif %}
+                
+                <!-- END CREDENTIALS STEPS -->
+                <h4>{% T Your Personal Details %}</h4>
+                {% if data.Local.Team != null %}
+                <div class="alert alert-info">
+                    <div>
+                        <strong>{% T Heads Up! %}</strong> {% T Your are joining the follow team: %}
+                        <strong>{{ data.Local.Team.Name }}</strong>.
+                        {% T if this is not right, please do not complete this form and get in touch with us %}.
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="credentials__box">
+                    <form class="form" data-bind="with: coworker">
+                        <div class="form-group required">
+                            <label for="">{% T Full name %}</label>
+                            <input data-bind="value: FullName" required="required" type="text" class="form-control" placeholder="{% T Required %}">
+                            <small class="help-block validation-error" data-bind="validationMessage: FullName"></small>
+                        </div>
+                        <div class="form-group required">
+                            <label for="">{% T Email %}</label>
+                            <input data-bind="value: Email, valueUpdate: 'keyup'" required="required" type="email" class="form-control" placeholder="{% T Required %}">
+                            <small class="help-block validation-error" data-bind="validationMessage: Email"></small>
+                            <div data-bind="visible: $root.alreadyRegistered()" style="display: none">
+                                <small class="help-block validation-error">{% T You are already registered, please log in. %}</small>
+                                <a href="{% Url Login, Index %}?returnUrl={{ data.URL }}" class="btn btn--primary btn--sm purchase-login">{% T Log in %}</a>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            {% if data.Setting_SignupForm_LandLine != 3 %}
+                            <div class="form-group col-sm-4 {% if data.Setting_SignupForm_LandLine == 2 %}required{% endif %}">
+                                <label for="">{% T Phone %}</label>
+                                <input data-bind="value: LandLine" {% if data.Setting_SignupForm_LandLine= =2 %}required{% endif %} type="input" class="form-control" placeholder="{% if data.Setting_SignupForm_LandLine == 2 %}{% T Required %}{% else %}{% T Optional %}{% endif %}">
+                                <small class="help-block validation-error" data-bind="validationMessage: LandLine"></small>
+                            </div>
+                            {% endif %}
+                            {% if data.Setting_SignupForm_MobilePhone != 3 %}
+                            <div class="form-group col-sm-4 {% if data.Setting_SignupForm_MobilePhone == 2 %}required{% endif %}">
+                                <label for="">{% T Mobile %}</label>
+                                <input data-bind="value: MobilePhone" {% if data.Setting_SignupForm_MobilePhone= =2 %}required{% endif %} type="input" class="form-control" placeholder="{% if data.Setting_SignupForm_MobilePhone == 2 %}{% T Required %}{% else %}{% T Optional %}{% endif %}">
+                                <small class="help-block validation-error" data-bind="validationMessage: MobilePhone"></small>
+                            </div>
+                            {% endif %}
+                            {% if data.Setting_SignupForm_Gender != 3 %}
+                            <div class="col-sm-4 form-group col-sm-4 {% if data.Setting_SignupForm_Gender == 2 %}required{% endif %}">
+                                <div class="form-group">
+                                    <label for="">{% T Gender %}</label>
+                                    <select class="form-control" data-bind="value: Gender" {% if data.Setting_SignupForm_Gender= =2 %}required{% endif %}>
+                                        <option value="NotSet">-</option>
+                                        <option value="Male">{% T Male %}</option>
+                                        <option value="Female">{% T Female %}</option>
+                                        <option value="Other">{% T Other %}</option>
+                                        <option value="RatherNotSay">{% T Rather Not Say %}</option>
+                                    </select>
+                                    <small class="help-block validation-error" data-bind="validationMessage: Gender"></small>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% if data.Setting_SignupForm_Avatar != 3 %}
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <div class="form-group {% if data.Setting_SignupForm_Avatar == 2 %}required{% endif %}">
+                                    <label for="Coworker_Avatar">{% T Your photo %}</label>
+                                    <input {% if data.Setting_SignupForm_Avatar == 2 %}required{% endif %} type="file" data-bind="value: Avatar, file: {data: Avatar, allowed: ['image/jpeg', 'image/jpg', 'image/png'] }" id="Coworker_Avatar" name="Coworker_Avatar">
+                                    <small class="help-block validation-error" data-bind="validationMessage: Avatar"></small>
+                                    <p class="help-block">
+                                        {%  T File smaller than 10MB and at least 400px by 400px. %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if data.Local.HasDiscountCodes %}
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label for="Coworker_DiscountCode">{% T Discount / Referral Code %}</label>
+                                    <input type="text" id="Coworker_DiscountCode" name="Coworker.DiscountCode" data-bind="value: DiscountCode" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </form>
+                </div>
+                {% if data.Setting_Signup_AskForPassword == "true" and data.UserIsLoggedIn == false %}
+                <h3>{% T Your Password %}</h3>
+                <div class="credentials__box">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <p>
+                                {% T To keep your account secure your password must have at least one uppercase letter, one lowercase letter and a number. %}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="form-group required">
+                                <label for="Coworker_DiscountCode">{% T Password %}</label>
+                                <input type="password" required="required" id="Coworker_Password" name="Coworker.Password" data-bind="value: coworker.Password" class="form-control">
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group required">
+                                <label for="Coworker_DiscountCode">{% T Confirm Password %}</label>
+                                <input type="password" required="required" id="Coworker_PasswordConfirm" name="Coworker.PasswordConfirm" data-bind="value: coworker.PasswordConfirm" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if data.Setting_SignupForm_ShowContactSection %}
+                <h4>{% T Your Contact Details %}</h4>
+                <div class="credentials__box">
+                    <form class="form" data-bind="with: coworker">
+                        {% include profile_address_fields.htm %}
+                    </form>
+                </div>
+                {% endif %}
+
+                <h4 data-bind="visible: coworker.hasBillingDetails" style="display: none">{% T Your Billing Details %}</h4>
+                <div class="credentials__box" data-bind="visible: coworker.hasBillingDetails" style="display: none">
+                    <form class="form" data-bind="with: coworker">
+                        {% include profile_billing_fields.htm %}
+
+                    </form>
+                </div>
+                <!-- CUSTOM FIELDS -->
+                <!-- ko foreach: { data: $root.customFields, as: 'group' } -->
+                <h4 data-bind="text: group[0].GroupName"></h4>
+                <div class="credentials__box" data-bind="attr: {id: 'customfields-' + $root.customFields.indexOf(group) }">
+
+                    <div class="row" data-bind="foreach: { data: group, as: 'field' }">
+                        <!-- ko template: { name: 'field-template-' + field.FieldType.toLowerCase() + (field.FieldType === 'Dropdown' && field.AllowMultipleOptions ? '-multiple' : '') } -->
+                        <!-- /ko -->
+                    </div>
+                </div>
+                <!-- /ko -->
+                <!-- END CUSTOM FIELDS -->
+                {% if data.Setting_SignupForm_ShowProfileSection %}
+                <h4>{% T Professional Profile %}</h4>
+                <div class="credentials__box">
+                    <form class="form" data-bind="with: coworker">
+                        {% include profile_fields.htm %}
+                        {% include profile_social_fields.htm %}
+                    </form>
+                </div>
+                {% endif %}
+
+                <h4>{% T Terms and Conditions %}</h4>
+                <div class="credentials__box">
+                    <form class="form" data-bind="with: coworker">
+                        <div class="checkbox">
+                            <label>
+                                <input data-bind="checked: SignUpToNewsletter" type="checkbox">
+                                <strong>{% T I would like to receive occasional and relevant updates from {0} by email. || data.Business.Name %}</strong>
+                            </label>
+                        </div>
+                        {% if data.Business.TermsAndConditions != null %}
+                        <div class="checkbox">
+                            <label>
+                                <input data-bind="checked: GeneralTermsAcceptedOnline" type="checkbox">
+                                {% capture tcUrl %}{% Url TermsAndConditions, Index %}{% endcapture %}
+                                <strong>{% T I agree to the <a target="_blank" href="{0}">terms and conditions</a>. || tcUrl %}</strong>
+                            </label>
+                        </div>
+                        {% endif %}
+                    </form>
+                </div>
+
+                {% if data.Setting_Signup_UseCaptcha %}
+                <div class="form-group">
+                    <form class="form">
+                        {% Captcha %}
+                    </form>
+                </div>
+                {% endif %}
+                <div class="form-actions">
+                    <button data-bind="click: $root.submit, disable: $root.busy" class="btn btn--primary" type="submit">
+                        <span data-bind="visible: !$root.busy()">{% T Continue %}</span>
+                        <span data-bind="visible: $root.busy">{% T Please wait... %}</span>
+                        <i class="fa fa-angle-right i-space--left"></i>
+                    </button>
+                </div>
+                {% include signup_footer.htm %}
+
+            </div>
+        </div>
+    </div>
+    <!-- END CREDENTIALS -->
+
+</div>
+{% endblock %}
+{% block scripts %}
+{% include custom_fields_templates.htm %}
+<script>
+    $(function(){
+		var coworker = {{ data.Coworker | Json prefix: false }};
+        coworker.Password  = null;
+		coworker.PasswordConfirm = null;
+        coworker.GeneralTermsAcceptedOnline = false;
+        coworker.Country = { Id: parseInt(coworker.CountryId) };
+        coworker.TourDate = null;
+        coworker.InvoicingBusiness = { Id: {{ data.Business.Id }} };
+
+        var sm = new SignupManager({
+            url: '{% Url Signup, Index, pricePlanId: data.Local.PricePlanId, TeamGuid: data.Local.TeamGuid, tariffGuid: data.Local.TariffGuid, returnUrl: data.Local.ReturnUrl, _resource: ".", _depth: 1 %}',
+            coworker: coworker,
+			profileTags: {{ data.Local.ProfileTags | Json prefix: false }},
+            customFields: {{ data.Local.CustomFields | Json prefix: false, maxDepth: 0 }},
+            errorInForm: "{% T Please complete all the required fields %}",
+            errorMessage: "{% T We could not update your profile, please try again later. %}"
+        });
+
+        sm.init();
+    })
+</script>
+{% endblock %}

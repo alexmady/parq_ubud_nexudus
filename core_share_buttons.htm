@@ -1,0 +1,25 @@
+<!-- SOCIAL BUTTONS -->
+<ul class="list-inline social-links">
+  <li>
+    <span>{% T Share %}:</span>
+  </li>
+  <li>
+    <a target="_blank" href="https://www.facebook.com/sharer/sharer.php?u={{ data.AbsoluteUri }}" class="link--facebook">
+      <i class="fa fa-facebook i-space--right--small"></i>
+      {% T Facebook %}
+    </a>
+  </li>
+  <li>
+    <a target="_blank" href="https://twitter.com/home?status={{ data.Local.BlogPost.Title | StripHtml }}:+{{ data.AbsoluteUri }}" class="link--twitter">
+      <i class="fa fa-twitter i-space--right--small"></i>
+      Twitter
+    </a>
+  </li>
+  <li>
+    <a target="_blank" href="https://plus.google.com/share?url={{ data.AbsoluteUri }}" class="link--google">
+      <i class="fa fa-google-plus i-space--right--small"></i>
+      Google
+    </a>
+  </li>
+</ul>
+<!-- END SOCIAL BUTTONS -->

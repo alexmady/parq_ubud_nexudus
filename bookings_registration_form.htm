@@ -1,0 +1,96 @@
+<!-- BOOKINGS MODAL STEP 2 -->
+<div class="modal modal--book" id="bookings-registration-form" tabindex="-1" role="dialog" aria-labelledby="modal-bookLabel">
+  <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h3 class="modal-title" id="modal-bookLabel">{% T Make your booking %}</h3>
+        </div>
+        <div class="modal-body">
+            <form class="form form--book" data-bind="with: coworker">
+              <div class="form-group required">
+                  <label for="FullName">{% T Full name %}</label>
+                  <input type="text" required="required" class="form-control" id="FullName" data-bind="value: FullName">
+                  <small class="help-block validation-error" data-bind="validationMessage: FullName"></small>
+              </div>
+              <div class="row" style="margin-left: -15px; margin-right: -15px">
+                  <div class="col-sm-6">
+                    <div class="form-group required">
+                        <label for="Email">{% T Email address %}</label>
+                        <input type="email" required="required" class="form-control" id="Email" data-bind="value: Email">
+                        <small class="help-block validation-error" data-bind="validationMessage: Email"></small>
+                    </div>
+                    </div>
+                    <div class="col-sm-6">
+                    <div class="form-group required">
+                        <label for="MobilePhone">{% T Phone %}</label>
+                        <input type="text" required="required" class="form-control" id="MobilePhone" data-bind="value: MobilePhone">
+                        <small class="help-block validation-error" data-bind="validationMessage: MobilePhone"></small>
+                    </div>
+                  </div>
+              </div>
+              <div class="form-group required">
+                  <label for="Address">{% T Address %}</label>
+                  <input type="text" required="required" class="form-control" id="Address" data-bind="value: Address">
+                  <small class="help-block validation-error" data-bind="validationMessage: Address"></small>
+              </div>
+              <div class="row" style="margin-left: -15px; margin-right: -15px">
+                  <div class="col-sm-4">
+                    <div class="form-group required">
+                        <label for="postCode">{% T Postcode / Zip code %}</label>
+                        <input type="text" required="required" class="form-control" id="PostCode" data-bind="value: PostCode">
+                        <small class="help-block validation-error" data-bind="validationMessage: PostCode"></small>
+                    </div>
+                    </div>
+                    <div class="col-sm-4">
+                    <div class="form-group required">
+                        <label for="CityName">{% T Town / City %}</label>
+                        <input type="text" required="required" class="form-control" id="CityName" data-bind="value: CityName">
+                        <small class="help-block validation-error" data-bind="validationMessage: CityName"></small>
+                    </div>
+                    </div>
+                    <div class="col-sm-4">
+                    <div class="form-group required">
+                        <label for="State">{% T State / Province %}</label>
+                        <input type="text" required="required" class="form-control" id="State" data-bind="value: State">
+                        <small class="help-block validation-error" data-bind="validationMessage: State"></small>
+                    </div>
+                  </div>
+              </div>
+
+              <div class="row" style="margin-left: -15px; margin-right: -15px">
+                  <div class="col-sm-4">
+                    <div class="form-group ">
+                        <label for="TaxIDNumber">{% T TAX/VAT Number %}</label>
+                        <input type="text" class="form-control" id="TaxIDNumber" data-bind="value: TaxIDNumber">
+                        <small class="help-block validation-error" data-bind="validationMessage: TaxIDNumber"></small>
+                    </div>
+                    </div>
+                    <div class="col-sm-8">
+                    <div class="form-group">
+                        <label for="BillingEmail">{% T Send Invoice To %}</label>
+                        <input type="email" class="form-control" id="BillingEmail" data-bind="value: BillingEmail">
+                        <small class="help-block validation-error" data-bind="validationMessage: BillingEmail"></small>
+                    </div>
+                  </div>
+              </div>
+
+              <div class="alert alert--danger alert--icon" role="alert" data-bind="visible: $root.coworker.errors().length > 0">
+                <i class="fa fa-exclamation-circle"></i>
+                <b>
+                    {% T Please complete or correct the form details %}
+                </b>
+            </div>
+
+              <div class="btn-toolbar form-actions">
+                  <button class="btn btn--primary btn--sm" data-bind="click: $root.validateRegistration" type="button">Continue</button>
+                  <a href="#" class="btn btn--link btn--sm" data-bind="click: $root.closeRegistationForm">Cancel</a>
+              </div>
+
+            </form>
+
+        </div>
+      </div>
+  </div>
+</div>
+<!-- END BOOKINGS MODAL STEP2 -->

@@ -1,0 +1,34 @@
+
+<div class="home__section home__section--locations">
+  <div class="container">
+    <h2 class="h1 home__section__title">{% T Locations %}</h2>
+    <ul class="row locations-list">
+      {% for business in data.Businesses %}
+      {% if business.IsChildLocation %}
+      <li class="col-xxs-12 col-xs-6 col-sm-3 locations-list__item">
+        <div class="locations-list__cover">
+          <a href="{{ business.HomeUrl }}">
+            {% if business.HasBanner %}
+            <img src="{% Url Business, GetBannerFor, id: business.Id, w: 530, h: 394 %}" alt="{{ business.Name }}">
+            {% else %}
+            <img src="http://placehold.it/530x394?text={{business.Name}}" alt="{{ business.Name }}">
+            {% endif %}
+          </a>
+        </div>
+        <h3 class="h5 locations-list__title">
+          <a href="{{ business.HomeUrl }}">
+            {{ business.Name }}
+          </a>
+        </h3>
+        {% if business.Address %}
+        <div class="locations-list__metadata">
+          <span class="locations-list__address">{{ business.Address | Replace:'\r\n', ', ' }}</span>
+          <span class="locations-list__map"><a target="_blank" class="link--secondary" href="https://www.google.co.uk/maps/place/{{ business.Address | Replace:'\r\n', ' ' | Replace:' ', '+' }}">{% T Map %}</a></span>
+        </div>
+        {% endif %}
+      </li>
+      {% endif %}
+     {% endfor  %}
+    </ul>
+  </div>
+</div>

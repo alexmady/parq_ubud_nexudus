@@ -1,0 +1,117 @@
+{% extends signup.master %}
+{% block title %}{% T Take a Tour %} | {{ data.Business.Name }}{% endblock %}
+{% block main %}
+
+<div class="container">
+    
+    <!-- CREDENTIALS -->
+    <div class="credentials credentials--step">
+
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <!-- LOGO OR SPACE NAME -->
+                <a class="navbar-brand" href="{{ data.Business.HomeUrl }}">
+                    {% if data.Business.HasLogo %}
+                    <img src="{% Url Business, GetLogo, w:600, h:150, mode: 'max' %}" alt="{{ data.Business.Name }}">
+                    {% else %}
+                    <img src="http://placehold.it/600x150/FFFFFF?text={{ data.Business.Name }}" alt="{{ data.Business.Name }}">
+                    {% endif %}
+                </a>
+                <!-- END LOGO OR SPACE NAME -->
+
+                <!-- CREDENTIALS HEADER -->
+                <header class="credentials__header">
+                <h1 class="h2">{% T Interested? %}</h1>
+                <h4>{% T We would love to hear from you. Please complete this form: %}</h4>
+                </header>
+
+                <!-- END CREDENTIALS HEADER -->
+                
+                <form class="form" data-bind="with: coworker">
+                    <div class="credentials__box">
+                        <div class="form-group required">
+                            <label for="">{% T Full Name %}</label>
+                            <input data-bind="value: FullName" required="required" type="text" class="form-control" placeholder="{% T Required %}">
+                            <small class="help-block validation-error" data-bind="validationMessage: FullName"></small>
+                        </div>
+                        <div class="form-group required">
+                            <label for="">{% T Email %}</label>
+                            <input data-bind="value: Email" required="required" type="email" class="form-control" placeholder="{% T Required %}">
+                            <small class="help-block validation-error" data-bind="validationMessage: Email"></small>
+                        </div>
+                        <div class="form-group required">
+                            <label for="">{% T Mobile %}</label>
+                            <input data-bind="value: MobilePhone" required="required" type="input" class="form-control" placeholder="{% T Required %}">
+                            <small class="help-block validation-error" data-bind="validationMessage: MobilePhone"></small>
+                        </div>
+                    </div>
+                    <h4>{% T Tour Date %}</h4>
+                    <p>
+                        {% T We would love to show you {0}. Please let us know when you are available and we will make our best to receive you on that date and time. || data.Business.Name %}
+                    </p>
+                     <div class="credentials__box">
+                        <div class="form-group required">
+                            <label for="">{% T Date %}</label>
+                            <input data-bind="pickadate:{ value: $root.coworker.TourDate, options: { clear: false, disable: [1,7] } }" required="required" type="datetime" class="form-control" placeholder="{% T Required %}">
+                            <input data-bind="value: $root.coworker.TourDate" type="hidden" required="required"/>
+                            <small class="help-block validation-error" data-bind="validationMessage: TourDate"></small>
+                        </div>
+                        <div class="form-group required">
+                            <label for="">{% T Time %}</label>
+                            <input data-bind="pickatime:{ value: $root.coworker.TourDate, options: { clear: false, disable: [{ from: [0,0], to: [8,30] }, { from: [17,0], to: [23,30] } ] } }" required="required" type="datetime" class="form-control" placeholder="{% T Required %}">
+                        </div>
+                    </div>
+                    <!-- CUSTOM FIELDS -->
+                    <!-- ko foreach: { data: $root.customFields, as: 'group' } -->
+                    <h4 data-bind="text: group[0].GroupName"></h4>
+                    <div class="credentials__box" data-bind="attr: {id: 'customfields-' + $root.customFields.indexOf(group) }">
+                        
+                        <div class="row"   data-bind="foreach: { data: group, as: 'field' }">
+                        <!-- ko template: { name: 'field-template-' + field.FieldType.toLowerCase() + (field.FieldType === 'Dropdown' && field.AllowMultipleOptions ? '-multiple' : '') } -->
+                        <!-- /ko -->
+                        </div>
+                    </div>
+                    <!-- /ko -->
+                    <!-- END CUSTOM FIELDS -->
+                </form>
+                {% if data.Setting_Signup_UseCaptcha %}
+                <div class="form-group">
+                    <form class="form">
+                        {% Captcha %}
+                    </form>
+                </div>
+                {% endif %}
+                <div class="form-actions">
+                    <button data-bind="click: $root.submit, disable: $root.busy" class="btn btn--primary" type="submit">{% T Continue %}</button>
+                </div>
+
+
+
+                {% include signup_footer.htm %}
+
+            </div>
+        </div>
+    </div>
+    <!-- END CREDENTIALS -->
+
+</div>
+{% endblock %}
+{% block scripts %}
+{% include custom_fields_templates.htm %}
+{% capture returnUrl %}{% Url Tour, Thankyou %}{% endcapture %}
+<script>
+    $(function(){
+        
+        var sm = new SignupManager({
+            url: '{% Url Signup, Index, createUser: false, returnUrl: returnUrl, _resource: ".", _depth: 1 %}',
+            coworker: {{ data.NewCoworker | Json prefix: false }},
+            profileTags: {{ data.Local.ProfileTags | Json prefix: false }},
+            customFields: {{ data.Local.CustomFields | Json prefix: false, maxDepth: 0 }},
+            errorInForm: '{% T Please complete all the required fields %}',
+            errorMessage: '{% T We could not update your profile, please try again later. %}'
+        });
+
+        sm.init();
+    })
+</script>
+{% endblock %}

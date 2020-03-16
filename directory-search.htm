@@ -1,0 +1,128 @@
+{% extends master.master %}
+{% block title %}{{ data.Local.Query | StripHtml | TruncateWords: 10 }} | {{ data.Business.Name }} {% endblock %}
+{% block content %}
+{% if data.Local.ShowCheckInMembers and data.Local.CheckedIn == false  %}
+<style>
+  .checkedin img { border-color: green !important; }
+</style>
+{% endif %}
+<div id="wrapper">
+  <!-- CONTAINER -->
+  <div id="main" class="container">
+    <!-- BREADCRUMB -->
+    <ul class="breadcrumb">
+      <li><a href="{% Url PublicHome, Index %}">{% T Home %}</a> <span class="divider">/</span></li>
+      <li><a href="{% Url Directory, Index %}">{% T People at {0} || data.Business.Name %}</a> <span class="divider">/</span></li>
+      <li class="active"> {{ data.Local.Query | StripHtml }}</li>
+    </ul>
+    <!-- END BREADCRUMB -->
+    <div class="row">
+      <!-- CONTENT -->
+      <section id="content" class="span12">
+        <!-- FILTER -->
+        <div class="filter text-center">
+          <form class="form-search" method="GET" action="{% Url Directory, Search %}">
+            {% if data.Local.Query.size > 0 %}
+            <a class="btn btn-link btn-small" href="{% Url Directory, Index %}">{% T Show all %}</a>
+            {% endif %}
+            <div class="input-append">
+              <input id="coworkers-search" value="{{ data.Local.Query }}" type="text" name="query" class="input-large search-query" autocomplete="off" placeholder="{% T Search... %}">
+              <button type="submit" class="btn">
+                <i class="icon-search"></i>
+              </button>
+            </div>
+          </form>
+        </div>
+        <!-- END FILTER -->
+        
+        <div class="row">
+         <div class="span12">
+           
+           {% if data.Local.AllCoworkers.size == 0 %}
+           <div class="well well-large text-center">
+             <h2>{% T No one here by that name... :( %}</h2>
+             <div class="media comment comment-form">
+               <a class="btn btn-orange btn-large" href="{% Url Directory, Index %}">{% T Browse all the directory %}</a>
+             </div>
+           </div>
+           {% endif %}
+           
+           <table class="table table-hover coworkers-table">
+              <tbody>
+                {% for coworker in data.Local.AllCoworkers %}
+                <tr>
+                  <td style="width: 35px">
+                  	<img class="img-circle"  src="{% Url Coworker, GetAvatar, Id: coworker.Id, h:35, w:35 %}" />
+                  </td>
+                  <td>
+                    <a href="{% Url Directory, Profile, id: coworker.Id, name: coworker.FullName | Clean %}">{{ coworker.FullName }}</a>
+                    {% if coworker.CheckedIn %}
+                    <span class="label label-success">{% T checked in %}</span>
+                    {% endif %}
+                  </td>
+                  <td style="width: 250px" class="hidden-phone hidden-tablet">
+                    {% if coworker.CompanyName != null %}
+                    {% if coworker.ProfileWebsite.size > 0 %}
+                    	<a target="_blank" href="{{ coworker.ProfileWebsite }}">{{ coworker.CompanyName }}</a>
+                    	<span aria-hidden="true" class="icon i-8 icon-new-tab"></span>
+                    {% else %}
+                    	{{ coworker.CompanyName }}
+                    {% endif %}
+                    {% else %}
+                    <span class="muted"><i>{% T No company name %}</i></span>
+                    {% endif %}
+                  </td>
+                  <td style="width: 275px" class="hidden-phone">
+                    <div class="text-right">
+                      {% if coworker.ProfileWebsite.size > 0 %}
+                      <a target="_blank" href="{{ coworker.ProfileWebsite }}" class="btn btn-grey"><span aria-hidden="true" class="icon i-16 icon-earth"></span></a>
+                      {% endif %}
+                      {% if coworker.Twitter.size > 0 %}
+                      <a target="_blank" href="http://twitter.com/{{ coworker.Twitter }}" class="btn btn-grey"><span aria-hidden="true" class="icon i-16 icon-twitter"></span></a>
+                      {% endif %}
+                      {% if coworker.Linkedin.size > 0 %}
+                      <a target="_blank" href="{{ coworker.Linkedin }}" class="btn btn-grey"><span aria-hidden="true" class="icon i-16 icon-linkedin"></span></a>
+                      {% endif %}
+                      {% if coworker.Facebook.size > 0 %}
+                      <a target="_blank" href="{{ coworker.Facebook }}" class="btn btn-grey"><span aria-hidden="true" class="icon i-16 icon-facebook"></span></a>
+                      {% endif %}
+                      {% if coworker.Skype.size > 0 %}
+                      <a href="callto://{{ coworker.Skype }}" class="btn btn-grey"><span aria-hidden="true" class="icon i-16 icon-skype"></span></a>
+                      {% endif %}
+                      &nbsp;
+                      {% if coworker.HasContactDetails == false %}
+                      <span class="muted"><i>{% T No contact details %}</i></span>
+                      {% endif %}
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+      </section>
+      <!-- END CONTENT -->
+      
+    </div>
+  </div>
+  <!-- END CONTAINER -->
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    $(function(){
+        var data = [
+          {% for tag in data.Local.AllTags %}
+          '{{ tag }}',
+          {% endfor %}
+          ''
+          ];
+        $("#coworkers-search").typeahead({
+            source: data,
+            limit: 10
+        });
+    });
+</script>
+{% endblock %}

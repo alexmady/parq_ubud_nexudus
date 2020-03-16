@@ -1,0 +1,59 @@
+{% extends signup.master %}
+{% block title %}{% T Join us %} | {{ data.Business.Name }}{% endblock %}
+{% block main %}
+<div class="container">
+    <!-- CREDENTIALS -->
+    <div class="credentials credentials--step">
+
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+
+                <!-- LOGO OR SPACE NAME -->
+                <a class="navbar-brand" href="{{ data.Business.HomeUrl }}">
+                    {% if data.Business.HasLogo %}
+                    <img src="{% Url Business, GetLogo, w:600, h:150, mode: 'max' %}" alt="{{ data.Business.Name }}">
+                    {% else %}
+                    <img src="http://placehold.it/600x150/FFFFFF?text={{ data.Business.Name }}" alt="{{ data.Business.Name }}">
+                    {% endif %}
+                </a>
+                <!-- END LOGO OR SPACE NAME -->
+
+                <!-- CREDENTIALS HEADER -->
+                <header class="credentials__header">
+                <h1 class="h2">{% T Change your price plan %}</h1>
+                </header>
+                <!-- END CREDENTIALS HEADER -->
+
+                <!-- CREDENTIALS STEPS -->
+                <ul class="row steps">
+                <li class="col-xs-6 active"><span>1</span> <b>{% T Select new plan %}</b></li>
+                <li class="col-xs-6"><span>2</span> <b>{% T Confirmation %}</b></li>
+                </ul>
+                <!-- END CREDENTIALS STEPS -->
+
+                <h4>{% T You are about to change this membership: %}</h4>
+                <div class="credentials__box">
+                   {% include tariff_details_fragment.htm %}
+                    <p class="settings__plan__notify">
+                      {% T If you change your plan now, the new plan will take effect on {0:d} || data.Local.Contract.RenewalDate %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <!-- SUSCRIPTIONS -->
+        {% include home_plans_fragment.htm %}
+        <!-- END SUSCRIPTIONS -->
+
+        <div class="form-actions">
+          <button class="btn btn--seconday" href="#" onclick="window.location = '{% Url Allowances, Plans %}'"><i class="fa fa-angle-left i-space--right"></i> {% T go back %}</button>  
+        </div>
+
+        {% include signup_footer.htm %}
+    </div>
+    <!-- END CREDENTIALS -->
+
+</div>
+{% endblock %}
+{% block scripts %}
+{% include core_priceplans_table_scripts.htm %}
+{% endblock %}

@@ -1,0 +1,82 @@
+{% capture billingDetailsRequired %}{% if data.Setting_Forms_BillingAddress == 2 or data.Setting_Forms_BillingCityName == 2 or data.Setting_Forms_BillingState == 2 or data.Setting_Forms_BillingPostCode == 2 or data.Setting_Forms_BillingEmail == 2 %}true{% else %}false{% endif %}{% endcapture %}
+
+{% if data.Setting_Forms_Address != 3 %}
+<div class="row">
+  {% if data.Setting_Forms_Address != 3 %}
+  <div class="form-group col-sm-12 {% if data.Setting_Forms_Address == 2 %}required{% endif %}">
+    <label for="">{% T Address %}</label>
+    <textarea class="form-control" rows="3" {% if data.Setting_Forms_Address == 2 %}required{% endif %} id="Address" data-bind="value: Address" placeholder="{% T Your personal address %}"></textarea>
+    <small class="help-block validation-error" data-bind="validationMessage: Address"></small> 
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+{% if data.Setting_Forms_Country != 3 %}
+<div class="row">
+    <div class="form-group col-sm-12 {% if data.Setting_Forms_Country == 2 %}required{% endif %}">
+        <label for="">{% T Country %}</label>
+        {% CountriesDropdown "", Country.Id %}
+        <small class="help-block validation-error" data-bind="validationMessage: Country.Id"></small>
+    </div>
+</div>
+{% endif %}
+<div class="row">
+  {% if data.Setting_Forms_CityName != 3 %}
+  <div class="form-group col-sm-4 {% if data.Setting_Forms_CityName == 2 %}required{% endif %}">
+      <label for="">{% T Town %}</label>
+      <input data-bind="value: CityName" {% if data.Setting_Forms_CityName == 2 %}required{% endif %} type="input" class="form-control" placeholder="{% if data.Setting_Forms_CityName == 2 %}{% T Required %}{% else %}{% T Optional %}{% endif %}">
+      <small class="help-block validation-error" data-bind="validationMessage: CityName"></small> 
+  </div>
+  {% endif %}
+  {% if data.Setting_Forms_State != 3 %}
+  <div class="form-group col-sm-4 {% if data.Setting_Forms_State == 2 %}required{% endif %}">
+      <label for="">{% T State / Province %}</label>
+      <input data-bind="value: State" {% if data.Setting_Forms_State == 2 %}required{% endif %} type="input" class="form-control" placeholder="{% if data.Setting_Forms_State == 2 %}{% T Required %}{% else %}{% T Optional %}{% endif %}">
+      <small class="help-block validation-error" data-bind="validationMessage: State"></small> 
+  </div>
+  {% endif %}
+  {% if data.Setting_Forms_PostCode != 3 %}
+  <div class="form-group col-sm-4 {% if data.Setting_Forms_PostCode == 2 %}required{% endif %}">
+      <label for="">{% T Zip / Postcode %}</label>
+      <input data-bind="value: PostCode" {% if data.Setting_Forms_PostCode == 2 %}required{% endif %} type="input" class="form-control" placeholder="{% if data.Setting_Forms_PostCode == 2 %}{% T Required %}{% else %}{% T Optional %}{% endif %}">
+      <small class="help-block validation-error" data-bind="validationMessage: PostCode"></small> 
+  </div>
+  {% endif %}
+</div>
+
+<div class="row">
+  {% if data.Setting_Forms_BillingName != 3 %}
+  <div class="form-group col-sm-4 {% if data.Setting_Forms_BillingName == 2 %}required{% endif %}">
+      <label for="">{% T Company/Org. Name %}</label>
+      <input data-bind="value: BillingName" {% if data.Setting_Forms_BillingName == 2 %}required{% endif %} type="input" class="form-control" placeholder="{% if data.Setting_Forms_BillingName == 2 %}{% T Required %}{% else %}{% T Optional %}{% endif %}">
+      <small class="help-block validation-error" data-bind="validationMessage: BillingName"></small> 
+  </div>
+  {% endif %}
+  {% if data.Setting_Forms_TaxIDNumber != 3 %}
+  <div class="form-group col-sm-4 {% if data.Setting_Forms_TaxIDNumber == 2 %}required{% endif %}">
+      <label for="">{% T  VAT / Tax Number %}</label>
+      <input data-bind="value: TaxIDNumber" {% if data.Setting_Forms_TaxIDNumber == 2 %}required{% endif %} type="input" class="form-control" placeholder="{% if data.Setting_Forms_TaxIDNumber == 2 %}{% T Required %}{% else %}{% T Optional %}{% endif %}">
+      <small class="help-block validation-error" data-bind="validationMessage: TaxIDNumber"></small> 
+  </div>
+  {% endif %}
+  {% if data.Setting_Forms_ProfileWebiste != 3 %}
+  <div class="form-group col-sm-4 {% if data.Setting_Forms_ProfileWebiste == 2 %}required{% endif %}">
+      <label for="">{% T  Company Website %}</label>
+      <input data-bind="value: ProfileWebsite" {% if data.Setting_Forms_ProfileWebiste == 2 %}required{% endif %} type="input" class="form-control" placeholder="{% if data.Setting_Forms_ProfileWebiste == 2 %}{% T Required %}{% else %}{% T Optional %}{% endif %}">
+      <small class="help-block validation-error" data-bind="validationMessage: ProfileWebsite"></small> 
+  </div>
+  {% endif %}
+</div>
+{% if data.Setting_SignupForm_ShowBillingSection %}
+<div class="row" style="{% if billingDetailsRequired == 'true' %}display: none;{% endif %}">
+  <div class="col-sm-12">
+    <div class="form-group form-group--related-top">
+      <div class="checkbox">
+        <label>
+          <input type="checkbox" data-bind="{% if billingDetailsRequired == 'true' %}checked: hasBillingDetails(true){% else %}checked: hasBillingDetails{% endif %}"> {% T My billing details are different than my personal details. %}
+        </label>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}

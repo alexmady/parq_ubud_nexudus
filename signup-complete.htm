@@ -1,0 +1,85 @@
+{% extends signup.master %}
+{% block title %}{% T Join us %} | {{ data.Business.Name }}{% endblock %}
+{% block main %}
+
+<div class="container">
+    <!-- CREDENTIALS -->
+    <div class="credentials credentials--step">
+
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+
+                <!-- LOGO OR SPACE NAME -->
+                <a class="navbar-brand" href="{{ data.Business.HomeUrl }}">
+                    {% if data.Business.HasLogo %}
+                    <img src="{% Url Business, GetLogo, w:600, h:150, mode: 'max' %}" alt="{{ data.Business.Name }}">
+                    {% else %}
+                    <img src="http://placehold.it/600x150/FFFFFF?text={{ data.Business.Name }}" alt="{{ data.Business.Name }}">
+                    {% endif %}
+                </a>
+                <!-- END LOGO OR SPACE NAME -->
+
+                <!-- CREDENTIALS HEADER -->
+                <header class="credentials__header">
+                    <h1 class="h2">{% T Thank you! %}</h1>
+                </header>
+
+                <div class="notifications-placeholder" style="display: none"></div>
+
+                <!-- END CREDENTIALS HEADER -->
+                <div class="credentials__confirm">
+                  <i class="fa fa-paper-plane"></i>
+
+                  <p class="credentials__confirm__sent">
+                    {% T We will be in touch very soon using the email below %} 
+                    
+                    <br>
+                    <b class="credentials__confirm__email">{{ data.Coworker.Email }}</b>
+                  </p>
+
+                  <p class="">
+                    <b>{% T What's next? %}</b><br/>
+
+                    {% if data.Coworker.PaysForTeam %}
+                    <br/>
+                    {% T Invite other members of your team by sending them this link %}<br/>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <div class="input-group">
+                                    <input readonly="readonly" class="form-control" type="text" id="Team_SignupLink" value="{{ data.Business.HomeUrl }}/{{ data.Language }}/signup/{{ data.Coworker.PaysForTeam.UniqueId }}" class="span12">
+                                    <span class="input-group-addon">
+                                        <i class="fa fa-copy" style="cursor: pointer" onclick="app.copyToClipboard('{{ data.Business.HomeUrl }}/{{ data.Language }}/signup/{{ data.Coworker.PaysForTeam.UniqueId }}'); app.showMessage('{% T The link has been copied to your clipboard %}')" data-toggle="tooltip" title="" data-original-title="{% T Copy link to clipboard %}"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% endif %}
+                    <br/><br/>
+                    {% T Take some time to <a target="_blank" href="https://www.campusubud.com/{0}/profile#professional-profile">complete your profile</a> || data.Language %}<br/>
+                    {% if data.Coworker.Active == false %}
+                    {% T We will check your details and review your account. %}<br/><br/>
+                    {% T If your account is approved and you pay your bills personally, we will let you know and take payment using the details provided. %}<br/>
+                    {% else %}
+                    <!--{% T Browse the <a target="_blank" href="/{0}/directory">directory</a> or say hello on the <a target="_blank" href="/{0}/community">community boards</a>. || data.Language  %}<br/>-->
+                    {% T Make your first booking in the <a target="_blank" href="https://www.campusubud.com/{0}/bookings/calendar">calendar</a> || data.Language  %}<br/>
+                    {% endif %}
+                  </p>
+                  
+                </div>
+                
+                {% include signup_footer.htm %}
+
+            </div>
+        </div>
+    </div>
+    <!-- END CREDENTIALS -->
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% include payment_scripts.htm %}
+{% endblock %}

@@ -1,0 +1,152 @@
+<li class="board-list__item {% if thread.MutedForUser %}board-list__item--muted{% endif %}">
+  <div class="row">
+    <div class="col-sm-8">
+      <div class="board-list__left">
+        <h3 class="h6 board-list__title">
+          <a href="{% Url Conversations, Thread, id: thread.Id, name: thread.Subject | Clean %}">
+          {{ thread.Subject | StripHtml | StripNewlines }}
+          </a>
+          
+        </h3>
+        <div class="board-list__metadata">
+          <time datetime="{{ thread.CreatedOn | FormatDate: 'yyyy-MM-ddTHH:mm:ssZ' }}" class="timeago">{{ thread.CreatedOn | FormatDate: 'g' }}</time> {% T by %} 
+          <a href="{% Url Directory, Profile, Id: thread.CoworkerId, name: thread.FullName | Clean %}" class="link--default">
+            {{ thread.FullName }}
+          </a>
+        </div>
+        <ul class="list-inline board-list__reputation">
+          {% if data.Coworker != null %}
+          <li><i class="fa fa-heart-o"></i>
+          <a href="#" class="link--secondary btn-like-thread" data-toggle="tooltip" title="{% if thread.LikeCount != 0 %}{{ thread.Likes | Join: ', ' }}{% endif %}" data-state="{% if thread.LikedByUser %}1{% else %}0{% endif %}" data-on="{% T Like %}" data-off="{% T Unlike %}" data-thread="{{ thread.Id }}"> 
+            {% if thread.LikeCount == 1 %} 1 {% T like %}{% else %}{{ thread.LikeCount }} {% T likes %}{% endif %}
+          </a>
+          </li>
+          <li><i class="fa fa-commenting-o"></i>
+            <a href="#" class="link--secondary btn-follow-thread" id="follow-thread-{{ thread.Id }}" data-state="{% if thread.FollowedByUser %}1{% else %}0{% endif %}" data-on="{% T Follow %}" data-off="{% T Unfollow %}" data-thread="{{ thread.Id }}"> 
+              {% if thread.FollowedByUser %}
+              {% T Unfollow %}
+              {% else %}
+              {% T Follow %}
+              {% endif %}
+            </a>
+          </li>
+          <li><i class="fa fa-bell-slash-o"></i>
+            <a href="#" class="link--secondary btn-mute-thread" id="mute-thread-{{ thread.Id }}" data-state="{% if thread.MutedForUser %}1{% else %}0{% endif %}" data-on="{% T Mute %}" data-off="{% T Unmute %}" data-thread="{{ thread.Id }}"> 
+              {% if thread.MutedForUser %}
+              {% T Unmute %}
+              {% else %}
+              {% T Mute %}
+              {% endif %}
+            </a>
+          </li>
+          {% endif %}
+          <li><i class="fa fa-comment-o"></i> {% if thread.MessageCount == 1 %} 1 {% T reply %}{% else %}{{ thread.MessageCount }} {% T replies %}{% endif %}</li>
+          
+        </ul>
+        {% if thread.GroupId > 0 %}
+        <div class="tags-list">
+          <i class="fa fa-circle-o"></i>
+          <ul>
+            <li><a href="{% Url Conversations, Group, id: thread.GroupId, name: thread.GroupName %}" class="link--secondary">{{ thread.GroupName }}</a></li>
+          </ul>
+        </div>
+        {% endif %}
+        {% if thread.Tags.size > 0 %}
+        <div class="tags-list">
+          <i class="fa fa-tags"></i>
+          <ul>
+            {% for tag in thread.Tags %}
+            <li><a href="{% Url Conversations, Index, tag: tag %}" class="link--secondary">{{ tag }}</a></li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+
+        <div class="user-badge board-list__user">
+          <a class="avatar user-badge__avatar" href="{% Url Directory, Profile, Id: thread.CoworkerId, name: thread.FullName | Clean %}">
+            <img src="{% Url Coworker, GetAvatar, id: thread.CoworkerId, h:48, w:48 %}&noavatar=%2Fcontent%2Fthemes%2Fpublic%2Fdos%2Fimg%2Favatar-default.png" alt="{{ thread.FullName }}" title="{{ thread.FullName }}">
+          </a>
+          <span style="{% if thread.FollowedByUser == false %}display: none{% endif %}" class="user-badge__presence" id="follow-icon-thread-{{thread.Id}}" data-toggle="tooltip" title="{% T You are following this conversation %}"></span>
+        </div>
+      </div>
+      <div class="board-list__message">
+        <div id="thread-summary-{{ thread.Id }}" data-thread="{{ thread.Id }}">
+        {{ thread.Message | Truncate: 500 }}
+        </div>
+        {% if thread.Message.size > 500 %}
+        <div id="thread-complete-{{ thread.Id }}" style="display: none">
+        {{ thread.Message }}
+        </div>
+        <a class="board-list__more-replies thread-expand" data-thread="{{ thread.Id}}" href="{% Url Conversations, Thread, id: thread.Id, name: thread.Subject | Clean %}">{% T Read more %}</a>
+        {% endif %}
+      </div>
+      {% if thread.FileIDs.size > 0 %}
+      <div class="board-list_media">
+        <div class="board-list_media_files">
+          {% for id in thread.FileIDs %}
+          {% include community_thread_file.htm %}
+          {% endfor %}
+        </div>
+        <div style="clear:both;"></div>
+      </div>
+      {% endif %}
+      {% if thread.LastMessageText != null %}
+      <div class="board-list__message-reply">
+        <div class="board-list__message-reply-name">
+          <a class="avatar" href="{% Url Directory, Profile, Id: thread.LastMessageCoworkerId, name: thread.LastMessageUserFullName | Clean %}">
+            <img src="{% Url Coworker, GetAvatar, id: thread.LastMessageCoworkerId, h:24, w:24 %}&noavatar=%2Fcontent%2Fthemes%2Fpublic%2Fdos%2Fimg%2Favatar-default.png" alt="{{ thread.LastMessageUserFullName }}" title="{{ thread.LastMessageUserFullName }}">
+          </a>
+          <a href="{% Url Directory, Profile, Id: thread.LastMessageCoworkerId, name: thread.LastMessageUserFullName | Clean %}">
+          {{ thread.LastMessageUserFullName }}
+          </a>
+          <span class="board-list__metadata">
+            {% T replied %}
+            <time datetime="{{ thread.LastMessage | FormatDate: 'yyyy-MM-ddTHH:mm:ssZ' }}" class="timeago">{{ thread.LastMessage | FormatDate: 'g' }}</time>
+          </span>
+        </div>
+        <div class="board-list__message-reply-text">
+          <div id="full-summary-{{ thread.Id}}">
+            {{ thread.LastMessageText | StripNewlines | TruncateWords: 50 }}
+          </div>
+          <div style="display: none" id="full-thread-{{ thread.Id}}">
+            {{ thread.LastMessageText | StripNewlines }}
+          </div>
+          {% if thread.MessageCount > 1 %}
+          
+          <a class="board-list__more-replies" href="{% Url Conversations, Thread, id: thread.Id, name: thread.Subject | Clean %}">{% T Show all replies... %}</a>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+    <div class="col-sm-4">
+      <div class="board-list__right">
+        <a href="{% Url Conversations, Thread, id: thread.Id, name: thread.Subject | Clean %}" class="board-list__comments-count hidden-xs">
+          {{ thread.Participants.size | Minus: 1 }}
+        </a>
+        <ul class="list-inline board-list__commenters hidden-xs">
+          {% for participantId in thread.Participants %}
+          <li><a class="avatar" href="{% Url Directory, Profile, Id: participantId, name: thread.FullNames[forloop.index0] | Clean %}" data-toggle="tooltip" title="{{ thread.FullNames[forloop.index0] }}">
+            <img height="32" width="32" src="{% Url Coworker, GetAvatar, id: participantId, h:32, w:32 %}&noavatar=%2Fcontent%2Fthemes%2Fpublic%2Fdos%2Fimg%2Favatar-default.png" title="{{ thread.FullNames[forloop.index0] }}" alt="{{ thread.FullNames[forloop.index0] }}"></a></li>
+          {% endfor %}
+        </ul>
+        <div class="board-list__updated hidden-xs">
+          {% if thread.LastMessageCoworkerId > 0 %}
+          <a href="{% Url Conversations, Thread, id: thread.Id, name: thread.Subject | Clean %}" class="link--secondary">
+            {% T Last reply %}
+          </a> 
+          <time class="timeago" datetime="{{ thread.LastMessage | FormatDate: 'yyyy-MM-ddTHH:mm:ssZ' }}">{{ thread.LastMessage | FormatDate: 'g' }}</time> {% T by %} 
+          <a href="{% Url Directory, Profile, Id: thread.LastMessageCoworkerId, name: thread.LastMessageUserFullName | Clean %}" class="link--default">
+            {{ thread.LastMessageUserFullName }}
+          </a>
+          {% else %}
+          <a class="link--secondary" href="{% Url Conversations, Thread, id: thread.Id, name: thread.Subject | Clean %}">
+            {% T Be the first one to leave a reply %}
+          </a>
+          {% endif %}
+        </div>
+        
+      </div>
+    </div>
+  </div>
+</li>

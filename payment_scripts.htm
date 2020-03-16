@@ -1,0 +1,427 @@
+
+
+<script>
+  $(function(){
+    var navManager = new LateralNavigationManager();
+    navManager.initLateralSmoothNav();
+    $('#nav-lateral-select').val('{{ data.URL }}');
+  })
+</script>
+
+{% if data.Local.SpreedlyEnabled %}
+<script src="https://core.spreedly.com/iframe/iframe-v1.min.js"></script>
+<script>
+
+  $(function () {
+
+    Spreedly.init("{{ data.Local.SpreedlyEnvironmentKey }}", {
+      "numberEl": "spreedly-number",
+      "cvvEl": "spreedly-cvv"
+    });
+
+    Spreedly.on("ready", function () {
+
+        console.log('Spreedly is ready');
+
+        Spreedly.setStyle("number", "width: 100%: display: block; font-size: 16px");
+        Spreedly.setStyle("cvv", "width: 100%: display: block; font-size: 16px");
+
+
+
+        $('#spreedly-ccpay-button').attr('disabled', null);
+    });
+
+
+
+    Spreedly.on('errors', function(errors) {
+      if(errors.length > 0){
+        app.showErrorMessage(errors[0].message);
+      }
+
+      $('#spreedly-ccpay-button').attr('disabled', null);
+      $('#spreedly-ccpay-button').text("{% T Update payment details %}");
+
+    });
+
+    Spreedly.on('paymentMethod', function(token, pmData) {
+      var tokenField = document.getElementById("payment_method_token");
+      tokenField.setAttribute("value", token);
+      var masterForm = document.getElementById('payment-form');
+      masterForm.submit();
+    });
+
+    $('.spreedlyButton').click(function (e) {
+      var btn = $(this);
+      var description = $(this).attr('data-description');
+
+      if(!description){
+        app.scrollToAnchorElement('payment-information')
+        e.preventDefault();
+        return;
+      }
+
+      var invoiceId = $(this).attr('data-invoiceId');
+      var originalText =  $(this).text();
+      app.showQuestion(description).then(function(result){
+        if(result){
+          btn.text("{% T Please wait %}");
+          btn.attr('disabled', 'disabled');
+
+          var browser_size = '05';
+          // The accept header from your server side rendered page. You'll need to inject it into the page. Below is an example.
+          var acceptHeader = 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+          // The request should include the browser data collected by using `Spreedly.ThreeDS.serialize().
+          let browser_info = Spreedly.ThreeDS.serialize(
+            browser_size,
+            acceptHeader
+          );
+
+          var data = {
+              three_ds_version: 2,
+              attempt_3dsecure: true,
+              browser_info: browser_info
+          };
+
+          function checkStatus(token){
+              fetch("{% Url Invoices, CheckStatus %}?token=" + token, { method: 'POST' })
+                .then(response => response.json())
+                .then((data) => {
+                    $('#3ds-modal').modal('hide');
+
+                    if(data.TransactionResult == "Success")
+                        app.showMessage('{% T Thank you for your payment %}')
+                            .then(function(){ location.reload(true); });
+                    else {
+                        app.showErrorMessage(data.FailedResultReason || '{% T We could not process your payment %}');
+                    }
+
+                    btn.text(originalText);
+                    btn.attr('disabled', null);
+                });
+          }
+
+          $.post('{% Url Invoices, TryPayment %}/' + invoiceId, data).then(function(result){
+
+            if(!result.WasSuccessful){
+              if(result.Value && result.Value.PostParameters && result.Value.TransactionResult == "Awaiting"){
+                var token = result.Value.TransactionID
+                  var lifecycle = new Spreedly.ThreeDS.Lifecycle({
+                  environmentKey: '{{ data.Local.SpreedlyEnvironmentKey }}',
+                  hiddenIframeLocation: 'callenge-frame',
+                  // The DOM node that you'd like to inject hidden iframes (required)
+                  challengeIframeLocation: 'challenge-layer',
+                  // The DOM node that you'd like to inject the challenge flow (required)
+                  transactionToken: token,
+                  // The token for the transaction - used to poll for state (required)
+                  challengeIframeClasses: 'challenge-fram',
+                })
+
+                var statusUpdates = function(event) {
+                  if (event.action === 'succeeded') {
+                    checkStatus(token);
+                  } else if(event.action === 'error') {
+                    $('#3ds-modal').modal('hide');
+                    checkStatus(token);
+                  } else if (event.action === 'trigger-completion') {
+                    fetch("{% Url Invoices, Complete %}?token=" + token, { method: 'POST' })
+                      .then(response => response.json())
+                      .then((data) => {
+                        data = {
+                          state: data.State,
+                          required_action: data.RequiredAction,
+                          device_fingerprint_form: data.DeviceFingerprintForm,
+                          challenge_form: data.ChallengeForm,
+                          challenge_url: data.ChallengeUrl,
+                          checkout_form: data.CheckoutForm,
+                          checkout_url: data.CheckoutUrl
+                        };
+                        if (data.state === 'succeeded') {
+                          checkStatus(token);
+                        }
+
+                        if(data.state === "gateway_processing_failed")
+                            checkStatus(token);
+
+                        if (data.state === 'pending' && data.required_action === 'challenge') {
+                          event.finalize(data);
+                          $('#3ds-modal').modal('show')
+                        }
+                    })
+                  }
+                }
+
+                Spreedly.on('3ds:status', statusUpdates);
+                lifecycle.start(result.Value.PostParameters);
+              }
+              else {
+                $('#3ds-modal').modal('hide');
+                app.showErrorMessage(result.Message);
+                btn.text(originalText);
+                btn.attr('disabled', null);
+              }
+            }
+            else{
+              app.showMessage('{% T Thank you for your payment %}')
+                 .then(function(){ location.reload(true); });
+
+            }
+          });
+        }
+      })
+
+      return false;
+    });
+
+    $('#spreedly-ccpay-button').click(function () {
+
+      var url = $(this).attr('data-payUrl');
+      $('#payment-form').attr('action', url);
+
+      if ($('#spreedly-ccpay-button').attr('disabled')) return;
+      $('#spreedly-ccpay-button').attr('disabled', 'disabled');
+      $('#spreedly-ccpay-button').text("{% T Please wait... %}");
+
+      var paymentMethodFields = ['first_name', 'last_name', 'month', 'year', 'address1', 'city', 'country', 'zip', 'state']
+      var requiredFields = {};
+      for(var i = 0; i < paymentMethodFields.length; i++) {
+      	var field = paymentMethodFields[i];
+        requiredFields[field] = document.getElementById(field).value;
+	  }
+
+      Spreedly.tokenizeCreditCard(requiredFields);
+
+    });
+
+    $('#ccpay-button').click(function () {
+      if ($('#ccpay-button').attr('disabled')) return;
+      $('#ccpay-button').attr('disabled', 'disabled');
+      $('#ccpay-button').text("{% T Please wait... %}");
+      $('#ccform').submit();
+    });
+  });
+</script>
+{% endif %}
+
+
+{% if data.Local.ForteEnabled %}
+<style>
+    .fortebtn {
+        margin-bottom: 10px;
+        background-color: #949494 !important;
+        border-color: #949494 !important;
+        color: #fff !important;
+        padding: 7px 20px !important;
+    }
+</style>
+<script type="text/javascript" src="https://checkout.forte.net/v1/js"></script>
+
+<script>
+  function forteCallback(e) {
+    var response = JSON.parse(e.data);
+    switch (response.event) {
+      case 'begin':
+        //call to forte checkout is successful
+        break;
+      case 'success':
+        $.post('/{{ data.Language }}/invoices/ForteResult', response)
+          .done(function (msg) {
+            app.showMessage("{% T Thank you, we'll process your payment shortly. %}");
+            setTimeout(function () { window.location.reload(1); }, 5000);
+          })
+          .fail(function (xhr, textStatus, errorThrown) {
+            app.showErrorMessage('Sorry, transaction failed. failed reason is ' + xhr.responseText);
+          });
+
+        break;
+      case 'failure':
+        app.showErrorMessage('Sorry, transaction failed. failed reason is ' + response.response_description);
+
+    }
+  }
+</script>
+{% endif %}
+
+{% if data.Local.StripeEnabled %}
+<script src="https://checkout.stripe.com/v2/checkout.js"></script>
+<script>
+  $('.stripePayButton').click(function () {
+    var el = $(this);
+    var token = function (res) {
+      var $input = $('<input type=hidden name=stripeToken />').val(res.id);
+      var payUrl = el.attr('data-payUrl');
+      window.location.href = payUrl + '&token=' + res.id + '&rnd=' + Math.floor((Math.random() * 100000) + 1);;
+    };
+
+    StripeCheckout.open({
+      key: '{{ data.Local.StripePublicKey }}',
+      address: false,
+      allowRememberMe: false,
+      email: '{{ data.Coworker.Email }}',
+      amount: el.attr('data-amount'),
+      currency: el.attr('data-currency'),
+      name: '{{ data.Business.Name }}',
+      description: el.attr('data-description'),
+      panelLabel: 'Checkout',
+      token: token
+    });
+
+    return false;
+  });
+</script>
+{% endif %}
+
+{% if data.Local.MidtransEnabled %}
+<script type="text/javascript" src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ data.Local.MidtransClientKey }}"></script>
+<script>
+$(function(){
+  $('.btn-midtrans').click(function(){
+    var el = $(this);
+    var token = el.attr('data-token').replace('vt_', '');
+    var invoiceId = el.attr('data-invoiceId');
+    snap.pay(token, {
+      onSuccess: function() { window.location = '{% Url Callbacks, PayCoworkerInvoice %}?result=OK&provider=MidTrans&invoiceownerid={{ data.Coworker.Id }}&invoiceId=' + invoiceId; },
+      onClose: function() { window.location = '{% Url Callbacks, PayCoworkerInvoice %}?result=FAIL&provider=MidTrans&invoiceownerid={{ data.Coworker.Id }}&invoiceId=' + invoiceId; }
+
+    });
+  })
+})
+</script>
+
+{% endif %}
+{% if data.Setting_RazorPay_Enabled %}
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+
+$('.razorpay').click(function (e) {
+    var invoiceNumber = $(this).attr('data-description');
+    var url = $(this).attr('data-payUrl');
+    var currency = $(this).attr('data-currency');
+    var amount = $(this).attr('data-amount');
+    var email = $(this).attr('data-email');
+      var options = {
+        "key": "{{ data.Setting_RazorPay_KeyId }}",
+        "amount": amount,
+        "name": "{{ data.Business.Name }}",
+        "description": invoiceNumber,
+        "image": "{% Url Business, GetLogo, w:600, h:600, mode: 'pad' %}",
+        "handler": function (response){
+            window.location = url + '?razorpay_payment_id=' + response.razorpay_payment_id;
+        },
+        "prefill": {
+            "contact": "{{ data.Coworker.MobilePhone }}",
+            "name": "{{ data.Coworker.FullNameForInvoice }}",
+            "email": "{{ data.Coworker.EmailForInvoice }}"
+        },
+        "theme": {
+          "color": '#7b7b7b'
+      }
+    };
+    var rzp1 = new Razorpay(options);
+
+    rzp1.open();
+    e.preventDefault();
+})
+</script>
+{% endif %}
+
+{% if data.Local.EpayEnabled %}
+<!-- EPAY -->
+<script charset="UTF-8" src="https://ssl.ditonlinebetalingssystem.dk/integration/ewindow/paymentwindow.js" type="text/javascript"></script>
+<script type="text/javascript">
+
+  $('.epay').click(payWithEPay);
+  function payWithEPay(){
+    var invoiceNumber = $(this).attr('data-description');
+    var url = $(this).attr('data-payUrl');
+    var currency = $(this).attr('data-currency');
+    var amount = $(this).attr('data-amount');
+    var hash = $(this).attr('data-hash');
+    var email = $(this).attr('data-email');
+
+    paymentwindow = new PaymentWindow({
+      'merchantnumber': '{{ data.Local.EPayMerchant }}',
+      'amount': amount,
+      'currency': currency,
+      'orderid': invoiceNumber,
+      'instantcapture': 1,
+      'subscription': {% if data.Coworker.HasRegularPaymentContractNumber %}2{% else %}1{% endif %},
+      {% if data.Coworker.HasRegularPaymentContractNumber %}
+      'subscriptionid': '{{data.Coworker.RegularPaymentContractNumber}}',
+      {% endif %}
+      'instantcallback': 1,
+      'callbackurl': url,
+      'subscriptionname': email,
+      'accepturl': '{{ data.AbsoluteUri }}',
+      'cancelurl': '{{ data.AbsoluteUri }}',
+      'hash': hash
+    });
+    paymentwindow.open();
+  }
+</script>
+{% endif %}
+
+
+{% if data.Local.StripeACHEnabled %}
+<script type="text/javascript" src="//js.stripe.com/v3/"></script>
+<script type="text/javascript">
+    var stripe = Stripe('{{ data.Local.StripeACHPublicKey }}');
+    var elements = stripe.elements();
+
+    function setStripeACHOutcome(result) {
+
+        if (result.token) {
+            var data = {
+                bankToken: result.token.id
+            }
+
+            $.ajax({
+                type: "POST",
+                url: '/{{ data.Language }}/coworker/StripeACHSetBankTokenAndCreateCustomer/{{ data.Coworker.Id }}',
+                contentType: "application/json",
+                dataType: "json",
+                data: JSON.stringify(data),
+                success: function (data) {
+                    window.location.reload(true);
+                }
+            });
+
+
+        } else if (result.error) {
+            app.showErrorMessage(result.error.message)
+        }
+    }
+
+    if ($('#stripeACHform').length > 0) {
+        document.querySelector('#stripeACHform').addEventListener('submit', function (e) {
+            e.preventDefault();
+            var bankAccountData = {
+                country: 'us',
+                currency: 'usd',
+                routing_number: document.getElementById('routing-number').value,
+                account_number: document.getElementById('account-number').value,
+                account_holder_name: document.getElementById('name').value,
+                account_holder_type: document.getElementById('type').value,
+            };
+            stripe.createToken('bank_account', bankAccountData).then(setStripeACHOutcome);
+        });
+    }
+
+    $('#stripe-amounts-verification-form').submit(function (event) {
+                event.preventDefault();
+                var form = $(this);
+                $('#stripe-ach-verify-amounts').attr('disabled', 'disabled');
+                $.ajax({
+                    type: form.attr('method'),
+                    url: '{% Url Callbacks, StripeACHVerifyAmounts %}/{{ data.Coworker.Id }}',
+                    data: form.serialize()
+                }).success (function (data) {
+                   location.reload(true);
+                   $('#stripe-ach-verify-amounts').attr('disabled', null);
+                }).error (function (data) {
+                    app.showErrorMessage(data.responseText)
+                    $('#stripe-ach-verify-amounts').attr('disabled', null);
+                });
+            });
+
+</script>
+{% endif %}

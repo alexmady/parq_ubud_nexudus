@@ -1,0 +1,173 @@
+{% extends signup.master %}
+{% block title %}{% T Join us %} | {{ data.Business.Name }}{% endblock %}
+{% block main %}
+
+<div class="container">
+    <!-- CREDENTIALS -->
+    <div class="credentials credentials--step">
+
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+
+                <!-- LOGO OR SPACE NAME -->
+                <a class="navbar-brand" href="{{ data.Business.HomeUrl }}">
+                    {% if data.Business.HasLogo %}
+                    <img src="{% Url Business, GetLogo, w:600, h:150, mode: 'max' %}" alt="{{ data.Business.Name }}">
+                    {% else %}
+                    <img src="http://placehold.it/600x150/FFFFFF?text={{ data.Business.Name }}" alt="{{ data.Business.Name }}">
+                    {% endif %}
+                </a>
+                <!-- END LOGO OR SPACE NAME -->
+
+                <!-- CREDENTIALS HEADER -->
+                <header class="credentials__header">
+                <h1 class="h2">{% T Your Payment Details %}</h1>
+                </header>
+                <!-- END CREDENTIALS HEADER -->
+
+                <!-- CREDENTIALS STEPS -->
+                <ul class="row steps">
+                  <li class="col-xs-3"><span>1</span> <b>{% T Personal details %}</b></li>
+                  <li class="col-xs-3"><span>2</span> <b>{% T Subscription plan %}</b></li>
+                  <li class="col-xs-3"><span>3</span> <b>{% T Additional products %}</b></li>
+                  <li class="col-xs-3 active"><span>4</span> <b>{% T Payment Details %}</b></li>
+                </ul>
+                <!-- END CREDENTIALS STEPS -->
+
+                {% if data.Local.HasUnpaidInvoices %}
+                <div class="credentials__box">
+                    <h2 class="h3 section__title">{% T Summary %}</h2>
+                    <table class="table table--settings js-table-settings">
+                        <thead>
+                            <th>{% T Item %}</th>
+                            <th>{% T Quantity %}</th>
+                            <th class="text-right">{% T SubTotal %}</th>
+                            <th class="text-right">{% T Tax %}</th>
+                        </thead>
+                        <tbody>
+                            {% for invoice in data.Local.UnPaidInvoices %}
+                            {% for line in invoice.Lines %}
+                            <tr>
+                                <td>{{ line.Description }}</td>
+                                <td>{{ line.Quantity }}</td>
+                                <td class="text-right">{{ line.SubTotalFormatted }}</td>
+                                <td class="text-right">{{ line.TaxAmountFormatted }}</td>
+                            </tr>
+                            {% endfor %}
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <td colspan="4" class="text-right"><strong>{% T Total %}: {{ data.Local.TotalUnpaidAmountFormmatted }}</strong></td>
+                                
+                        </tfoot>
+                    </table>
+                </div>
+                {% endif %}
+
+                <div class="credentials__box">
+                    <p>
+                        {% T Please choose how you would like to pay for your membership. %}
+                        {% if data.Local.KeepNewAccountsOnHold %}
+                        <b>
+                            {% T We won't use these details until your account is reviewed and approved. %}
+                        </b>
+                        {% endif %}
+                    </p>
+                    {% if data.Coworker.EnableGoCardlessPayments %}
+                    <h2 class="h3 section__title">{% T Pay by Direct Debit %}</h2>
+                    {% capture gc_returnUrl %}{% Url Profile, Complete %}{% endcapture %}
+                    {% include gocardless_payment_form.htm %}
+                    <hr/>
+                    {% endif %}
+
+                    {% if data.Local.SpreedlyEnabled %}
+                    <h2 class="h3 section__title">{% T Pay by Credit/Debit Card %}</h2>
+                    {% capture gw_returnUrl %}{% Url Profile, Complete %}{% endcapture %}
+                    {% include gateway_payment_form.htm %}
+                    {% if data.Coworker.CardNumber.size > 0 %}
+                    <hr/>
+                    <div class="form-actions btn-toolbar">
+                        <a href="{% Url Payments, UseExistingSpreedlyToken %}?okRedirectUrl={% Url Allowances, Plans %}" class="btn btn--primary btn--sm">{% T Continue using card ending on '{0}' || data.Coworker.CardNumber %}
+                            <i class="fa fa-chevron-right" aria-hidden="true"></i>
+                        </a>
+                    </div>
+                    {% endif %}
+                    {% endif %}
+                    
+                    {% if data.Local.StripeEnabled %}
+                    <h2 class="h3 section__title">{% T Pay by Credit/Debit Card %}</h2>
+                    <a href="#" class="stripeCustomerButton btn btn--primary btn--sm">
+                        <i class="fa fa-card" aria-hidden="true"></i>    
+                        {% T Enter Card Details %}
+                    </a>
+                    {% if data.Coworker.CardNumber.size > 0 %}
+                    <hr/>
+                    <div class="form-actions btn-toolbar">
+                        <a href="{% Url Payments, UseExistingStripeToken %}?okRedirectUrl={% Url Allowances, Plans %}" class="btn btn--primary btn--sm">{% T Continue using card ending on '{0}' || data.Coworker.CardNumber %}
+                            <i class="fa fa-chevron-right" aria-hidden="true"></i>
+                        </a>
+                    </div>
+                    {% endif %}
+                    {% endif %}
+                </div>
+                
+                {% include signup_footer.htm %}
+
+            </div>
+        </div>
+    </div>
+    <!-- END CREDENTIALS -->
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% include payment_scripts.htm %}
+{% if data.Local.StripeEnabled %}
+<script>
+  $('.stripeCustomerButton').click(function () {
+    var el = $(this);
+    var token = function (res) {
+      var $input = $('<input type=hidden name=stripeToken />').val(res.id);
+      var payUrl = el.attr('data-payUrl');
+      window.location.href = '{% Url Payments, StoreStripeToken %}?errorRedirectUrl={% Url Invoices, PaymentDetails %}&okRedirectUrl={% Url Profile, Complete %}&stripeToken=' + res.id + '&rnd=' + Math.floor((Math.random() * 100000) + 1);
+    };
+
+    StripeCheckout.open({
+      key: '{{ data.Local.StripePublicKey }}',
+      address: false,
+      allowRememberMe: false,
+      email: '{{ data.Coworker.Email }}',
+      name: '{{ data.Business.Name }}',
+      panelLabel: '{% T Continue %}',
+      token: token
+    });
+
+    return false;
+  });
+  $('.stripeOrderFoodButton').click(function () {
+
+      console.log('stripe order food button');
+
+      var el = $(this);
+      var token = function (res) {
+          var $input = $('<input type=hidden name=stripeToken />').val(res.id);
+          var payUrl = el.attr('data-payUrl');
+          window.location.href = '{% Url Payments, StoreStripeToken %}?errorRedirectUrl={% Url Invoices, PaymentDetails %}&okRedirectUrl={% Url Profile, Complete %}&stripeToken=' + res.id + '&rnd=' + Math.floor((Math.random() * 100000) + 1);
+      };
+
+      StripeCheckout.open({
+          key: '{{ data.Local.StripePublicKey }}',
+          address: false,
+          allowRememberMe: false,
+          email: '{{ data.Coworker.Email }}',
+          name: '{{ data.Business.Name }}',
+          panelLabel: '{% T Continue %}',
+          token: token
+      });
+
+      return false;
+  });
+</script>
+{% endif %}
+{% endblock %}

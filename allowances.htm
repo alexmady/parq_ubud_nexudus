@@ -1,0 +1,165 @@
+{% extends master.master %}
+{% block scripts %}
+<script>
+  $(function(){
+    var navManager = new LateralNavigationManager();
+    navManager.initLateralSmoothNav();
+    $('#nav-lateral-select').val('{{ data.URL }}');
+  })
+</script>
+{% endblock %}
+{% block main %}
+ <div class="container">
+  <!-- BREADCRUMBS -->
+  <ol class="breadcrumb">
+    <li><a href="{{ data.Business.HomeUrl }}">{% T Home %}</a></li>
+    <li class="active">{% T Plans and Products %}</li>
+  </ol>
+  <!-- END BREADCRUMBS -->
+
+  <!-- SETTINGS -->
+  <div class="settings">
+    <div class="row">
+      <div class="col-sm-3">
+        {% include my_account_navigation.htm %}
+      </div>
+
+      <div class="col-sm-9">
+        <div class="notifications-placeholder"></div>
+        <!-- YOUR PLAN -->
+        <form id="profile-form">
+          <fieldset class="section section--settings" id="your-plan">
+            <legend class="h3 section__title">{% T Your plan %}</legend>
+            {% if data.Coworker.ActiveContracts.size == 0 and data.Coworker.FutureContracts.size == 0 %}
+            <div class="alert alert--info alert--icon" role="alert">
+              <i class="fa fa-info"></i>
+              <b>{% T You are not in a price plan. %}</b>
+            </div>
+            <div class="btn-toolbar">
+                <a href="{% Url Profile, Tariff %}" class="btn btn--primary btn--sm">{% T Choose your plan %}</a>
+            </div>
+            {% else %}
+            <div class="settings__plan">
+              {% for contract in data.Coworker.ActiveContracts %}
+              {% include contract_details.htm %}
+              {% endfor %}
+              {% for contract in data.Coworker.FutureContracts %}
+              {% include contract_details.htm %}
+              {% endfor %}
+            </div>
+            {% endif %}
+            {% if data.Setting_Members_CanSignup and data.Setting_Members_UseInvitationLink == null %}
+            <div class="btn-toolbar">
+                <a href="{% Url Profile, Tariff %}" class="btn btn--secondary btn--sm">
+                  <i class="fa fa-plus-circle"></i>
+                  {% T Join a new plan %}</a>
+            </div>
+            {% endif %}
+        </fieldset>
+
+        
+        <!-- END YOUR PLAN -->
+
+        <!-- ALLOWANCES -->
+        <div class="section section--settings" id="allowances">
+
+          <h2 class="h3 section__title">{% T Benefits %}</h2>
+          {% if data.Local.ChargeBooingImmediately %}
+          <p>
+            {% T Bookings will be charged to your account as you request them. Any credit available at the time of requesting the booking will be used to pay for it. %}
+          </p>
+          {% else %}
+          <p>
+            {% T Bookings will be charged to your account as they end. Any credit available at the time the booking ends will be used to pay for it. %}
+          </p>
+          {% endif %}
+          {% if data.Local.TimePasses.size > 0 or data.Local.BookingCredits.size > 0 or data.Local.ExtraServices.size > 0 %}
+          <table class="table table--settings js-table-settings">
+            <thead>
+              <th>{% T Item %}</th>
+              <th>{% T Quantity %}</th>
+              <th class="text-right">{% T Remaining %}</th>
+            </thead>
+            <tbody>
+              {% for group in data.Local.TimePasses %}
+              {% include allowances_credit_details.htm %}
+              {% endfor %}
+              {% for group in data.Local.BookingCredits %}
+              {% include allowances_credit_details.htm %}
+              {% endfor %}
+              {% for group in data.Local.ExtraServices %}
+              {% include allowances_credit_details.htm %}
+              {% endfor %}
+              
+            </tbody>
+          </table>
+          {% else %}
+          <div class="alert alert--info alert--icon" role="alert">
+            <i class="fa fa-info"></i>
+            <b>{% T You are not signed up to a membership that includes benefits. %}</b>
+          </div>
+          {% endif %}
+
+        </div>
+        <!-- END ALLOWANCES -->
+
+        <!-- YOUR ADDITIONAL PRODUCTS -->
+        <div class="section section--settings" id="your-additional-products">
+
+          <h2 class="h3 section__title">{% T Your additional products %}</h2>
+          {% if data.Local.Products.size > 0 %}
+          <table class="table table-striped table--settings">
+            <thead>
+              <th>{% T Product %}</th>
+              <th>{% T Payment frequency %}</th>
+              <th class="text-right">{% T Price %}</th>
+            </thead>
+            <tbody>
+              {% for product in data.Local.Products %}
+              <tr>
+                <th>{{ product.Product.Name }}</th>
+                <td>
+                  {% if product.RepeatCycle == "PricePlan" %}
+                    {% T With your membership %}
+                  {% elseif product.RepeatCycle == "Day" %}
+                    {% T Every day %}
+                  {% elseif product.RepeatCycle == "Week" %}
+                    {% T Every week %}
+                  {% elseif product.RepeatCycle == "Month" %}
+                    {% T Every month %}
+                  {% elseif product.RepeatCycle == "Year" %}
+                    {% T Every year %}
+                  {% elseif product.RepeatCycle == "LastDayOfMonth" %}
+                    {% T Last day of the month %}
+                  {% else %}
+                  -
+                  {% endif %}
+                  {% if product.InvoiceOn != null %}
+                  <span class="help-block">{% T We will invoice this product again on {0:d} || product.InvoiceOn %}</span>
+                  {% endif %}
+                </td>
+                <td class="text-right">{{ product.PriceFormatted }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% endif %}
+          {% if data.Local.Products.size == 0 %}
+          <div class="alert alert--info alert--icon" role="alert">
+            <i class="fa fa-info"></i>
+            <b>{% T You have no products added to your account. %}</b>
+          </div>
+          {% endif %}
+
+          <div class="btn-toolbar">
+            <a href="{% Url Store, Products %}" class="btn btn--primary btn--sm">See more additional products</a>
+          </div>
+
+        </div>
+        <!-- END YOUR ADDITIONAL PRODUCTS -->
+        </form>
+      </div>
+
+  </div>
+  <!-- END SETTNGS -->
+{% endblock %}

@@ -1,0 +1,190 @@
+<header class="site-header">
+
+    <!-- REFERRALS MODAL -->
+    {% if data.Coworker != null and data.Coworker.Id > 0 and data.ReferalDiscounts.size > 0 %}
+    <div class="alert alert--top-bar">
+        <p class="alert--top-bar__message">
+            <a href="#" data-toggle="modal" data-target="#modal_referral" class="btn btn--primary btn--xs">{% T Click here  %}</a>
+            {% T to refer a friend and get a discount %}
+        </p>
+    </div>
+
+    {% endif %}
+
+    {% if data.UnpaidBookings.size > 0 %}
+    <div class="alert alert--top-bar">
+        <p class="alert--top-bar__message">
+            <b>{% T One or more bookings need payment before they are confirmed %}</b>
+            <a href="{% Url Bookings, Pay %}" class="btn btn--primary btn--xs">{% T Pay now %}</a>
+        </p>
+    </div>
+    {% endif %}
+    <nav class="navbar navbar-static-top" role="navigation">
+        <div class="container">
+            <div class="navbar-header">
+                <!-- LOGO OR SPACE NAME -->
+                <a class="navbar-brand" href="{{ data.Business.HomeUrl }}">
+                    {% if data.Business.HasLogo %}
+                    <img src="{% Url Business, GetLogo, w:600, h:200 %}" alt="{{ data.Business.Name }}">
+                    {% else %}
+                    <img src="http://placehold.it/600x200/FFFFFF?text={{ data.Business.Name }}" alt="{{ data.Business.Name }}">
+                    {% endif %}
+                </a>
+                <!-- END LOGO OR SPACE NAME -->
+                <!-- COLLAPSE BUTTON -->
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="sr-only">{% T Toggle navigation %}</span>
+                </button>
+                <!-- END COLLAPSE BUTTON -->
+
+            </div>
+            <div id="navbar" class="navbar-collapse collapse">
+
+                <!-- MAIN NAVIGATION -->
+                <ul class="navbar-nav navbar-nav--main">
+                    {% if data.Setting_PublicWebSite_AboutUs %}
+                    <li class="{% if data.Controller == 'about'%}active{%endif%}"><a href="{% Url About, Index %}">{% T About %}</a></li>
+                    {% endif %}
+                    {% if data.CustomTemplates.size > 0 %}
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{ data.Business.Name }} <span class="caret"></span></a>
+                        <ul class="dropdown-menu" role="menu">
+                            {% for t in data.CustomTemplates %}
+                            <li class="{%if data.Controller == 'page' and data.URL contains t.Permalink %}active{%endif%}">
+                                <a href="{% Url Page, Index, name: t.Permalink %}" role="menuitem" tabindex="-1">{% T t.Title %}</a>
+                            </li>
+                            {% endfor %}
+
+                            </li>
+                </ul>
+                </li>
+                {% endif %}
+                {% if data.Setting_PublicWebSite_Directory or data.Setting_PublicWebSite_CommunityBoard or data.Setting_PublicWebSite_Events %}
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{% T Community %} <span class="caret"></span></a>
+                    <ul class="dropdown-menu" role="menu">
+                        {% if data.Setting_PublicWebSite_Directory %}
+                        <li class="{% if data.Controller == 'directory'%}active{%endif%}"><a href="{% Url Directory, Members %}" role="menuitem" tabindex="-1">{% T Members %}</a></li>
+                        {% endif %}
+                        {% if data.Setting_PublicWebSite_CommunityBoard %}
+                        <li class="{% if data.Controller == 'community'%}active{%endif%}"><a href="{% Url Community, Index %}" role="menuitem" tabindex="-1">{% T Message Board %}</a></li>
+                        {% endif %}
+                        {% if data.Setting_PublicWebSite_Events %}
+                        <li class="{% if data.Controller == 'events'%}active{%endif%}"><a href="{% Url Events, Index %}" role="menuitem" tabindex="-1">{% T Events %}</a></li>
+                        {% endif %}
+                        {% if data.Setting_Included_Enabled %}
+                        <li class="{% if data.Controller == 'included'%}active{%endif%}"><a href="{% Url Included, Index %}" role="menuitem" tabindex="-1">{% T Discounts %}</a></li>
+                        {% endif %}
+
+                    </ul>
+                </li>
+                {% endif %}
+                {% if data.Resources.size > 0 %}
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{% T Bookings %} <span class="caret"></span></a>
+                    <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                        <li class="{% if data.Controller == 'bookings' and data.Action == 'search' %}active{%endif%}"><a href="{% Url Bookings, Search %}">{% T Find a Room %}</a></li>
+                        <li class="{% if data.Controller == 'bookings' and data.Action == 'calendar' %}active{%endif%}" role="menuitem" tabindex="-1"><a href="{% Url Bookings, Calendar %}">{% T Bookings Calendar %}</a></li>
+                    </ul>
+                </li>
+                {% endif %}
+
+                {% if data.Setting_Blog_Enabled %}
+                <li><a class="{% if data.Controller == 'blog'%}active{%endif%}" href="{% Url Blog, Index %}">{% T Blog %}</a></li>
+                {% endif %}
+
+                    {% if data.UserIsLoggedIn %}
+                    <li><a href="{% Url Login, Logout %}">{% T Sign out %}</a></li>
+                    {% if data.Setting_PublicWebSite_MyAccount %}
+                    <li><a href="{% Url Profile, Index %}" >{% T My Account %}</a></li>
+                    {% endif %}
+                    {% else %}
+                    {% if data.Setting_PublicWebSite_MyAccount %}
+                    <li><a href="{% Url Login, Index %}">{% T Sign in %}</a></li>
+                    {% endif %}
+                    {% if data.Setting_Members_CanSignup %}
+                    <li><a href="{% Url Signup, Index %}">{% T Become a member %}</a></li>
+                    {% endif %}
+                    {% endif %}
+
+                </ul>
+                <!-- END MAIN NAVIGATION -->
+                <!-- USER NAVIGATION -->
+                <!--<ul class="navbar-nav navbar-nav&#45;&#45;user">-->
+
+                    <!--{% if data.Setting_PublicWebSite_Tour %}-->
+                    <!--<li class="{% if data.Controller == 'tour'%}active{%endif%}"><a href="{% Url Tour, Index %}">{% T Take a Tour %}</a></li>-->
+                    <!--{% endif %}-->
+
+                    <!--{% if data.Setting_PublicWebSite_Help %}-->
+                    <!--<li class="{% if data.Controller == 'support'%}active{%endif%}"><a href="{% Url Support, Index %}">{% T Help %}</a></li>-->
+                    <!--{% endif %}-->
+
+                    <!--{% if data.Businesses.size > 1 %}-->
+                    <!--<li class="dropdown">-->
+                        <!--<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">-->
+                            <!--{% T Location %} <span class="caret"></span>-->
+                        <!--</a>-->
+                        <!--{% include core_locations_list.htm %}-->
+                    <!--</li>-->
+                    <!--{% endif %}-->
+
+                    <!--{% if data.UserIsLoggedIn %}-->
+                    <!--<li><a href="{% Url Login, Logout %}">{% T Sign out %}</a></li>-->
+                    <!--{% if data.Setting_PublicWebSite_MyAccount %}-->
+                    <!--<li><a href="{% Url Profile, Index %}" class="btn btn&#45;&#45;primary btn&#45;&#45;sm">{% T My Account %}</a></li>-->
+                    <!--{% endif %}-->
+                    <!--{% else %}-->
+                    <!--{% if data.Setting_PublicWebSite_MyAccount %}-->
+                    <!--<li><a href="{% Url Login, Index %}">{% T Sign in %}</a></li>-->
+                    <!--{% endif %}-->
+                    <!--{% if data.Setting_Members_CanSignup %}-->
+                    <!--<li><a href="{% Url Signup, Index %}" class="btn btn&#45;&#45;primary btn&#45;&#45;sm">{% T Become a member %}</a></li>-->
+                    <!--{% endif %}-->
+                    <!--{% endif %}-->
+                <!--</ul>-->
+                <!-- END USER NAVIGATION -->
+
+            </div>
+
+        </div>
+
+    </nav>
+
+</header>
+
+<!-- MODAL -->
+<div id="modal_referral" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">{% T Refer to a friend %}</h4>
+            </div>
+            <div class="modal-body">
+                {% for discount in data.ReferalDiscounts %}
+
+                <form action="{% Url Referrals, Refer %}" method="post" class="form form-inline form--newsletter">
+                    <input type="hidden" name="discountCodeId" value="{{ discount.Id }}" />
+                    <p>
+                        {% T Type an email address below to refer someone and get your discount: %}
+                    </p>
+
+                    <strong>{{ discount.Description }}</strong> <br />
+                    <input autocomplete="off" required="required" type="email" name="email" class="form-control input--sm" placeholder="Enter your email" title="This field is required." data-orig-title="">
+
+                    <button class="btn btn--default btn--sm" type="submit">{% T Send invite %}</button>
+                </form>
+
+                {% endfor %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">{% T Close %}</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+<!-- END MODAL -->

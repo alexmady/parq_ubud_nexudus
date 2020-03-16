@@ -1,0 +1,68 @@
+<li class="col-sm-6 col-md-4 users-list__item">
+  <div class="user-badge user-badge--lg">
+    <h3 class="h6 user-badge__name">
+      <a href="{% Url Directory, Profile, Id: member.Id, name: member.FullName | Clean, page: forloop.index %}&{{ data.UrlQueryNoQuestionMark }}">{{ member.FullName }}</a>
+    </h3>
+    {% if member.Position != null or member.CompanyName != null %}
+    <p class="user-badge__position">
+      {{ member.Position }}
+      {% if member.Position != null %}/{% endif %}
+      {{ member.CompanyName }}
+    </p>
+    {% endif %}
+    <a class="avatar user-badge__avatar" href="{% Url Directory, Profile, Id: member.Id, name: member.FullName | Clean, page: forloop.index %}&{{ data.UrlQueryNoQuestionMark }}">
+    <img src="{% Url Coworker, GetAvatar, id: member.Id, h:128, w:128 %}&noavatar=%2Fcontent%2Fthemes%2Fpublic%2Fdos%2Fimg%2Favatar-default.png" alt="{{ member.FullName }}"></a>
+    
+    {% if member.IsNew %}
+    <span class="label label--success">{% T New Member %}</span>
+    {% endif %}
+    {% if member.IsAdmin %}
+    <span class="label label--default">{% T Staff %}</span>
+    {% endif %}
+    
+    <ul class="list-inline user-badge__social">
+      {% if member.ProfileWebsite.size > 0 %}
+      <li><a target="_blank" href="{{ member.ProfileWebsite }}" class="link--tertiary"><i class="fa fa-globe"></i></a></li>
+      {% endif %}
+      {% if member.Twitter.size > 0 %}
+      <li><a target="_blank" href="http://twitter.com/{{ member.Twitter }}" class="link--tertiary"><i class="fa fa-twitter"></i></a></li>
+      {% endif %}
+      {% if member.Linkedin.size > 0 %}
+      <li><a target="_blank" href="{{ member.Linkedin }}" class="link--tertiary"><i class="fa fa-linkedin"></i></a></li>
+      {% endif %}
+      {% if member.Facebook.size > 0 %}
+      <li><a target="_blank" href="{{ member.Facebook }}" class="link--tertiary"><i class="fa fa-facebook"></i></a></li>
+      {% endif %}
+      {% if member.Skype.size > 0 %}
+      <li><a href="callto://{{ member.Skype }}" class="link--tertiary"><i class="fa fa-skype"></i></a></li>
+      {% endif %}
+      {% if member.Google.size > 0 %}
+      <li><a target="_blank" href="{{ member.Google }}" class="link--tertiary"><i class="fa fa-google-plus"></i></a></li>
+      {% endif %}
+      {% if member.Github.size > 0 %}
+      <li><a target="_blank" href="{{ member.Github }}" href="{{ member.Google }}" class="link--tertiary"><i class="fa fa-github"></i></a></li>
+      {% endif %}
+      {% if member.Pinterest.size > 0 %}
+      <li><a target="_blank" href="{{ member.Pinterest }}" class="link--tertiary"><i class="fa fa-pinterest"></i></a></li>
+      {% endif %}
+      {% if member.Flickr.size > 0 %}
+      <li><a target="_blank" href="{{ member.Flickr }}" class="link--tertiary"><i class="fa fa-flickr"></i></a></li>
+      {% endif %}
+      {% if member.Instagram.size > 0 %}
+      <li><a target="_blank" href="{{ member.Instagram }}" class="link--tertiary"><i class="fa fa-instagram"></i></a></li>
+      {% endif %}
+      {% if member.Vimeo.size > 0 %}
+      <li><a target="_blank" href="{{ member.Vimeo }}" class="link--tertiary"><i class="fa fa-vimeo"></i></a></li>
+      {% endif %}
+      {% if member.Tumblr.size > 0 %}
+      <li><a target="_blank" href="{{ member.Tumblr }}" class="link--tertiary"><i class="fa fa-tumblr"></i></a></li>
+      {% endif %}
+      {% if member.Blogger.size > 0 %}
+      <li><a target="_blank" href="{{ member.Blogger }}"  class="link--tertiary"><i class="fa fa-blogger"></i></a></li>
+      {% endif %}
+    </ul>
+    {% if member.CheckedIn %}
+    <span class="user-badge__presence" data-toggle="tooltip" title="" data-original-title="{% T {0} is at {1} || member.FullName || data.Business.Name %}"></span>
+    {% endif %}
+  </div>
+</li>

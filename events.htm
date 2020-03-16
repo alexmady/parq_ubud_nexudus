@@ -1,0 +1,108 @@
+{% extends master.master %}
+{% block title %}{% if data.Local.Category != null %}{{  data.Local.Category.Title | Capitalize }} | {% endif %}{% T Events %} | {{ data.Business.Name }} {% endblock %}
+{% block main %}
+<div class="container">
+  <!-- BREADCRUMBS -->
+  <ol class="breadcrumb">
+    <li><a href="{{ data.Business.HomeUrl }}">{% T Home %}</a></li>
+    <li class="active">{% T Events %}</li>
+  </ol>
+  <!-- END BREADCRUMBS -->
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <h1>{% T Events at {0} || data.Business.Name %}</h1>
+  </div>
+  <!-- END PAGE HEADER -->
+
+  <!-- FILTERS -->
+  <div class="filters">
+    <ul class="nav filters__nav">
+      <li class="active">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+          {% if data.Local.PastEvents %}
+          {% T Past events %}
+          {% else %}
+          {% T Upcoming events %}
+          {% endif %}
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu" role="menu">
+          <li class="{% if data.Local.PastEvents == false %}active{% endif %}" role="menuitem" tabindex="-1"><a href="{{ data.UrlPath }}?{{ data.UrlQuery | ReplaceQueryString: 'pastevents', 'false' | ReplaceQueryString: 'page', '1' }}">{% T Upcoming events %}</a></li>
+          <li class="{% if data.Local.PastEvents %}active{% endif %}" role="menuitem" tabindex="-1"><a href="{{ data.UrlPath }}?{{ data.UrlQuery | ReplaceQueryString: 'pastevents', 'true' | ReplaceQueryString: 'page', '1' }}"> {% T Past events %}</a></li>
+        </ul>
+      </li>
+      <li>
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+          {% T Categories %} {% if data.Local.Category != null %}:
+          {{ data.Local.Category.Title }}
+          {% endif %}
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu" role="menu">
+          <li class="{% if data.Local.Category == null %}active{% endif %}" role="menuitem" tabindex="-1">
+            <a href="{% Url Events, Index, categoryId: null %}">{% T Show all events %}</a>
+          </li>
+          {% for category in data.Local.Categories %}
+          <li class="{% if data.Local.Category.Id == category.Id %}active{% endif %}" role="menuitem" tabindex="-1">
+            <a href="{% Url Events, Index, title: category.Title | Clean, categoryId: category.Id, pastEvents: data.Local.PastEvents %}">{{ category.Title }}</a>
+          </li>
+          {% endfor %}
+        </ul>
+      </li>
+      <li>
+        <a href="{% Url Bookings, Calendar, onlyevents: true %}">
+          {% T Calendar View %}
+        </a>
+      </li>
+    </ul>
+  </div>
+  <!-- END FILTERS -->
+
+  <!-- EVENTS LIST -->
+  <ul class="row events-list">
+    {% for event in data.Local.CalendarEvents %}
+    {% include events_list_item.htm %}
+    {% endfor %}
+
+    {% if data.Local.CalendarEvents.size == 0 %}
+    <!-- ZERO CASE -->
+    <div class="zero-case">
+      <i class="fa fa-calendar-o zero-case__icon"></i>
+      <h3>{% T There are no events to display %}</h3>
+      <p>
+        {% if data.Local.PastEvents == false %}
+        <a href="{{ data.UrlPath }}?{{ data.UrlQuery | ReplaceQueryString: 'pastEvents', 'true' }}">{% T check what you missed %}</a>
+        {% endif %}
+      </p>
+      </div>
+    <!-- END ZERO CASE -->
+    {% endif %}
+  </ul>
+  <!-- END EVENTS LIST -->
+
+  <!-- PAGINATION -->
+  {% assign pagedRecords = data.Local.CalendarEvents %}
+  {% include core_pagination_fragment.htm %}
+  <!-- END PAGINATION -->
+
+</div>
+
+{% endblock %}
+{% block script %}
+<script type="text/javascript" src="https://addthisevent.com/libs/1.5.8/ate.min.js"></script>
+<script type="text/javascript">
+addthisevent.settings({
+    license   : "a405mv4wfzncermbtmjd",
+    mouse     : false,
+    css       : false,
+    outlook   : {show:true, text:"Outlook Calendar"},
+    google    : {show:true, text:"Google Calendar"},
+    yahoo     : {show:true, text:"Yahoo Calendar"},
+    hotmail   : {show:true, text:"Hotmail Calendar"},
+    ical      : {show:true, text:"iCal Calendar"},
+    facebook  : {show:true, text:"Facebook Event"},
+    callback  : ""
+});
+</script>
+{% endblock %}

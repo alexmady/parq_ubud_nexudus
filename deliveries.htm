@@ -1,0 +1,118 @@
+{% extends master.master %}
+{% block main %}
+<div class="container">
+    <!-- BREADCRUMBS -->
+    <ol class="breadcrumb">
+        <li><a href="{{ data.Business.HomeUrl }}">{% T Home %}</a></li>
+        <li><a href="{% Url Profile, Index %}">{% T My Account %}</a></li>
+        <li class="active">{% T Deliveries %}</li>
+    </ol>
+    <!-- END BREADCRUMBS -->
+    <!-- SETTINGS -->
+    <div class="settings">
+        <div class="row">
+            <div class="col-sm-3">
+                {% include my_account_navigation.htm %}
+            </div>
+            <div class="col-sm-9">
+                <div class="notifications-placeholder"></div>
+            
+                <fieldset class="section section--settings" id="payment-history">
+                    <legend class="h3 section__title">{% T Deliveries %}</legend>
+
+                    <p class="alert alert--info alert--icon">
+                        <i class="fa fa-info"></i>
+                        <b>{% T To make sure we can match your deliveries correctly, make sure they are addressed to "{0}" or "{1}". || data.Coworker.BillingName || data.Coworker.FullName %}</b>
+                    </p>
+
+                    {% if data.Local.Deliveries.size == 0 %}
+                    <p class="alert alert--info alert--icon">
+                        <i class="fa fa-info"></i>
+                        <b>{% T You have no deliveries. %}</b>
+                    </p>
+                    {% else %}
+                    <table class="table table-striped table--settings">
+                        <thead>
+                            <th>{% T Reference %}</th>
+                            <th></th>
+                            <th>{% T Location %}</th>
+                            <th>{% T Status %}</th>
+                        </thead>
+                        <tbody>
+                            {% for delivery in data.Local.UncollectedDeliveries %}
+                            <tr>
+                                <td>
+                                    <strong>
+                                        {{delivery.Name}}
+                                    </strong>
+                                </td>
+                                <td>
+                                    {% if delivery.HasImage %}
+                                    <a class="link--primary" rel="popover" data-img="{{ delivery.ImageUrl }}">
+                                        <i class="fa fa-file-text"></i>
+                                    </a>
+                                    {% endif %}
+                                    {% if delivery.RequiresSignature %}
+                                    <a class="link--primary" data-toggle="tooltip" title="" data-original-title="{% T Requires signature %}" title="" href="#">
+                                        <i class="fa file-signature"></i>
+                                    </a>
+                                    {% endif %}
+                                    
+                                </td>
+                                <td>
+                                    {{ delivery.Location }}
+                                </td>
+                                <td class="text-error" colspan="2">
+                                    <i class="fa fa-clock"></i> {% T Received on {0:D} || delivery.CreatedOn %}
+                                </td>                    
+                            </tr>
+                            {% endfor %}
+                            {% for delivery in data.Local.CollectedDeliveries %}
+                            <tr>
+                                <td>
+                                    <strong>
+                                        {{delivery.Name}}
+                                    </strong>
+                                </td>
+                                <td>
+                                    {% if delivery.HasImage %}
+                                    <a class="link--primary" rel="popover" data-img="{{ delivery.ImageUrl }}">
+                                        <i class="fa fa-file-text"></i>
+                                    </a>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {{ delivery.Location }}
+                                </td>
+                                <td class="text-success" colspan="2">
+                                    <i class="fa fa-check-circle"></i> {% T Collected %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                
+                        </tbody>
+                    </table>
+                    {% endif %}
+                </fieldset>
+                
+                <!-- END PAYMENT HISTORY -->
+            
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+    $(function() {
+        $('a[rel=popover]').popover({
+            html: true,
+            placement: 'bottom',
+            trigger: 'hover',
+            content: function () {
+                return '<img style="width: 200px" src="'+$(this).data('img') + '" />';
+            }
+        })
+    })
+</script>
+{% endblock %}

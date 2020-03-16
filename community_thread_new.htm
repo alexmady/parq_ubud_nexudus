@@ -1,0 +1,159 @@
+{% extends master.master %}
+{% block title %}{{ data.Local.Thread.Subject | StripHtml | StripNewlines | TruncateWords: 10 }} | {% T Community %} | {{ data.Business.Name }} {% endblock %}
+{% block scripts %}
+<link rel="stylesheet" type="text/css" href="/content/themes/public/js/libs/bootstrap-tagsinput/bootstrap-tagsinput.css" />
+<link rel="stylesheet" type="text/css" href="/content/themes/public/js/libs/jquery.mentionsInput/jquery.mentionsInput.css" />
+<script src="/content/themes/public/js/libs/jquery.elastic/jquery.elastic.source.js"></script>
+<script src="/content/themes/public/js/libs/underscore/underscore-min.js"></script>
+<script src="/content/themes/public/js/libs/typeahead/typeahead.bundle.js"></script>
+<script src="/content/themes/public/js/libs/jquery.mentionsInput/jquery.mentionsInput.js"></script>
+<script src="/content/themes/public/js/libs/bootstrap-tagsinput/bootstrap-tagsinput.min.js"></script>
+<script src="/scripts/jquery.timeago.js"></script>
+<script src="/scripts/jquery.timeago.{{ data.Language }}.js"></script>
+
+
+<script>
+  var cm = new CommunityBoardManager();
+  $(function(){
+    cm.init();
+    
+  })
+
+    var settings = {
+      formId: 'new_thread_form',
+      formError: '{% T Please make sure all the required fields are complete. %}',
+      formData: {
+          subject: null,
+          message: null
+      }
+    }
+    var fm = new SimpleFormManager(settings);
+    fm.init();
+</script>
+{% endblock %}
+{% block main %}
+<div class="container">
+
+  <!-- BREADCRUMBS -->
+<ol class="breadcrumb">
+    <li><a href="{{ data.Business.HomeUrl }}">{% T Home %}</a></li>
+    <li><a href="{% Url Community, Index %}">{% T Message Board %} </a></li>
+    <li class="active">{% T Start conversation %}</li>
+  </ol>
+  <!-- END BREADCRUMBS -->
+
+  <div class="row">
+
+    <div class="col-md-8 col-md-offset-2">
+
+      <!-- NEW CONTENT -->
+      <div class="new-content">
+
+        <!-- USER PAGE HEADER -->
+        <div class="page-header page-header--user">
+
+          <a href="{% Url Community, Index %}" class="link--secondary link--back">
+            <i class="fa fa-angle-left"></i>
+            {% T Back to Message Board %}
+          </a>
+
+          <h1 class="h2">{% T Start a new conversation %}</h1>
+
+          <div class="user-badge user-badge--md page-header__user">
+            <a class="avatar user-badge__avatar" href="#">
+              <img <img height="64" width="64" src="{% Url Coworker, GetAvatar, id: data.Coworker.Id, h:64, w:64 %}&noavatar=%2Fcontent%2Fthemes%2Fpublic%2Fdos%2Fimg%2Favatar-default.png" alt="{{ data.Coworker.FulLName }}">
+            </a>
+          </div>
+
+        </div>
+        <!-- END USER PAGE HEADER -->
+
+        <!-- BOARD NEW FORM -->
+        <form class="form" id="new_thread_form" method="post" action="{% Url Conversations, Start %}" data-bind="with: formData, submit: $root.submitForm"  enctype="multipart/form-data">
+          {% AntiforgeryToken %}  
+                   
+          <div class="form-group">
+            <label for="message_subject">{% T Topic %}</label>
+            <input required="required" type="text" id="message_subject" data-bind="value: subject" name="CommunityThread.Subject" class="form-control input--lg"  placeholder="{% T Keep it relevant, less is more... %}">
+            <small class="help-block validation-error" data-bind="validationMessage: subject"></small>
+          </div>
+
+          <div class="form-group">
+            <label for="">{% T Message %}</label>
+            <textarea id="reply-box" cols="30" rows="6"  required="required" data-bind="value:message, valueUpdate: 'keyup'" class="form-control" placeholder="{% T Type your message here %}"></textarea>
+            <textarea style="display:none" rows="5" id="reply-box-server" name="CommunityThread.Message">{{data.Local.CommunityThread.Message}}</textarea>
+            <small class="help-block validation-error" data-bind="validationMessage: message"></small>
+            <p class="help-block">{% T Invite other people to this conversation by mentioning them: type the '@' symbol followed by their name. %}</p>
+          </div>
+
+          <div class="form-group">
+            <label for="files">{% T Images or Files %}</label>
+            <input type="file" name="files" multiple="multiple" id="files" class="form-control" />            
+            <small class="help-block">{% T Max 10Mb. %} {% T Hold Ctrl in Windows or Command in Mac to select more than one file %}</small>
+          </div>
+          <hr/>
+          <div class="form-group">
+            <label for="tags">{% T Group %}</label>
+            <select name="Group.Id" class="form-control">
+              <option value="">{% T General Thread %}</option>
+              {% for group in data.Local.Groups %}
+              {% if group.Id == data.Local.Group.Id %}
+              <option selected="selected" value="{{group.Id}}">{{ group.Name }}</option>
+              {% else %}
+              <option value="{{group.Id}}">{{ group.Name }}</option>
+              {% endif %}
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="tags">{% T Tags %}</label>
+            <input type="text" class="form-control" id="tags" name="CommunityThread.Tags">
+            <p class="help-block">
+              {% T Help others find your posts by tagging them. Hit enter after each tag. Maximun three tags, choose wisely. %}
+            </p>
+          </div>
+          <hr/>
+          <div class="form-group">
+            <div class="checkbox">
+              <label>
+                {% if data.Local.PrivateThread %}
+                <input checked="checked" value="true" id="message_private" name="CommunityThread.Private" type="checkbox">
+                {% else %}
+                <input value="true" id="message_private" name="CommunityThread.Private" type="checkbox">
+                {% endif %}
+                {% T Make this conversation private %}
+                <input type="hidden" value="false" name="CommunityThread.Private">
+              </label>
+              <p class="help-block">{% T Only you and those people you @mention will see this conversation %}</p>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="checkbox">
+              <label>
+                <input value="true" id="message_private" name="CommunityThread.InstantDelivery" type="checkbox">
+                {% T Instant delivery %}
+                <input type="hidden" value="false" name="CommunityThread.InstantDelivery">
+              </label>
+              <p class="help-block">{% T Most members choose to only receive a notification about new conversations every morning. Enable this option to notify everyone about this conversation right away. <strong>Please use responsibly</strong>. %}</p>
+            </div>
+          </div>
+
+          <div class="btn-toolbar form-actions">
+            <button class="btn btn--primary btn--sm" onclick="$('#new_thread_form').submit()" type="button" data-bind="disable: $root.busy">{% T Start Conversation %}</button>
+            <a href="{% Url Community, Index %}" class="btn btn--link btn--sm">{% T Cancel %}</a>
+          </div>
+
+        </form>
+        <!-- END BOARD NEW FORM -->
+
+      </div>
+      <!-- END NEW CONTENT -->
+
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

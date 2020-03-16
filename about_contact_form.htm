@@ -1,0 +1,60 @@
+<h2 class="h3 section__title">{% T Get in touch with us %}</h2>
+<div class="row">
+  <div class="col-sm-6">
+    <div class="your-input" data-mh="contact-box">
+      <form action="{% Url Contact, NewUserMessage, ReturnUrl: data.URL %}" method="POST" class="form your-input__form" data-bind="with: formData, submit: $root.submitForm" novalidate>
+        <div class="form-group">
+          <label for="email-from">{% T Your Email %}</label>
+          <input type="email" data-bind="value: email" required="required"  name="UserMessage.FromName" class="form-control" id="email-from" placeholder="{% T Type your email address here %}">
+          <small class="help-block validation-error" data-bind="validationMessage: email"></small>
+        </div>
+        <div class="form-group">
+          <label for="email-subject">{% T Message Subject %}</label>
+          <input type="text" data-bind="value: header" required="required" name="UserMessage.Header" class="form-control" id="email-subject" placeholder="{% T Type a subject for your message here %}">
+          <small class="help-block validation-error" data-bind="validationMessage: header"></small>
+        </div>
+        <div class="form-group">
+          <label for="email-message">{% T Message Text %}</label>
+          <textarea required="required" data-bind="value: body" name="UserMessage.Body" cols="30" rows="6" id="email-message" class="form-control" placeholder="{% T Type your message here... %}"></textarea>
+          <small class="help-block validation-error" data-bind="validationMessage: body"></small>
+        </div>
+        <div class="form-group">
+          {% Captcha %}
+          
+        </div>
+        <div class="form-actions">
+          <button class="btn btn--default--inverse btn--sm" data-bind="disable: $root.busy" type="submit">{% T Send %}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div class="col-sm-6">
+    <div id="map-canvas" data-mh="contact-box" style="color: rgb(196, 196, 196);margin: 25px 0px;padding-top: 180px;text-align: center;height: 350px;background-color: rgb(244, 244, 244);">
+      <b>{% T Loading Map... %}</b>
+    </div>
+  </div>
+</div>
+
+<h3 class="h4">{% T Contact details %}</h3>
+<div class="contact-details">
+  <div class="row">
+    <div class="col-sm-4 contact-details__item">
+      <p>{{ data.Business.Name }}</p>
+      <p>{{ data.Business.Address | NewlineToBr }}</p>
+    </div>
+    <div class="col-sm-8 contact-details__item">
+      {% if data.Business.Phone != null %}
+      <p>{% T Tel. %} {{ data.Business.Phone }}</p>
+      {% endif %}
+      {% if data.Business.Fax != null %}
+      <p>{% T Fax. %} {{ data.Business.Fax }}</p>
+      {% endif %}
+      {% if data.Business.EmailContact != null %}
+      <p><a class="link--secondary contact-details__url" href="mailto:{{ data.Business.EmailContact }}">{{ data.Business.EmailContact }}</a></p>
+      {% endif %}
+      {% if data.Business.WebContact != null %}
+      <p><a class="link--secondary contact-details__url" target="_blank" href="http://{{ data.Business.WebContact | Replace: 'http://', '' | Replace: 'https://', '' }}">{{ data.Business.WebContact }}</a></p>
+      {% endif %}
+    </div>
+  </div>
+</div>

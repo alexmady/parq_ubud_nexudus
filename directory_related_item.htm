@@ -1,0 +1,17 @@
+<li class="users-list__item">
+  <div class="user-badge">
+    <h3 class="h6 user-badge__name">
+      <a href="{% Url Directory, Profile, Id: member.Id, name: member.FullName | Clean, page: data.Local.Page | Plus: 1 %}&{{ data.UrlQuery | ReplaceQueryString name: 'page', value: null }}">
+        {{member.FullName}}
+      </a>
+    </h3>
+    <p class="user-badge__position">
+      {{ member.Position }}
+      {% if member.Position != null %}/{% endif %}
+      {{ member.CompanyName }}
+    </p>
+    <a class="avatar user-badge__avatar" href="{% Url Directory, Profile, Id: member.Id, name: member.FullName | Clean, page: data.Local.Page | Plus: 1 %}&{{ data.UrlQuery | ReplaceQueryString name: 'page', value: null }}">
+      <img src="{% Url Coworker, GetAvatar, id: member.Id, h: 48, w: 48 %}?noavatar=%2Fcontent%2Fthemes%2Fpublic%2Fdos%2Fimg%2Favatar-default.png" alt="">
+    </a>
+  </div>
+</li>

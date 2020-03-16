@@ -1,0 +1,50 @@
+{% extends master.master %}
+{% block title %}{% T About {0} || data.Business.Name %}{% endblock %}
+{% block main %}
+<div class="container">
+    <!-- BREADCRUMBS -->
+    <ol class="breadcrumb">
+        <li><a href="{{ business.HomeUrl }}">{% T Home %}</a></li>
+        <li class="active">{% T Member discounts %}</li>
+    </ol>
+    <!-- END BREADCRUMBS -->
+</div>
+<div class="container">
+
+    {% if data.Local.Solutions.size > 0 %}
+    <!-- USERS LIST -->
+    <div class="">
+        <h2 class="h3 section__title">{% T Member discounts at {0} || data.Business.Name %} </h2>
+        <ul class="row users-list">
+
+            {% for solution in data.Local.Solutions %}
+            <li class="col-sm-6 col-md-4 users-list__item">
+                <div class="user-badge user-badge--lg user-badge--team">
+                    <h3 class="h6 user-badge__name">
+                        <a target="_blank" href="{{ solution.Permalink }}">{{ solution.Title }}</a>
+                    </h3>
+                    {% if solution.Price != null %}
+                    <p class="user-badge__position">
+                        <span style="text-decoration: line-through;">{{ solution.Price.Public }}</span>
+                        <strong>
+                            {{ solution.Price.Included }}
+                            {{ solution.Price.Currency }}
+                            / {{ solution.Price.Period }}
+                        </strong>
+                    </p>
+                    {% endif %}
+
+                    <a class="avatar user-badge__avatar" target="_blank" href="{{ solution.Permalink }}">
+                        <img src="{{ solution.Vendor.Logo }}" alt="{{ solution.Title }}" style="padding: 5px">
+                    </a>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% assign pagedRecords = data.Local.Solutions %}
+        {% include core_pagination_fragment.htm %}
+    </div>
+    <!-- END USERS LIST -->
+    {% endif %}
+</div>
+{% endblock %}
